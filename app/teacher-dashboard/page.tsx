@@ -5,6 +5,7 @@ import api from '../utils/api';
 import { Menu, Users, Calendar, Clock, IndianRupee } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import IncentiveProgressCard from '../components/IncentiveProgressCard';
 
 export default function TeacherDashboard() {
     const [stats, setStats] = useState({
@@ -110,6 +111,10 @@ export default function TeacherDashboard() {
                             icon={IndianRupee}
                             delay="300"
                         />
+                    </div>
+
+                    <div className="mt-8">
+                        <IncentiveProgressCard />
                     </div>
                 </div>
             </div>

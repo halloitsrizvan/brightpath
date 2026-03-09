@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import { Menu, User, Mail, Phone, Clock, IndianRupee, BookOpen, GraduationCap, Edit3, CheckCircle, Camera, Loader2, Save } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'react-hot-toast';
+import IncentiveProgressCard from '../../components/IncentiveProgressCard';
 
 interface Teacher {
     _id: string;
@@ -234,6 +235,11 @@ export default function TeacherProfile() {
 
                         {/* Top Accent Strip */}
                         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#45308D] via-[#45308D]/80 to-[#FDC70B]"></div>
+                    </div>
+
+                    {/* Incentive Progress System */}
+                    <div className="w-full">
+                        <IncentiveProgressCard />
                     </div>
 
                     {/* Stats Grid */}
