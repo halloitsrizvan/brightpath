@@ -17,14 +17,6 @@ export async function POST(req: NextRequest) {
         const attendance = new Attendance({ ...body, teacherId });
         await attendance.save();
 
-        if (user.role === 'teacher') {
-            const teacher = await Teacher.findById(user.id);
-            if (teacher) {
-                teacher.totalTeachingHours += (body.durationMinutes / 60);
-                await teacher.save();
-            }
-        }
-
         return NextResponse.json(attendance, { status: 201 });
     } catch (err: any) {
         if (err.message && err.message.includes('Forbidden')) {

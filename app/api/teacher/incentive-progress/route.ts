@@ -8,7 +8,13 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        const user = await checkAuth(req, ['teacher']);
+        const user = await checkAuth(req, ['teacher', 'admin']);
+        const teacherId = req.nextUrl.searchParams.get('teacherId') || user.id;
+
+        // Security: If not admin, can only see own progress
+        if (user.role !== 'admin' && teacherId !== user.id) {
+            return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+        }
 
         const now = new Date();
         const start = startOfMonth(now);
@@ -16,7 +22,7 @@ export async function GET(req: NextRequest) {
 
         // Find all attendance records for the current month for this teacher
         const attendances = await Attendance.find({
-            teacherId: user.id,
+            teacherId: teacherId,
             date: { $gte: start, $lte: end },
             status: 'Present'
         });
@@ -27,7 +33,7 @@ export async function GET(req: NextRequest) {
         // Fetch all active incentive rules for this teacher
         const rules = await IncentiveRule.find({
             active: true,
-            targetTeachers: { $in: [user.id] }
+            targetTeachers: { $in: [teacherId] }
         }).sort({ targetHours: 1 });
 
         if (rules.length === 0) {

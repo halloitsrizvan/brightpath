@@ -10,8 +10,6 @@ const IncentiveRuleSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Avoid stale models in development
-if (mongoose.models.IncentiveRule) {
-    delete mongoose.models.IncentiveRule;
-}
+const IncentiveRule = mongoose.models.IncentiveRule || mongoose.model('IncentiveRule', IncentiveRuleSchema);
 
-export default mongoose.model('IncentiveRule', IncentiveRuleSchema);
+export default IncentiveRule;

@@ -126,12 +126,12 @@ export default function AdminIncentives() {
             <Toaster position="top-center" />
 
             {/* Sidebar */}
-            <div className={`fixed lg:static z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <Sidebar role="admin" />
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen">
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                 <header className="flex items-center justify-between p-4 bg-white shadow-sm lg:hidden">
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
                         <Menu className="w-8 h-8 text-[#45308D]" />

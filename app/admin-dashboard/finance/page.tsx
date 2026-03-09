@@ -21,8 +21,10 @@ export default function AdminFinance() {
 
     return (
         <div className="flex bg-gray-50 min-h-screen">
-            <Sidebar role="admin" />
-            <div className="flex-1 p-8">
+            <div className="fixed z-50 h-full">
+                <Sidebar role="admin" />
+            </div>
+            <div className="flex-1 lg:ml-64 p-8">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8 mt-2">Finance Overview</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

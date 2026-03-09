@@ -4,11 +4,15 @@ import Teacher from '@/models/Teacher';
 import Attendance from '@/models/Attendance';
 import dbConnect from '@/lib/mongodb';
 import IncentiveRule from '@/models/IncentiveRule';
+import Student from '@/models/Student';
 
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         const user = await checkAuth(req, ['teacher']);
+
+        // Ensure models are registered for population
+        const dummyStudent = Student.modelName;
 
         const teacherContent = await Teacher.findById(user.id).populate('students');
         if (!teacherContent) return NextResponse.json({ message: 'Teacher not found' }, { status: 404 });

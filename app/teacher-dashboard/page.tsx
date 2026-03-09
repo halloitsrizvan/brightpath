@@ -41,12 +41,12 @@ export default function TeacherDashboard() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed lg:static z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <Sidebar role="teacher" />
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
                 {/* Header (matches wireframe) */}
                 <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 shadow-sm lg:hidden">
                     <button
