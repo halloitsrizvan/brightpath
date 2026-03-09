@@ -6,20 +6,23 @@ import dbConnect from '@/lib/mongodb';
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const user = await checkAuth(req, ['teacher']);
-        // In NextJS APIs multipart form data requires specialized parsers or edge configs.
-        // Assuming simple JSON is passed for exam images (like Cloudinary URL directly) since previous code fallback mapped it out.
+        const user = await checkAuth(req, ['teacher', 'admin']);
         const body = await req.json();
+
+        const teacherId = user.role === 'teacher' ? user.id : body.teacherId || user.id;
 
         const newExam = new Exam({
             ...body,
-            teacherId: user.id,
+            teacherId,
             paperImage: body.paperImageUrl || 'https://via.placeholder.com/150'
         });
 
         await newExam.save();
         return NextResponse.json(newExam, { status: 201 });
     } catch (err: any) {
+        if (err.message && err.message.includes('Forbidden')) {
+            return NextResponse.json({ message: err.message }, { status: 403 });
+        }
         return NextResponse.json({ message: err.message }, { status: 500 });
     }
 }

@@ -192,7 +192,7 @@ export default function MarkAttendance() {
 
                         <form onSubmit={handleSubmit} className="flex flex-col w-full flex-1 space-y-8">
 
-                             {/* --------- STUDENT RECORDS CONFIG --------- */}
+                            {/* --------- STUDENT RECORDS CONFIG --------- */}
                             <div>
                                 <h3 className="text-md font-bold text-primary mb-4 flex items-center">
                                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs mr-2">1</span>
@@ -241,17 +241,32 @@ export default function MarkAttendance() {
                                                 <div className="relative md:col-span-4">
                                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">Subject</label>
                                                     <select
-                                                        className="w-full bg-gray-50/50 text-gray-900 border-2 border-gray-200 p-3 pr-10 text-[15px] font-medium rounded-xl appearance-none focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all hover:border-gray-300"
+                                                        className="w-full bg-gray-50/50 text-gray-900 border-2 border-gray-200 p-3 pr-10 text-[15px] font-medium rounded-xl appearance-none focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         value={record.subjectId}
                                                         onChange={(e) => handleRecordChange(record.id, 'subjectId', e.target.value)}
                                                         required
+                                                        disabled={!record.studentId}
                                                     >
-                                                        <option value="" disabled>Select Subject...</option>
-                                                        {subjects.map(subject => (
-                                                            <option key={subject._id} value={subject._id}>
-                                                                {subject.name}
-                                                            </option>
-                                                        ))}
+                                                        <option value="" disabled>{record.studentId ? "Select Subject..." : "Select Student First"}</option>
+                                                        {record.studentId && (() => {
+                                                            const student = students.find(s => s._id === record.studentId);
+                                                            if (!student || !student.subjects) return null;
+                                                            return student.subjects.map((subjId: string | { _id: string, name?: string, subjectName?: string }) => {
+                                                                const actualId = typeof subjId === 'object' ? subjId._id : subjId;
+                                                                const subjectFromList = subjects.find(s => s._id === actualId);
+
+                                                                // Grab the name natively or from the subjects list endpoint 
+                                                                const sName = (typeof subjId === 'object' && (subjId.subjectName || subjId.name))
+                                                                    || (subjectFromList && (subjectFromList.subjectName || subjectFromList.name))
+                                                                    || actualId;
+
+                                                                return (
+                                                                    <option key={actualId} value={actualId}>
+                                                                        {sName}
+                                                                    </option>
+                                                                );
+                                                            });
+                                                        })()}
                                                     </select>
                                                     <div className="absolute right-3 top-9 pointer-events-none text-gray-400 group-hover:text-primary transition-colors">
                                                         <ChevronDown className="w-4 h-4" />
@@ -348,7 +363,7 @@ export default function MarkAttendance() {
                             </div>
 
 
-                           
+
 
                             {/* --------- NOTES --------- */}
                             <div>

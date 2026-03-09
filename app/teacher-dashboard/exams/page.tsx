@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
-import { Menu, Filter, Trash2, Edit3, Eye, PlusCircle, Search } from 'lucide-react';
+import { Menu, Search, Filter, PlusCircle, Edit3, Trash2, Eye } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'react-hot-toast';
 import Link from 'next/link';
@@ -32,7 +32,7 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in duration-300 border border-white/20">
+            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in duration-300">
                 {/* Modal Header */}
                 <div className="bg-gradient-to-r from-[#45308D] to-[#45308D]/90 p-8 text-white relative">
                     <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
@@ -44,7 +44,7 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                         </div>
                         <div>
                             <h2 className="text-3xl font-bold tracking-tight">{exam.studentId?.fullName}</h2>
-                            <p className="text-white/70 font-medium text-lg italic">Master Exam Record</p>
+                            <p className="text-white/70 font-medium text-lg italic">Exam Result Details</p>
                         </div>
                     </div>
                 </div>
@@ -65,17 +65,12 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                             <p className="text-lg font-bold text-gray-800">{exam.examMonth}</p>
                         </div>
                         <div className="bg-[#45308D]/5 p-4 rounded-2xl border border-[#45308D]/10">
-                            <p className="text-xs font-bold text-[#45308D] uppercase tracking-widest mb-1">Result</p>
+                            <p className="text-xs font-bold text-[#45308D] uppercase tracking-widest mb-1">Score</p>
                             <p className="text-xl font-black text-[#FDC70B]">{exam.marks} <span className="text-sm text-gray-400">/ {exam.maxMarks}</span></p>
                         </div>
                     </div>
 
-                    <div className="bg-[#FDC70B]/5 p-4 rounded-2xl border border-[#FDC70B]/20 flex items-center justify-between">
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Authorized Examiner</p>
-                        <p className="font-black text-[#45308D] italic">{exam.teacherId?.name || 'Administrator'}</p>
-                    </div>
-
-                    {exam.paperImage && (
+                    {(exam.paperImage) && (
                         <div>
                             <p className="text-sm font-bold text-gray-700 mb-3 ml-1">Answer Paper Image</p>
                             <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
@@ -94,15 +89,15 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                     )}
 
                     <div>
-                        <p className="text-sm font-bold text-gray-700 mb-3 ml-1">Observations & Feedback</p>
+                        <p className="text-sm font-bold text-gray-700 mb-3 ml-1">Teacher Notes</p>
                         <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 min-h-[100px] italic text-gray-600 leading-relaxed shadow-inner">
-                            {exam.progressNote || "No specific feedback provided for this exam record."}
+                            {exam.progressNote || "No specific feedback provided for this exam."}
                         </div>
                     </div>
 
                     <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase tracking-widest px-1">
-                        <span>Database UID: {exam._id}</span>
-                        <span>Creation Date: {new Date(exam.createdAt).toLocaleDateString()}</span>
+                        <span>Record ID: {exam._id}</span>
+                        <span>Added On: {new Date(exam.createdAt).toLocaleDateString()}</span>
                     </div>
                 </div>
 
@@ -112,7 +107,7 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                         onClick={onClose}
                         className="px-8 py-3 bg-[#45308D] text-white font-bold rounded-2xl shadow-lg shadow-[#45308D]/20 hover:shadow-[#45308D]/40 hover:-translate-y-0.5 transition-all"
                     >
-                        Close Registry
+                        Close Portal
                     </button>
                 </div>
             </div>
@@ -120,8 +115,9 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
     );
 };
 
-export default function AdminExams() {
+export default function ExamDashboard() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [teacherName, setTeacherName] = useState('Teacher Name');
     const [exams, setExams] = useState<Exam[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
@@ -129,24 +125,32 @@ export default function AdminExams() {
     const [filterQuery, setFilterQuery] = useState('');
 
     useEffect(() => {
-        fetchExams();
+        const userStr = Cookies.get('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.name) setTeacherName(user.name);
+
+                fetchExams(user.id);
+            } catch (e) { }
+        }
     }, []);
 
-    const fetchExams = async () => {
+    const fetchExams = async (teacherId: string) => {
         try {
             setIsLoading(true);
-            const { data } = await api.get('/exams');
+            const { data } = await api.get(`/exams/teacher/${teacherId}`);
             setExams(data);
         } catch (error) {
             console.error('Failed to fetch exams', error);
-            toast.error('Failed to load all exam records');
+            toast.error('Failed to load exam history');
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to permanently delete this exam record?')) return;
+        if (!window.confirm('Are you sure you want to delete this exam record?')) return;
 
         try {
             await api.delete(`/exams/${id}`);
@@ -163,8 +167,7 @@ export default function AdminExams() {
             exam.studentId?.fullName?.toLowerCase().includes(query) ||
             exam.subject?.toLowerCase().includes(query) ||
             exam.examMonth?.toLowerCase().includes(query) ||
-            exam.studentId?.class?.toLowerCase().includes(query) ||
-            exam.teacherId?.name?.toLowerCase().includes(query)
+            exam.studentId?.class?.toLowerCase().includes(query)
         );
     });
 
@@ -191,7 +194,7 @@ export default function AdminExams() {
 
             {/* Sidebar */}
             <div className={`fixed lg:static z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="admin" />
+                <Sidebar role="teacher" />
             </div>
 
             {/* Main Content */}
@@ -207,31 +210,49 @@ export default function AdminExams() {
 
                     <div className="text-right">
                         <h1 className="text-xl font-bold text-primary">BrightPath</h1>
-                        <p className="text-sm text-gray-500 font-medium">Administrator</p>
+                        <p className="text-sm text-gray-500 font-medium">{teacherName}</p>
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-8 max-w-5xl mx-auto w-full flex flex-col lg:mt-6">
+                <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full flex flex-col lg:mt-6">
                     {/* Desktop Title */}
-                    <div className="hidden lg:flex w-full items-center justify-between mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-[#45308D] tracking-tight">All Exam Records</h1>
-                            <p className="text-lg font-medium text-gray-600 mt-1">Manage all student examination results system-wide.</p>
-                        </div>
+                    <div className="hidden lg:flex w-full items-center justify-between mb-6">
+                        <h1 className="text-3xl font-bold text-primary tracking-tight">Exam Portal</h1>
+                        <p className="text-lg font-medium text-gray-600">Welcome back, {teacherName}!</p>
                     </div>
 
-                    {/* History Section */}
+                    {/* Giant Entry Portal Button (Matches Reference) */}
+                    <Link
+                        href="/teacher-dashboard/exams/form"
+                        className="w-full relative overflow-hidden group mb-10 transition-transform transform  hover:shadow-2xl shadow-xl rounded-[1rem] bg-white border border-gray-100 flex items-center justify-center min-h-[220px]"
+                    >
+                        {/* Elegant background gradients aligned with theme */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#45308D]/5 to-[#45308D]/10 opacity-70 transition-opacity group-hover:opacity-100"></div>
+                        <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#FDC70B]/10 rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#45308D]/10 rounded-full blur-3xl"></div>
+
+                        <div className="relative z-10 flex flex-col items-center justify-center p-8 text-center gap-4">
+                            <h2 className="text-4xl sm:text-5xl font-extrabold text-[#45308D] tracking-tight text-balance leading-tight">
+                                Exam Mark <br className="hidden sm:block" />
+                                Entry Portal
+                            </h2>
+                            <div className="text-[#FDC70B] bg-[#45308D] text-sm px-6 py-2 rounded-full font-bold shadow-md shadow-[#45308D]/20 mt-2 flex items-center gap-2">
+                                <PlusCircle className="w-4 h-4" /> Go to Form
+                            </div>
+                        </div>
+                    </Link>
+
                     <div className="flex flex-col w-full">
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 px-1 gap-4">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-800 tracking-tight">Database Records</h3>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Search through all history</p>
+                                <h3 className="text-2xl font-bold text-gray-800 tracking-tight">History</h3>
+                                <p className="text-sm text-gray-500 font-medium mt-1">Search through past exam records</p>
                             </div>
 
-                            <div className="relative group min-w-[320px]">
+                            <div className="relative group min-w-[300px]">
                                 <input
                                     type="text"
-                                    placeholder="Search student, teacher, or subject..."
+                                    placeholder="Search student, subject or class..."
                                     className="w-full bg-white border-2 border-gray-100 py-3 pl-11 pr-4 rounded-2xl text-sm font-bold text-black focus:outline-none focus:border-[#45308D] focus:ring-4 focus:ring-[#45308D]/10 transition-all shadow-sm"
                                     value={filterQuery}
                                     onChange={(e) => setFilterQuery(e.target.value)}
@@ -251,26 +272,26 @@ export default function AdminExams() {
                         {/* Exam History Cards */}
                         <div className="space-y-4">
                             {isLoading ? (
-                                <div className="text-center p-12 text-gray-400 font-medium animate-pulse">Loading global exam history...</div>
+                                <div className="text-center p-12 text-gray-400 font-medium animate-pulse">Loading exam history...</div>
                             ) : filteredExams.length === 0 ? (
                                 <div className="text-center p-12 bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center gap-3">
                                     <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
                                         <Search className="w-8 h-8 text-gray-300" />
                                     </div>
-                                    <p className="text-gray-500 font-bold">{filterQuery ? `No records found for "${filterQuery}"` : "No records exist."}</p>
+                                    <p className="text-gray-500 font-bold">{filterQuery ? `No results match "${filterQuery}"` : "No exam records found."}</p>
                                     {filterQuery && (
                                         <button
                                             onClick={() => setFilterQuery('')}
                                             className="text-[#45308D] font-black text-sm hover:underline"
                                         >
-                                            Reset Filters
+                                            View all records
                                         </button>
                                     )}
                                 </div>
                             ) : (
                                 (
                                     filteredExams.map((exam) => (
-                                        <div key={exam._id} className="bg-white hover:border-[#45308D]/30 transition-all duration-300 border border-gray-100 rounded-[1rem] p-5 flex flex-col sm:flex-row items-center justify-between gap-5 group shadow-sm hover:shadow-xl relative overflow-hidden">
+                                        <div key={exam._id} className="bg-white hover:border-[#45308D]/30 transition-all duration-300 border border-gray-100 rounded-[1rem] p-5 flex flex-col sm:flex-row items-center justify-between gap-5 group shadow-sm hover:shadow-xl  relative overflow-hidden">
                                             {/* Subtle internal gradient accent */}
                                             <div className="absolute top-0 left-0 w-1 h-full bg-[#45308D]/20 group-hover:bg-[#45308D] transition-colors"></div>
 
@@ -296,7 +317,7 @@ export default function AdminExams() {
                                                         </span>
                                                     </div>
                                                     <p className="text-[11px] font-bold text-gray-400 mt-0.5 flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                                                        Examiner: <span className="text-[#45308D] font-black italic">{exam.teacherId?.name || 'Administrator'}</span>
+                                                        Exam Portal Entry • {new Date(exam.createdAt).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                             </div>
@@ -304,7 +325,7 @@ export default function AdminExams() {
                                             <div className="flex items-center gap-8 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-gray-50 pt-4 sm:pt-0">
                                                 {/* Score Visualization */}
                                                 <div className="flex flex-col items-end gap-1 min-w-[100px]">
-                                                    <div className="text-sm font-black text-gray-400 uppercase tracking-tighter mb-0.5">Global Mark</div>
+                                                    <div className="text-sm font-black text-gray-400 uppercase tracking-tighter mb-0.5">Score</div>
                                                     <div className="text-3xl font-black text-gray-800 flex items-baseline gap-1 leading-none group-hover:text-[#45308D] transition-colors">
                                                         {exam.marks}
                                                         <span className="text-xs text-gray-400 font-bold">/ {exam.maxMarks}</span>
@@ -322,21 +343,21 @@ export default function AdminExams() {
                                                     <button
                                                         onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }}
                                                         className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-[#45308D] hover:bg-[#45308D]/10 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="View Registry"
+                                                        title="View Full Details"
                                                     >
                                                         <Eye className="w-5 h-5" />
                                                     </button>
                                                     <Link
                                                         href={`/teacher-dashboard/exams/form?id=${exam._id}`}
                                                         className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-[#FDC70B] hover:bg-[#FDC70B]/10 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="Modify Entry"
+                                                        title="Edit Entry"
                                                     >
                                                         <Edit3 className="w-5 h-5" />
                                                     </Link>
                                                     <button
                                                         onClick={() => handleDelete(exam._id)}
                                                         className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="Erase Record"
+                                                        title="Delete Record"
                                                     >
                                                         <Trash2 className="w-5 h-5" />
                                                     </button>

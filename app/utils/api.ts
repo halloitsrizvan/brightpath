@@ -28,6 +28,14 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const msg = error.response?.data?.message?.toLowerCase() || '';
+
+        // Log all interceptor errors so we know what is triggering the disconnects
+        console.error('API Interceptor caught error: ', {
+            status: error.response?.status,
+            message: msg,
+            url: error.config?.url
+        });
+
         if (
             error.response &&
             (error.response.status === 401 ||
@@ -35,7 +43,6 @@ api.interceptors.response.use(
                     msg.includes('token') ||
                     msg.includes('jwt') ||
                     msg.includes('signature') ||
-                    msg.includes('forbidden') ||
                     msg.includes('authorization denied')
                 )))
         ) {

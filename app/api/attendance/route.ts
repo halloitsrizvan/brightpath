@@ -7,20 +7,29 @@ import dbConnect from '@/lib/mongodb';
 export async function POST(req: NextRequest) {
     try {
         await dbConnect();
-        const user = await checkAuth(req, ['teacher']);
+        const user = await checkAuth(req, ['teacher', 'admin']);
         const body = await req.json();
 
-        const attendance = new Attendance({ ...body, teacherId: user.id });
+        // If the user is an admin running the teacher dashboard, 
+        // they might not have a Teacher profile to augment.
+        const teacherId = user.role === 'teacher' ? user.id : body.teacherId || user.id;
+
+        const attendance = new Attendance({ ...body, teacherId });
         await attendance.save();
 
-        const teacher = await Teacher.findById(user.id);
-        if (teacher) {
-            teacher.totalTeachingHours += (body.durationMinutes / 60);
-            await teacher.save();
+        if (user.role === 'teacher') {
+            const teacher = await Teacher.findById(user.id);
+            if (teacher) {
+                teacher.totalTeachingHours += (body.durationMinutes / 60);
+                await teacher.save();
+            }
         }
 
         return NextResponse.json(attendance, { status: 201 });
     } catch (err: any) {
+        if (err.message && err.message.includes('Forbidden')) {
+            return NextResponse.json({ message: err.message }, { status: 403 });
+        }
         return NextResponse.json({ message: err.message }, { status: 500 });
     }
 }
