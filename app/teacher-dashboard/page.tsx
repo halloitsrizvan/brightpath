@@ -10,7 +10,7 @@ import IncentiveProgressCard from '../components/IncentiveProgressCard';
 export default function TeacherDashboard() {
     const [stats, setStats] = useState({
         totalStudentsAssigned: 0,
-        classesTakenToday: 0,
+        classesThisMonth: 0,
         totalHoursThisMonth: 0,
         salaryEstimate: 0
     });
@@ -94,8 +94,8 @@ export default function TeacherDashboard() {
                             delay="0"
                         />
                         <StatBox
-                            title="Classes today"
-                            value={stats.classesTakenToday}
+                            title="Classes this month"
+                            value={stats.classesThisMonth}
                             icon={Calendar}
                             delay="100"
                         />

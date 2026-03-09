@@ -24,19 +24,33 @@ export async function GET(req: NextRequest) {
         const totalMinutes = attendances.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0);
         const totalHours = totalMinutes / 60;
 
-        // Fetch active incentive rule
-        let rule = await IncentiveRule.findOne({ active: true });
+        // Fetch all active incentive rules for this teacher
+        const rules = await IncentiveRule.find({
+            active: true,
+            targetTeachers: { $in: [user.id] }
+        }).sort({ targetHours: 1 });
 
-        // If no rule exists, create a default one
-        if (!rule) {
-            rule = await IncentiveRule.create({
-                targetHours: 20,
-                incentiveAmount: 2000,
-                active: true
+        if (rules.length === 0) {
+            return NextResponse.json({
+                totalHours: parseFloat(totalHours.toFixed(1)),
+                targetHours: 0,
+                progress: 0,
+                incentiveAmount: 0,
+                incentiveUnlocked: false,
+                hoursRemaining: 0,
+                notEligible: true
             });
         }
 
-        const targetHours = rule.targetHours;
+        // Current milestone is the first one where totalHours < targetHours
+        let currentRule = rules.find(r => totalHours < r.targetHours) || rules[rules.length - 1];
+
+        // Calculate total earned incentives (all rules where totalHours >= targetHours)
+        const totalEarnedIncentive = rules
+            .filter(r => totalHours >= r.targetHours)
+            .reduce((sum, r) => sum + r.incentiveAmount, 0);
+
+        const targetHours = currentRule.targetHours;
         const progress = Math.min(100, (totalHours / targetHours) * 100);
         const incentiveUnlocked = totalHours >= targetHours;
         const hoursRemaining = Math.max(0, targetHours - totalHours);
@@ -45,9 +59,15 @@ export async function GET(req: NextRequest) {
             totalHours: parseFloat(totalHours.toFixed(1)),
             targetHours,
             progress: Math.round(progress),
-            incentiveAmount: rule.incentiveAmount,
+            incentiveAmount: currentRule.incentiveAmount,
             incentiveUnlocked,
-            hoursRemaining: parseFloat(hoursRemaining.toFixed(1))
+            hoursRemaining: parseFloat(hoursRemaining.toFixed(1)),
+            totalEarnedIncentive,
+            milestones: rules.map(r => ({
+                targetHours: r.targetHours,
+                incentiveAmount: r.incentiveAmount,
+                isReached: totalHours >= r.targetHours
+            }))
         });
 
     } catch (err: any) {

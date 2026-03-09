@@ -3,6 +3,7 @@ import { checkAuth } from '@/lib/auth';
 import Teacher from '@/models/Teacher';
 import Attendance from '@/models/Attendance';
 import dbConnect from '@/lib/mongodb';
+import IncentiveRule from '@/models/IncentiveRule';
 
 export async function GET(req: NextRequest) {
     try {
@@ -16,13 +17,35 @@ export async function GET(req: NextRequest) {
         today.setHours(0, 0, 0, 0);
         const classesTakenToday = await Attendance.countDocuments({ teacherId: user.id, date: { $gte: today } });
 
-        const estimatedSalary = (teacherContent.totalTeachingHours || 0) * (teacherContent.salaryPerHour || 0);
+        // Calculate Monthly Teaching Hours from Attendance
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+
+        const monthlyAttendances = await Attendance.find({
+            teacherId: user.id,
+            date: { $gte: start, $lte: end },
+            status: 'Present'
+        });
+
+        const totalMinutes = monthlyAttendances.reduce((acc, curr) => acc + (curr.durationMinutes || 0), 0);
+        const totalHoursThisMonth = totalMinutes / 60;
+
+        // Calculate Earned Incentives
+        const reachedIncentives = await IncentiveRule.find({
+            active: true,
+            targetTeachers: { $in: [user.id] },
+            targetHours: { $lte: totalHoursThisMonth }
+        });
+
+        const earnedIncentivesTotal = reachedIncentives.reduce((acc: number, curr: any) => acc + curr.incentiveAmount, 0);
+        const baseSalary = totalHoursThisMonth * (teacherContent.salaryPerHour || 0);
+        const estimatedSalary = baseSalary + earnedIncentivesTotal;
 
         return NextResponse.json({
             totalStudentsAssigned: teacherContent.students.length,
-            classesTakenToday,
-            totalHoursThisMonth: teacherContent.totalTeachingHours,
-            salaryEstimate: estimatedSalary
+            classesThisMonth: monthlyAttendances.length,
+            totalHoursThisMonth: parseFloat(totalHoursThisMonth.toFixed(1)),
+            salaryEstimate: Math.round(estimatedSalary)
         });
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

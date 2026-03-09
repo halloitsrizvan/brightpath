@@ -1,7 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Target, Trophy, TrendingUp, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
+import { Target, Trophy, TrendingUp, CheckCircle2, Loader2, Sparkles, ChevronRight, Star } from 'lucide-react';
 import api from '../utils/api';
+
+interface Milestone {
+    targetHours: number;
+    incentiveAmount: number;
+    isReached: boolean;
+}
 
 interface IncentiveData {
     totalHours: number;
@@ -10,6 +16,9 @@ interface IncentiveData {
     incentiveAmount: number;
     incentiveUnlocked: boolean;
     hoursRemaining: number;
+    totalEarnedIncentive: number;
+    milestones: Milestone[];
+    notEligible?: boolean;
 }
 
 export default function IncentiveProgressCard() {
@@ -39,108 +48,125 @@ export default function IncentiveProgressCard() {
         );
     }
 
-    if (!data) return null;
+    if (!data || data.notEligible) return null;
 
     const getMotivationMessage = (progress: number) => {
-        if (progress >= 100) return "Incentive unlocked!";
+        if (progress >= 100) return "Milestone achieved!";
         if (progress >= 70) return "Almost there!";
         if (progress >= 40) return "Great progress!";
-        return "Let's get started!";
+        return "Keep teaching to unlock rewards!";
     };
 
     const isUnlocked = data.incentiveUnlocked;
 
     return (
-        <div className={`relative overflow-hidden transition-all duration-500 rounded-[2.5rem] p-8 border-2 ${isUnlocked
-            ? 'bg-gradient-to-br from-[#198754] to-[#146c43] border-[#198754]/20 shadow-xl shadow-green-500/20'
-            : 'bg-white border-gray-100 shadow-sm hover:shadow-xl shadow-[#45308D]/5'}`}>
+        <div className="flex flex-col gap-6">
+            <div className={`relative overflow-hidden transition-all duration-500 rounded-[2.5rem] p-8 border-2 ${isUnlocked
+                ? 'bg-gradient-to-br from-[#45308D] to-[#2a1d5a] border-[#45308D]/20 shadow-xl shadow-[#45308D]/20'
+                : 'bg-white border-gray-100 shadow-sm hover:shadow-xl shadow-[#45308D]/5'}`}>
 
-            {/* Background Ornaments */}
-            {isUnlocked ? (
-                <>
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-white/5 rounded-full blur-2xl"></div>
-                </>
-            ) : (
-                <>
-                    <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#45308D]/5 rounded-full blur-3xl transition-transform group-hover:scale-150"></div>
-                    <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#FDC70B]/5 rounded-full blur-3xl"></div>
-                </>
-            )}
+                {/* Background Ornaments */}
+                <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#FDC70B]/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#45308D]/5 rounded-full blur-3xl"></div>
 
-            <div className="relative z-10 flex flex-col gap-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isUnlocked ? 'bg-white/20 text-white' : 'bg-[#45308D]/10 text-[#45308D]'}`}>
-                            {isUnlocked ? <Trophy className="w-6 h-6" /> : <Target className="w-6 h-6" />}
-                        </div>
-                        <div>
-                            <h3 className={`text-xl font-black tracking-tight ${isUnlocked ? 'text-white' : 'text-gray-800'}`}>
-                                Monthly Incentive Progress
-                            </h3>
-                            <p className={`text-xs font-bold uppercase tracking-widest ${isUnlocked ? 'text-white/60' : 'text-gray-400'}`}>
-                                Target based rewards
-                            </p>
-                        </div>
-                    </div>
-                    {isUnlocked && <Sparkles className="w-6 h-6 text-[#FDC70B] animate-bounce" />}
-                </div>
-
-                {/* Progress Stats */}
-                <div className="space-y-2">
-                    <div className="flex items-baseline justify-between mb-1">
-                        <div className="flex items-baseline gap-2">
-                            <span className={`text-4xl font-black italic ${isUnlocked ? 'text-white' : 'text-[#45308D]'}`}>
-                                {data.totalHours}
-                            </span>
-                            <span className={`text-lg font-bold italic ${isUnlocked ? 'text-white/40' : 'text-gray-400'}`}>
-                                / {data.targetHours} hours completed
-                            </span>
-                        </div>
-                        <span className={`text-2xl font-black italic ${isUnlocked ? 'text-[#FDC70B]' : 'text-gray-800'}`}>
-                            {data.progress}%
-                        </span>
-                    </div>
-
-                    {/* Modern Progress Bar */}
-                    <div className={`h-4 w-full rounded-full overflow-hidden p-1 ${isUnlocked ? 'bg-white/10' : 'bg-gray-100 border border-gray-200 shadow-inner'}`}>
-                        <div
-                            className={`h-full rounded-full transition-all duration-1000 ease-out relative ${isUnlocked
-                                ? 'bg-gradient-to-r from-[#FDC70B] to-white'
-                                : 'bg-gradient-to-r from-[#45308D] to-[#FDC70B]'}`}
-                            style={{ width: `${data.progress}%` }}
-                        >
-                            <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer Message & Reward */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
-                    <div className="flex items-center gap-2">
-                        {isUnlocked ? (
-                            <div className="flex flex-col">
-                                <span className="text-white font-black text-lg flex items-center gap-2">
-                                    <CheckCircle2 className="w-5 h-5" /> 🎉 Incentive Unlocked!
-                                </span>
-                                <p className="text-white/70 text-sm font-medium">You earned ₹{data.incentiveAmount} incentive this month!</p>
+                <div className="relative z-10 flex flex-col gap-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${isUnlocked ? 'bg-[#FDC70B]/20 text-[#FDC70B]' : 'bg-[#45308D]/10 text-[#45308D]'}`}>
+                                {isUnlocked ? <Trophy className="w-6 h-6" /> : <Target className="w-6 h-6" />}
                             </div>
-                        ) : (
-                            <div className="bg-gray-50 px-4 py-2 rounded-xl border border-gray-100 flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-[#45308D]" />
-                                <span className="text-sm font-black text-gray-700">{getMotivationMessage(data.progress)}</span>
+                            <div>
+                                <h3 className={`text-xl font-black tracking-tight ${isUnlocked ? 'text-white' : 'text-gray-800'}`}>
+                                    Next Intelligence Milestone
+                                </h3>
+                                <p className={`text-xs font-bold uppercase tracking-widest ${isUnlocked ? 'text-white/60' : 'text-gray-400'}`}>
+                                    Current Tier Progress
+                                </p>
+                            </div>
+                        </div>
+                        {isUnlocked && <Sparkles className="w-6 h-6 text-[#FDC70B] animate-bounce" />}
+                    </div>
+
+                    {/* Progress Stats */}
+                    <div className="space-y-4">
+                        <div className="flex items-baseline justify-between mb-1">
+                            <div className="flex items-baseline gap-2">
+                                <span className={`text-5xl font-black italic tracking-tighter ${isUnlocked ? 'text-white' : 'text-[#45308D]'}`}>
+                                    {data.totalHours}
+                                </span>
+                                <span className={`text-lg font-bold italic ${isUnlocked ? 'text-white/40' : 'text-gray-400'}`}>
+                                    / {data.targetHours} hours
+                                </span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className={`text-2xl font-black italic ${isUnlocked ? 'text-[#FDC70B]' : 'text-[#45308D]'}`}>
+                                    {data.progress}%
+                                </span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${isUnlocked ? 'text-white/40' : 'text-gray-400'}`}>Accuracy Rate</span>
+                            </div>
+                        </div>
+
+                        {/* Modern Progress Bar */}
+                        <div className={`h-5 w-full rounded-full overflow-hidden p-1 ${isUnlocked ? 'bg-white/10' : 'bg-gray-100 border border-gray-200 shadow-inner'}`}>
+                            <div
+                                className={`h-full rounded-full transition-all duration-1000 ease-out relative ${isUnlocked
+                                    ? 'bg-gradient-to-r from-[#FDC70B] to-yellow-200'
+                                    : 'bg-gradient-to-r from-[#45308D] to-[#FDC70B]'}`}
+                                style={{ width: `${data.progress}%` }}
+                            >
+                                <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Milestone Footer */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                        <div className={`px-5 py-3 rounded-2xl flex items-center gap-3 ${isUnlocked ? 'bg-white/10 text-white' : 'bg-gray-50 text-gray-700'}`}>
+                            <TrendingUp className={`w-5 h-5 ${isUnlocked ? 'text-[#FDC70B]' : 'text-[#45308D]'}`} />
+                            <span className="text-sm font-black">{getMotivationMessage(data.progress)}</span>
+                        </div>
+
+                        <div className={`px-6 py-3 rounded-[1.5rem] flex flex-col items-center border-2 transition-transform hover:scale-105 ${isUnlocked
+                            ? 'bg-white text-[#45308D] border-[#FDC70B]'
+                            : 'bg-[#45308D] text-white border-white/10'}`}>
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Tier Reward</span>
+                            <span className="text-xl font-black italic">₹{data.incentiveAmount}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* All Milestones List */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {data.milestones.map((m, idx) => (
+                    <div key={idx} className={`p-6 rounded-[2rem] border-2 transition-all group relative overflow-hidden ${m.isReached
+                        ? 'bg-white border-green-100 shadow-md'
+                        : 'bg-gray-50 border-transparent opacity-70 hover:opacity-100 hover:bg-white hover:border-[#45308D]/10'}`}>
+
+                        {m.isReached && (
+                            <div className="absolute -top-4 -right-4 w-12 h-12 bg-green-500/10 rounded-full flex items-center justify-center">
+                                <CheckCircle2 className="w-5 h-5 text-green-500 mt-2 mr-2" />
                             </div>
                         )}
-                    </div>
 
-                    <div className={`px-6 py-3 rounded-2xl flex flex-col items-center justify-center min-w-[140px] border-2 shadow-lg transition-transform hover:scale-105 ${isUnlocked
-                        ? 'bg-white text-[#198754] border-white/50'
-                        : 'bg-[#45308D] text-white border-[#45308D]/20 shadow-[#45308D]/20'}`}>
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${isUnlocked ? 'text-[#198754]/60' : 'text-white/60'}`}>Reward Amount</span>
-                        <span className="text-2xl font-black italic">₹{data.incentiveAmount}</span>
+                        <div className="flex flex-col gap-3 relative z-10">
+                            <div className="flex items-center justify-between">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${m.isReached ? 'bg-green-50 text-green-600' : 'bg-gray-200 text-gray-400 group-hover:bg-[#45308D]/10 group-hover:text-[#45308D]'}`}>
+                                    <Star className="w-5 h-5" fill={m.isReached ? "currentColor" : "none"} />
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${m.isReached ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
+                                    {m.isReached ? 'Achieved' : 'Locked'}
+                                </span>
+                            </div>
+
+                            <div>
+                                <h4 className="text-lg font-black text-gray-800 leading-tight">{m.targetHours} Hours</h4>
+                                <p className="text-sm font-bold text-[#45308D]">Reward: ₹{m.incentiveAmount}</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                ))}
             </div>
 
             <style jsx>{`

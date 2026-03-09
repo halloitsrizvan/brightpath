@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee } from 'lucide-react';
+import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee, Trophy } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -28,6 +28,7 @@ export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student
                 { name: 'Attendance', href: '/admin-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
                 { name: 'Exams', href: '/admin-dashboard/exams', icon: <FileText className="w-5 h-5" /> },
                 { name: 'Finance', href: '/admin-dashboard/finance', icon: <IndianRupee className="w-5 h-5" /> },
+                { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
             ];
         }
         if (role === 'teacher') {

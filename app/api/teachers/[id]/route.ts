@@ -14,7 +14,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             .populate('students', 'fullName class contactNumber');
 
         if (!teacher) return NextResponse.json({ message: 'Teacher profile not found' }, { status: 404 });
-        return NextResponse.json(teacher);
+
+        // Calculate total hours from attendance
+        const Attendance = require('@/models/Attendance').default;
+        const allAttendances = await Attendance.find({ teacherId: id, status: 'Present' });
+        const totalMinutes = allAttendances.reduce((acc: number, curr: any) => acc + (curr.durationMinutes || 0), 0);
+
+        const teacherData = teacher.toObject();
+        teacherData.totalTeachingHours = parseFloat((totalMinutes / 60).toFixed(1));
+
+        return NextResponse.json(teacherData);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });
     }

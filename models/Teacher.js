@@ -10,7 +10,6 @@ const TeacherSchema = new mongoose.Schema({
     joinedAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
-    totalTeachingHours: { type: Number, default: 0 },
     role: { type: String, default: 'teacher' }
 }, { timestamps: true });
 
