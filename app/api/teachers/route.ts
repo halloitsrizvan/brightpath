@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin']);
-        const teachers = await Teacher.find().select('-password').populate('students', 'fullName');
+        const teachers = await Teacher.find().select('-password');
         return NextResponse.json(teachers);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

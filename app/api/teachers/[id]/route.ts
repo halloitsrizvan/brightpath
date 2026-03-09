@@ -18,10 +18,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         const teacher = await Teacher.findById(id)
             .select('-password')
-            .populate('subjects', 'subjectName')
-            .populate('students', 'fullName class contactNumber');
+            .populate('subjects', 'subjectName');
 
         if (!teacher) return NextResponse.json({ message: 'Teacher profile not found' }, { status: 404 });
+
+        // Find students assigned to this teacher
+        const assignedStudents = await Student.find({ preferredTrainers: id })
+            .select('fullName class contactNumber');
 
         // Calculate total hours from attendance registry
         const allAttendances = await Attendance.find({ teacherId: id, status: 'Present' });
@@ -29,6 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         const teacherData = teacher.toObject();
         teacherData.totalTeachingHours = parseFloat((totalMinutes / 60).toFixed(1)) || 0;
+        teacherData.students = assignedStudents;
 
         return NextResponse.json(teacherData);
     } catch (err: any) {

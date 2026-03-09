@@ -14,9 +14,11 @@ export async function GET(req: NextRequest) {
         // Ensure models are registered for population
         const dummyStudent = Student.modelName;
 
-        const teacherContent = await Teacher.findById(user.id).populate('students');
+        const teacherContent = await Teacher.findById(user.id);
         if (!teacherContent) return NextResponse.json({ message: 'Teacher not found' }, { status: 404 });
 
+        // Find students assigned to this teacher
+        const assignedStudentsCount = await Student.countDocuments({ preferredTrainers: user.id });
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const classesTakenToday = await Attendance.countDocuments({ teacherId: user.id, date: { $gte: today } });
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
         const estimatedSalary = baseSalary + earnedIncentivesTotal;
 
         return NextResponse.json({
-            totalStudentsAssigned: teacherContent.students.length,
+            totalStudentsAssigned: assignedStudentsCount,
             classesThisMonth: monthlyAttendances.length,
             totalHoursThisMonth: parseFloat(totalHoursThisMonth.toFixed(1)),
             salaryEstimate: Math.round(estimatedSalary)

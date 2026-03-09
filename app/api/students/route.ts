@@ -24,8 +24,14 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'teacher']);
-        const students = await Student.find().populate('preferredTrainers', 'name');
+        const user = await checkAuth(req, ['admin', 'teacher']);
+
+        let query = {};
+        if (user.role === 'teacher') {
+            query = { preferredTrainers: user.id };
+        }
+
+        const students = await Student.find(query).populate('preferredTrainers', 'name');
         return NextResponse.json(students);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });
