@@ -9,7 +9,10 @@ import Student from '@/models/Student';
 export async function POST(req: Request) {
     try {
         await dbConnect();
-        const { email, password, role } = await req.json();
+        const body = await req.json();
+        const email = body.email?.toLowerCase().trim();
+        const password = body.password;
+        const role = body.role;
 
         let user;
         if (role === 'admin') user = await Admin.findOne({ email });

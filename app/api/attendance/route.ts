@@ -29,8 +29,19 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin']);
-        const list = await Attendance.find().populate('studentId', 'fullName').populate('teacherId', 'name');
+        const user = await checkAuth(req, ['admin', 'student', 'teacher']);
+
+        let query = {};
+        if (user.role === 'student') {
+            query = { studentId: user.id };
+        } else if (user.role === 'teacher') {
+            query = { teacherId: user.id };
+        }
+
+        const list = await Attendance.find(query)
+            .populate('studentId', 'fullName')
+            .populate('teacherId', 'name')
+            .populate('subjectId', 'subjectName');
         return NextResponse.json(list);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

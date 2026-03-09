@@ -33,8 +33,10 @@ api.interceptors.response.use(
         console.error('API Interceptor caught error: ', {
             status: error.response?.status,
             message: msg,
-            url: error.config?.url
+            url: error.config?.url,
+            originalError: error.message
         });
+        console.dir(error);
 
         if (
             error.response &&
@@ -46,9 +48,20 @@ api.interceptors.response.use(
                     msg.includes('authorization denied')
                 )))
         ) {
+            const userStr = Cookies.get('user');
+            let loginPath = '/admin';
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    if (user.role === 'student') loginPath = '/student';
+                    else if (user.role === 'teacher') loginPath = '/teacher';
+                } catch (e) { }
+            }
+
             Cookies.remove('token');
+            Cookies.remove('user');
             if (typeof window !== 'undefined') {
-                window.location.href = '/admin';
+                window.location.href = loginPath;
             }
         }
         return Promise.reject(error);

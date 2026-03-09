@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { checkAuth } from '@/lib/auth';
 import Teacher from '@/models/Teacher';
 import Subject from '@/models/Subject';
@@ -51,8 +52,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const body = await req.json();
         const { id } = await params;
 
-        // Prevent password update via this simple PUT for safety
-        if (body.password) delete body.password;
+        // Hash password if provided, or prevent student from changing it if needed
+        // Teachers are usually changed by admins, but teachers can also change their own profile.
+        if (body.password) {
+            body.password = await bcrypt.hash(body.password, 10);
+        }
 
         const updated = await Teacher.findByIdAndUpdate(id, body, { new: true }).select('-password');
         if (!updated) return NextResponse.json({ message: 'Teacher not found' }, { status: 404 });
