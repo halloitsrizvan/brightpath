@@ -20,8 +20,9 @@ export async function checkAuth(req: NextRequest, roles: string[] = []) {
         }
 
         return decoded;
-    } catch (err) {
-        throw new Error('Token is not valid');
+    } catch (err: any) {
+        console.error('Auth verification failed:', err.message);
+        throw new Error(err.message || 'Token is not valid');
     }
 }
 

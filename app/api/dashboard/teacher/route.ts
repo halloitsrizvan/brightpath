@@ -16,12 +16,12 @@ export async function GET(req: NextRequest) {
         today.setHours(0, 0, 0, 0);
         const classesTakenToday = await Attendance.countDocuments({ teacherId: user.id, date: { $gte: today } });
 
-        const estimatedSalary = (teacherContent.totalHours || 0) * (teacherContent.salaryPerHour || 0);
+        const estimatedSalary = (teacherContent.totalTeachingHours || 0) * (teacherContent.salaryPerHour || 0);
 
         return NextResponse.json({
             totalStudentsAssigned: teacherContent.students.length,
             classesTakenToday,
-            totalHoursThisMonth: teacherContent.totalHours,
+            totalHoursThisMonth: teacherContent.totalTeachingHours,
             salaryEstimate: estimatedSalary
         });
     } catch (err: any) {

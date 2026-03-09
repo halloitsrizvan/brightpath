@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
         const teacher = await Teacher.findById(user.id);
         if (teacher) {
-            teacher.totalHours += (body.durationMinutes / 60);
+            teacher.totalTeachingHours += (body.durationMinutes / 60);
             await teacher.save();
         }
 

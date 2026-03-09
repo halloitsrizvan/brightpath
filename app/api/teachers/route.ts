@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { checkAuth } from '@/lib/auth';
 import Teacher from '@/models/Teacher';
+import Student from '@/models/Student';
 import dbConnect from '@/lib/mongodb';
 
 export async function POST(req: NextRequest) {
@@ -10,8 +11,9 @@ export async function POST(req: NextRequest) {
         await checkAuth(req, ['admin']);
         const body = await req.json();
 
-        const defaultPassword = await bcrypt.hash('teacher123', 10);
-        const newTeacher = new Teacher({ ...body, password: defaultPassword });
+        const initialPassword = body.password || 'teacher123';
+        const hashedPassword = await bcrypt.hash(initialPassword, 10);
+        const newTeacher = new Teacher({ ...body, password: hashedPassword });
         await newTeacher.save();
         return NextResponse.json(newTeacher, { status: 201 });
     } catch (err: any) {

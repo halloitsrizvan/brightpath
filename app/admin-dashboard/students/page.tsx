@@ -8,6 +8,7 @@ export default function AdminStudents() {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editData, setEditData] = useState(null);
 
     const fetchStudents = () => {
         setLoading(true);
@@ -17,6 +18,22 @@ export default function AdminStudents() {
                 setLoading(false);
             })
             .catch(console.error);
+    };
+
+    const handleEdit = (student: any) => {
+        setEditData(student);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you sure you want to delete this student?')) {
+            try {
+                await api.delete(`/students/${id}`);
+                fetchStudents();
+            } catch (err) {
+                console.error(err);
+            }
+        }
     };
 
     useEffect(() => {
@@ -30,7 +47,10 @@ export default function AdminStudents() {
                 <div className="flex justify-between items-center mb-8 mt-2">
                     <h1 className="text-3xl font-bold text-gray-800">Students Management</h1>
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setEditData(null);
+                            setIsModalOpen(true);
+                        }}
                         className="bg-primary text-white px-4 py-2 rounded-lg font-medium shadow-md hover:bg-primary/90 transition"
                     >
                         + Add Student
@@ -63,8 +83,8 @@ export default function AdminStudents() {
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button className="text-primary hover:text-primary/80 font-medium mr-3">Edit</button>
-                                            <button className="text-red-500 hover:text-red-600 font-medium">Delete</button>
+                                            <button onClick={() => handleEdit(student)} className="text-primary hover:text-primary/80 font-medium mr-3">Edit</button>
+                                            <button onClick={() => handleDelete(student._id)} className="text-red-500 hover:text-red-600 font-medium">Delete</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -77,6 +97,7 @@ export default function AdminStudents() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={fetchStudents}
+                editData={editData}
             />
         </div>
     );

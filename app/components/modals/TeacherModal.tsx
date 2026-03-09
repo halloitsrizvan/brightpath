@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
 
-export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
+export default function TeacherModal({ isOpen, onClose, onSuccess, editData }: { isOpen: boolean, onClose: () => void, onSuccess: () => void, editData?: any }) {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', phone: '', salaryPerHour: 0, status: 'active', subjects: [] as string[] });
     const [subjectsList, setSubjectsList] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -10,8 +10,21 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
     useEffect(() => {
         if (isOpen) {
             api.get('/subjects').then(res => setSubjectsList(res.data)).catch(console.error);
+            if (editData) {
+                setFormData({
+                    name: editData.name || '',
+                    email: editData.email || '',
+                    password: '', // Blank
+                    phone: editData.phone || '',
+                    salaryPerHour: editData.salaryPerHour || 0,
+                    status: editData.status || 'active',
+                    subjects: editData.subjects ? editData.subjects.map((s: any) => s._id || s) : []
+                });
+            } else {
+                setFormData({ name: '', email: '', password: '', phone: '', salaryPerHour: 0, status: 'active', subjects: [] });
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, editData]);
 
     if (!isOpen) return null;
 
@@ -19,7 +32,13 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/teachers', formData);
+            if (editData) {
+                const payload: any = { ...formData };
+                if (!payload.password) delete payload.password;
+                await api.put(`/teachers/${editData._id}`, payload);
+            } else {
+                await api.post('/teachers', formData);
+            }
             setFormData({ name: '', email: '', password: '', phone: '', salaryPerHour: 0, status: 'active', subjects: [] });
             onSuccess();
             onClose();
@@ -43,7 +62,7 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">Add New Teacher</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{editData ? 'Edit Teacher' : 'Add New Teacher'}</h2>
                     <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
 
@@ -69,9 +88,9 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">{editData ? 'New Password (Optional)' : 'Password'}</label>
                             <input
-                                required
+                                required={!editData}
                                 type="password"
                                 className="w-full border border-gray-300 text-gray-900 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary outline-none"
                                 value={formData.password}
@@ -92,8 +111,8 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
                                 type="number"
                                 required
                                 className="w-full border border-gray-300 text-gray-900 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary outline-none"
-                                value={formData.salaryPerHour}
-                                onChange={(e) => setFormData({ ...formData, salaryPerHour: parseFloat(e.target.value) })}
+                                value={formData.salaryPerHour || ''}
+                                onChange={(e) => setFormData({ ...formData, salaryPerHour: parseFloat(e.target.value) || 0 })}
                             />
                         </div>
                         <div>
@@ -133,7 +152,7 @@ export default function TeacherModal({ isOpen, onClose, onSuccess }: { isOpen: b
                     <div className="pt-4 flex justify-end gap-3 mt-6 border-t border-gray-100 pt-6">
                         <button type="button" onClick={onClose} className="px-5 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition">Cancel</button>
                         <button type="submit" disabled={loading} className="px-5 py-2.5 bg-secondary text-primary font-bold rounded-lg hover:bg-secondary/90 transition disabled:opacity-50">
-                            {loading ? 'Saving...' : 'Save Teacher Profile'}
+                            {loading ? 'Saving...' : editData ? 'Update Teacher' : 'Save Teacher Profile'}
                         </button>
                     </div>
                 </form>
