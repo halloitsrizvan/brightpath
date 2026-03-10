@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { checkAuth } from '@/lib/auth';
 import Teacher from '@/models/Teacher';
+import Subject from '@/models/Subject';
 import Student from '@/models/Student';
 import dbConnect from '@/lib/mongodb';
 
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin']);
-        const teachers = await Teacher.find().select('-password');
+        const teachers = await Teacher.find().select('-password').populate('subjects', 'subjectName');
         return NextResponse.json(teachers);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

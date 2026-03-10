@@ -190,7 +190,14 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                                     {teachersList.map((tea: any) => (
                                         <label key={tea._id} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
                                             <input type="checkbox" className="rounded text-primary focus:ring-primary" checked={formData.preferredTrainers.includes(tea._id)} onChange={() => toggleTeacher(tea._id)} />
-                                            {tea.name}
+                                            {tea.name} {tea.subjects && tea.subjects.length > 0 && typeof tea.subjects[0] === 'object' && (
+                                                <span className="text-gray-400 text-xs font-normal ml-1">
+                                                    ({tea.subjects
+                                                        .filter((s: any) => s && s.subjectName)
+                                                        .map((s: any) => s.subjectName)
+                                                        .join(', ')})
+                                                </span>
+                                            )}
                                         </label>
                                     ))}
                                 </div>
