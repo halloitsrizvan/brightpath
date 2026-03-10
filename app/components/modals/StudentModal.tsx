@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import api from '../../utils/api';
+import { Search, Book, User, CheckCircle2 } from 'lucide-react';
 
 export default function StudentModal({ isOpen, onClose, onSuccess, editData }: { isOpen: boolean, onClose: () => void, onSuccess: () => void, editData?: any }) {
     const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
     const [subjectsList, setSubjectsList] = useState([]);
     const [teachersList, setTeachersList] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [subjectSearch, setSubjectSearch] = useState('');
+    const [teacherSearch, setTeacherSearch] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -165,43 +168,111 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                     </div>
 
                     {/* Checkboxes (Subjects & Preferred Trainers) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2 mt-2">Subjects Pursuing</label>
-                            {subjectsList.length === 0 ? (
-                                <p className="text-sm text-gray-500">No subjects found.</p>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                                    {subjectsList.map((sub: any) => (
-                                        <label key={sub._id} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                                            <input type="checkbox" className="rounded text-primary focus:ring-primary" checked={formData.subjects.includes(sub._id)} onChange={() => toggleSubject(sub._id)} />
-                                            {sub.subjectName} ({sub.classLevel})
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {/* Subjects Selection */}
+                        <div className="flex flex-col h-[450px]">
+                            <div className="flex items-center justify-between mb-4">
+                                <label className="text-sm font-black text-gray-700 uppercase tracking-widest flex items-center gap-2">
+                                    <Book className="w-4 h-4 text-primary" /> Subjects Pursuing
+                                </label>
+                                <span className="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-full">{formData.subjects.length} Selected</span>
+                            </div>
+
+                            <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search modules..."
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-black focus:bg-white focus:ring-1 focus:ring-primary/20 outline-none transition-all"
+                                    value={subjectSearch}
+                                    onChange={(e) => setSubjectSearch(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                {subjectsList
+                                    .filter((s: any) => s.subjectName.toLowerCase().includes(subjectSearch.toLowerCase()))
+                                    .map((sub: any) => {
+                                        const isSelected = formData.subjects.includes(sub._id);
+                                        return (
+                                            <div
+                                                key={sub._id}
+                                                onClick={() => toggleSubject(sub._id)}
+                                                className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer border-2 transition-all ${isSelected ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-gray-50 hover:border-gray-200'}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-xl border transition-all ${isSelected ? 'bg-primary text-white border-primary' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                                                        <Book className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-sm font-black tracking-tight ${isSelected ? 'text-primary' : 'text-gray-700'}`}>{sub.subjectName}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{sub.classLevel}</p>
+                                                    </div>
+                                                </div>
+                                                {isSelected && <CheckCircle2 className="w-5 h-5 text-primary animate-in zoom-in duration-200" />}
+                                            </div>
+                                        );
+                                    })}
+                                {subjectsList.length > 0 && subjectsList.filter((s: any) => s.subjectName.toLowerCase().includes(subjectSearch.toLowerCase())).length === 0 && (
+                                    <p className="text-center text-gray-400 text-xs italic py-10">No modules match your search.</p>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2 mt-2">Preferred Trainers</label>
-                            {teachersList.length === 0 ? (
-                                <p className="text-sm text-gray-500">No teachers found.</p>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
-                                    {teachersList.map((tea: any) => (
-                                        <label key={tea._id} className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
-                                            <input type="checkbox" className="rounded text-primary focus:ring-primary" checked={formData.preferredTrainers.includes(tea._id)} onChange={() => toggleTeacher(tea._id)} />
-                                            {tea.name} {tea.subjects && tea.subjects.length > 0 && typeof tea.subjects[0] === 'object' && (
-                                                <span className="text-gray-400 text-xs font-normal ml-1">
-                                                    ({tea.subjects
-                                                        .filter((s: any) => s && s.subjectName)
-                                                        .map((s: any) => s.subjectName)
-                                                        .join(', ')})
-                                                </span>
-                                            )}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
+
+                        {/* Teachers Selection */}
+                        <div className="flex flex-col h-[450px]">
+                            <div className="flex items-center justify-between mb-4">
+                                <label className="text-sm font-black text-gray-700 uppercase tracking-widest flex items-center gap-2">
+                                    <User className="w-4 h-4 text-secondary" /> Preferred Trainers
+                                </label>
+                                <span className="bg-secondary/10 text-secondary text-[10px] font-black px-2 py-1 rounded-full">{formData.preferredTrainers.length} Assigned</span>
+                            </div>
+
+                            <div className="relative mb-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search trainers..."
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm text-black focus:bg-white focus:ring-1 focus:ring-secondary/20 outline-none transition-all"
+                                    value={teacherSearch}
+                                    onChange={(e) => setTeacherSearch(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                                {teachersList
+                                    .filter((t: any) => t.name.toLowerCase().includes(teacherSearch.toLowerCase()))
+                                    .map((tea: any) => {
+                                        const isSelected = formData.preferredTrainers.includes(tea._id);
+                                        return (
+                                            <div
+                                                key={tea._id}
+                                                onClick={() => toggleTeacher(tea._id)}
+                                                className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer border-2 transition-all ${isSelected ? 'bg-secondary/5 border-secondary shadow-sm' : 'bg-white border-gray-50 hover:border-gray-200'}`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-2 rounded-xl border transition-all ${isSelected ? 'bg-secondary text-white border-secondary' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                                                        <User className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-sm font-black tracking-tight ${isSelected ? 'text-secondary' : 'text-gray-700'}`}>{tea.name}</p>
+                                                        <div className="flex flex-wrap gap-1 mt-0.5">
+                                                            {tea.subjects?.map((s: any) => (
+                                                                <span key={s._id} className="text-[9px] font-black text-gray-400 uppercase tracking-tight bg-gray-100 px-1.5 py-0.5 rounded">
+                                                                    {s.subjectName}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {isSelected && <CheckCircle2 className="w-5 h-5 text-secondary animate-in zoom-in duration-200" />}
+                                            </div>
+                                        );
+                                    })}
+                                {teachersList.length > 0 && teachersList.filter((t: any) => t.name.toLowerCase().includes(teacherSearch.toLowerCase())).length === 0 && (
+                                    <p className="text-center text-gray-400 text-xs italic py-10">No trainers match your search.</p>
+                                )}
+                            </div>
                         </div>
                     </div>
 
