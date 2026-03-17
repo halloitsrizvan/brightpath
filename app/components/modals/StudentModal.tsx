@@ -38,8 +38,21 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                     status: editData.status || 'active',
                     subjects: editData.subjects ? editData.subjects.map((s: any) => s._id || s) : [],
                     preferredTrainers: editData.preferredTrainers ? editData.preferredTrainers.map((t: any) => t._id || t) : [],
-                    subjectAssignments: editData.subjectAssignments || []
+                    subjectAssignments: editData.subjectAssignments ? editData.subjectAssignments.map((a: any) => ({
+                        subjectId: a.subjectId?._id || a.subjectId,
+                        teacherId: a.teacherId?._id || a.teacherId,
+                        billPerHour: a.billPerHour
+                    })) : []
                 });
+                
+                // If preferredTrainers doesn't include teachers from subjectAssignments, sync them
+                if (editData.subjectAssignments) {
+                    setFormData(prev => {
+                        const assignmentTutors = editData.subjectAssignments.map((a: any) => a.teacherId?._id || a.teacherId);
+                        const allTutors = Array.from(new Set([...prev.preferredTrainers, ...assignmentTutors]));
+                        return { ...prev, preferredTrainers: allTutors };
+                    });
+                }
             } else {
                 setFormData({ fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India', parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '', status: 'active', subjects: [], preferredTrainers: [], subjectAssignments: [] });
             }
@@ -340,7 +353,7 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                                                                                     <input 
                                                                                         type="number" 
                                                                                         placeholder="0"
-                                                                                        className="w-16 px-2 py-0.5 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-secondary/20 outline-none"
+                                                                                        className="w-16 px-2 py-0.5 border border-gray-200 rounded text-xs text-black focus:ring-1 focus:ring-secondary/20 outline-none"
                                                                                         value={assignment.billPerHour}
                                                                                         onChange={(e) => updateAssignmentRate(subId, tea._id, parseFloat(e.target.value) || 0)}
                                                                                     />

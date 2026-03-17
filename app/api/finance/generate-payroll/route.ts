@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/auth';
 import Teacher from '@/models/Teacher';
+import Student from '@/models/Student';
 import Attendance from '@/models/Attendance';
 import Salary from '@/models/Salary';
 import dbConnect from '@/lib/mongodb';
