@@ -361,21 +361,30 @@ export default function MarkAttendance() {
 
                                     <div className="relative group">
                                         <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Class Duration</label>
-                                        <div className="relative">
-                                            <select
-                                                className="w-full bg-white text-gray-900 border-2 border-gray-200 p-3.5 pr-12 text-[15px] font-medium rounded-xl appearance-none focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 hover:border-gray-300"
-                                                value={sharedData.durationMinutes}
-                                                onChange={(e) => setSharedData({ ...sharedData, durationMinutes: Number(e.target.value) })}
-                                                required
-                                            >
-                                                <option value={30}>30 mins</option>
-                                                <option value={60}>1 Hours</option>
-                                                <option value={90}>1.5 Hours</option>
-                                                <option value={120}>2 Hours</option>
-                                                <option value={180}>3 Hours</option>
-                                            </select>
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-primary transition-colors">
-                                                <ChevronDown className="w-5 h-5" />
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 relative">
+                                                <input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    placeholder="0"
+                                                    className="w-full bg-white text-gray-900 border-2 border-gray-200 p-3.5 text-center text-[15px] font-bold rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all hover:border-gray-300"
+                                                    value={Math.floor(sharedData.durationMinutes / 60)}
+                                                    onChange={(e) => setSharedData({ ...sharedData, durationMinutes: (parseInt(e.target.value) || 0) * 60 + (sharedData.durationMinutes % 60) })}
+                                                />
+                                                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] uppercase font-black text-gray-400">Hours</span>
+                                            </div>
+                                            <span className="text-xl font-black text-gray-300">:</span>
+                                            <div className="flex-1 relative">
+                                                <input 
+                                                    type="number" 
+                                                    min="0"
+                                                    max="59"
+                                                    placeholder="00"
+                                                    className="w-full bg-white text-gray-900 border-2 border-gray-200 p-3.5 text-center text-[15px] font-bold rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all hover:border-gray-300"
+                                                    value={sharedData.durationMinutes % 60}
+                                                    onChange={(e) => setSharedData({ ...sharedData, durationMinutes: Math.floor(sharedData.durationMinutes / 60) * 60 + (Math.min(59, parseInt(e.target.value) || 0)) })}
+                                                />
+                                                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] uppercase font-black text-gray-400">Mins</span>
                                             </div>
                                         </div>
                                     </div>
