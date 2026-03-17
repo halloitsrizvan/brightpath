@@ -32,27 +32,46 @@ export async function POST(req: NextRequest) {
                 teacherId: teacher._id,
                 date: { $gte: startDate, $lte: endDate },
                 status: 'Present'
-            });
+            }).populate('studentId');
 
-            const totalMinutes = attendanceRecords.reduce((acc, rec) => acc + (rec.durationMinutes || 0), 0);
-            const totalHours = totalMinutes / 60;
-            const totalSalary = totalHours * (teacher.salaryPerHour || 0);
+            let teacherMonthlySalary = 0;
+            let teacherMonthlyHours = 0;
 
-            if (totalSalary > 0) {
+            for (const rec of attendanceRecords) {
+                const hours = (rec.durationMinutes || 0) / 60;
+                teacherMonthlyHours += hours;
+                
+                const student = rec.studentId as any;
+                let rate = teacher.salaryPerHour || 0;
+
+                if (student && student.subjectAssignments) {
+                    const assignment = student.subjectAssignments.find((a: any) => 
+                        a.subjectId.toString() === rec.subjectId?.toString() && 
+                        a.teacherId.toString() === teacher._id.toString()
+                    );
+                    if (assignment && assignment.billPerHour > 0) {
+                        rate = assignment.billPerHour;
+                    }
+                }
+                
+                teacherMonthlySalary += hours * rate;
+            }
+
+            if (teacherMonthlySalary > 0) {
                 // Check if salary record already exists for this month
                 let salaryRecord = await Salary.findOne({ teacherId: teacher._id, month });
                 if (salaryRecord) {
-                    salaryRecord.totalHours = totalHours;
-                    salaryRecord.salaryPerHour = teacher.salaryPerHour;
-                    salaryRecord.totalSalary = totalSalary;
+                    salaryRecord.totalHours = teacherMonthlyHours;
+                    salaryRecord.salaryPerHour = teacher.salaryPerHour; // Keep base rate as reference
+                    salaryRecord.totalSalary = teacherMonthlySalary;
                     await salaryRecord.save();
                 } else {
                     salaryRecord = new Salary({
                         teacherId: teacher._id,
                         month,
-                        totalHours,
+                        totalHours: teacherMonthlyHours,
                         salaryPerHour: teacher.salaryPerHour,
-                        totalSalary,
+                        totalSalary: teacherMonthlySalary,
                         paidStatus: 'unpaid'
                     });
                     await salaryRecord.save();

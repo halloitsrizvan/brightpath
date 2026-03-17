@@ -31,7 +31,10 @@ export async function GET(req: NextRequest) {
             query = { preferredTrainers: user.id };
         }
 
-        const students = await Student.find(query).populate('preferredTrainers', 'name');
+        const students = await Student.find(query)
+            .populate('preferredTrainers', 'name salaryPerHour')
+            .populate('subjectAssignments.subjectId', 'subjectName')
+            .populate('subjectAssignments.teacherId', 'name');
         return NextResponse.json(students);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

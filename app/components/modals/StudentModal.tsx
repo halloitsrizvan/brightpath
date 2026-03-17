@@ -7,7 +7,8 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
     const [formData, setFormData] = useState({
         fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India',
         parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '',
-        status: 'active', subjects: [] as string[], preferredTrainers: [] as string[]
+        status: 'active', subjects: [] as string[], preferredTrainers: [] as string[],
+        subjectAssignments: [] as { subjectId: string, teacherId: string, billPerHour: number }[]
     });
 
     const [subjectsList, setSubjectsList] = useState([]);
@@ -36,10 +37,11 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                     password: '', // Leave empty to not update password unless user types new one
                     status: editData.status || 'active',
                     subjects: editData.subjects ? editData.subjects.map((s: any) => s._id || s) : [],
-                    preferredTrainers: editData.preferredTrainers ? editData.preferredTrainers.map((t: any) => t._id || t) : []
+                    preferredTrainers: editData.preferredTrainers ? editData.preferredTrainers.map((t: any) => t._id || t) : [],
+                    subjectAssignments: editData.subjectAssignments || []
                 });
             } else {
-                setFormData({ fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India', parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '', status: 'active', subjects: [], preferredTrainers: [] });
+                setFormData({ fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India', parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '', status: 'active', subjects: [], preferredTrainers: [], subjectAssignments: [] });
             }
         }
     }, [isOpen, editData]);
@@ -59,7 +61,7 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                 await api.post('/students', formData);
             }
             // Reset state
-            setFormData({ fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India', parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '', status: 'active', subjects: [], preferredTrainers: [] });
+            setFormData({ fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India', parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '', status: 'active', subjects: [], preferredTrainers: [], subjectAssignments: [] });
             onSuccess();
             onClose();
         } catch (err) {
@@ -70,16 +72,64 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
     };
 
     const toggleSubject = (subjectId: string) => {
-        setFormData(prev => ({
-            ...prev,
-            subjects: prev.subjects.includes(subjectId) ? prev.subjects.filter(id => id !== subjectId) : [...prev.subjects, subjectId]
-        }));
+        setFormData(prev => {
+            const isSelected = prev.subjects.includes(subjectId);
+            const newSubjects = isSelected ? prev.subjects.filter(id => id !== subjectId) : [...prev.subjects, subjectId];
+            
+            // If unselecting, remove assignments for this subject
+            const newAssignments = isSelected 
+                ? prev.subjectAssignments.filter(a => a.subjectId !== subjectId)
+                : prev.subjectAssignments;
+
+            return {
+                ...prev,
+                subjects: newSubjects,
+                subjectAssignments: newAssignments
+            };
+        });
     };
 
     const toggleTeacher = (teacherId: string) => {
+        setFormData(prev => {
+            const isSelected = prev.preferredTrainers.includes(teacherId);
+            const newTeachers = isSelected ? prev.preferredTrainers.filter(id => id !== teacherId) : [...prev.preferredTrainers, teacherId];
+            
+            // If unselecting, remove assignments for this teacher
+            const newAssignments = isSelected 
+                ? prev.subjectAssignments.filter(a => a.teacherId !== teacherId)
+                : prev.subjectAssignments;
+
+            return {
+                ...prev,
+                preferredTrainers: newTeachers,
+                subjectAssignments: newAssignments
+            };
+        });
+    };
+
+    const toggleAssignment = (subjectId: string, teacherId: string) => {
+        setFormData(prev => {
+            const exists = prev.subjectAssignments.find(a => a.subjectId === subjectId && a.teacherId === teacherId);
+            if (exists) {
+                return {
+                    ...prev,
+                    subjectAssignments: prev.subjectAssignments.filter(a => !(a.subjectId === subjectId && a.teacherId === teacherId))
+                };
+            } else {
+                return {
+                    ...prev,
+                    subjectAssignments: [...prev.subjectAssignments, { subjectId, teacherId, billPerHour: 0 }]
+                };
+            }
+        });
+    };
+
+    const updateAssignmentRate = (subjectId: string, teacherId: string, rate: number) => {
         setFormData(prev => ({
             ...prev,
-            preferredTrainers: prev.preferredTrainers.includes(teacherId) ? prev.preferredTrainers.filter(id => id !== teacherId) : [...prev.preferredTrainers, teacherId]
+            subjectAssignments: prev.subjectAssignments.map(a => 
+                (a.subjectId === subjectId && a.teacherId === teacherId) ? { ...a, billPerHour: rate } : a
+            )
         }));
     };
 
@@ -247,25 +297,64 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                                         return (
                                             <div
                                                 key={tea._id}
-                                                onClick={() => toggleTeacher(tea._id)}
-                                                className={`group flex items-center justify-between p-3 rounded-2xl cursor-pointer border-2 transition-all ${isSelected ? 'bg-secondary/5 border-secondary shadow-sm' : 'bg-white border-gray-50 hover:border-gray-200'}`}
+                                                className={`group flex flex-col p-3 rounded-2xl border-2 transition-all ${isSelected ? 'bg-secondary/5 border-secondary shadow-sm' : 'bg-white border-gray-50 hover:border-gray-200'}`}
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`p-2 rounded-xl border transition-all ${isSelected ? 'bg-secondary text-white border-secondary' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
-                                                        <User className="w-4 h-4" />
-                                                    </div>
-                                                    <div>
-                                                        <p className={`text-sm font-black tracking-tight ${isSelected ? 'text-secondary' : 'text-gray-700'}`}>{tea.name}</p>
-                                                        <div className="flex flex-wrap gap-1 mt-0.5">
-                                                            {tea.subjects?.map((s: any) => (
-                                                                <span key={s._id} className="text-[9px] font-black text-gray-400 uppercase tracking-tight bg-gray-100 px-1.5 py-0.5 rounded">
-                                                                    {s.subjectName}
-                                                                </span>
-                                                            ))}
+                                                <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleTeacher(tea._id)}>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`p-2 rounded-xl border transition-all ${isSelected ? 'bg-secondary text-white border-secondary' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                                                            <User className="w-4 h-4" />
+                                                        </div>
+                                                        <div>
+                                                            <p className={`text-sm font-black tracking-tight ${isSelected ? 'text-secondary' : 'text-gray-700'}`}>{tea.name}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-[10px] text-gray-400 font-bold">Base: ₹{tea.salaryPerHour}/hr</span>
+                                                            </div>
                                                         </div>
                                                     </div>
+                                                    {isSelected && <CheckCircle2 className="w-5 h-5 text-secondary animate-in zoom-in duration-200" />}
                                                 </div>
-                                                {isSelected && <CheckCircle2 className="w-5 h-5 text-secondary animate-in zoom-in duration-200" />}
+
+                                                {isSelected && formData.subjects.length > 0 && (
+                                                    <div className="mt-3 pt-3 border-t border-secondary/10 space-y-3">
+                                                        <p className="text-[10px] font-black text-secondary uppercase tracking-widest">Assign Subjects & Rates</p>
+                                                        {formData.subjects
+                                                            .filter(subId => tea.subjects?.some((s: any) => (s._id || s) === subId))
+                                                            .map(subId => {
+                                                                const subject = subjectsList.find((s: any) => s._id === subId) as any;
+                                                                if (!subject) return null;
+                                                                const assignment = formData.subjectAssignments.find(a => a.subjectId === subId && a.teacherId === tea._id);
+                                                                const isAssigned = !!assignment;
+
+                                                                return (
+                                                                    <div key={subId} className="flex flex-col gap-2 bg-white/50 p-2 rounded-lg border border-gray-100">
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center gap-2 cursor-pointer" onClick={() => toggleAssignment(subId, tea._id)}>
+                                                                                <div className={`w-3 h-3 rounded border flex items-center justify-center ${isAssigned ? 'bg-secondary border-secondary text-white' : 'border-gray-300'}`}>
+                                                                                    {isAssigned && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
+                                                                                </div>
+                                                                                <span className="text-xs font-bold text-gray-700">{subject.subjectName}</span>
+                                                                            </div>
+                                                                            {isAssigned && (
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-[10px] text-gray-400 font-bold">Bill:</span>
+                                                                                    <input 
+                                                                                        type="number" 
+                                                                                        placeholder="0"
+                                                                                        className="w-16 px-2 py-0.5 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-secondary/20 outline-none"
+                                                                                        value={assignment.billPerHour}
+                                                                                        onChange={(e) => updateAssignmentRate(subId, tea._id, parseFloat(e.target.value) || 0)}
+                                                                                    />
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        {formData.subjects.filter(subId => tea.subjects?.some((s: any) => (s._id || s) === subId)).length === 0 && (
+                                                            <p className="text-[10px] text-gray-400 italic">No matching subjects for this trainer.</p>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}

@@ -16,8 +16,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         const student = await Student.findById(id)
-            .populate('preferredTrainers', 'name')
-            .populate('subjects', 'subjectName classLevel');
+            .populate('preferredTrainers', 'name salaryPerHour')
+            .populate('subjects', 'subjectName classLevel')
+            .populate('subjectAssignments.subjectId', 'subjectName')
+            .populate('subjectAssignments.teacherId', 'name salaryPerHour');
         return NextResponse.json(student);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

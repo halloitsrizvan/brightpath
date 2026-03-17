@@ -14,6 +14,11 @@ const StudentSchema = new mongoose.Schema({
     password: { type: String, required: true },
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
     preferredTrainers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }],
+    subjectAssignments: [{
+        subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject' },
+        teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' },
+        billPerHour: { type: Number, default: 0 }
+    }],
     joinedAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     role: { type: String, default: 'student' }
