@@ -10,6 +10,21 @@ export default function AdminFinance() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'pending' | 'paid' | 'payroll'>('pending');
     const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
+    
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        loading: boolean;
+    }>({ 
+        isOpen: false, 
+        title: '', 
+        message: '', 
+        onConfirm: () => {}, 
+        loading: false 
+    });
 
     const fetchFinance = async () => {
         try {
@@ -33,27 +48,48 @@ export default function AdminFinance() {
         fetchFinance();
     }, []);
 
-    const markFeePaid = async (feeId: string) => {
-        try {
-            await api.put(`/finance/fees/${feeId}`, { paymentStatus: 'paid', paymentDate: new Date() });
-            toast.success("Payment Received Successfully");
-            fetchFinance();
-            
-            // Trigger invoice download
-            window.open(`/api/finance/invoice/${feeId}`, '_blank');
-        } catch (err) {
-            toast.error("Process failed");
-        }
+    const markFeePaid = (feeId: string, studentName: string, amount: number) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Confirm Receipt",
+            message: `Are you sure you want to mark ₹${amount.toLocaleString()} as received from ${studentName}? This will generate a formal PDF invoice.`,
+            loading: false,
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, loading: true }));
+                try {
+                    await api.put(`/finance/fees/${feeId}`, { paymentStatus: 'paid', paymentDate: new Date() });
+                    toast.success("Payment Received Successfully");
+                    fetchFinance();
+                    window.open(`/api/finance/invoice/${feeId}`, '_blank');
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                } catch (err) {
+                    toast.error("Process failed");
+                    setConfirmModal(prev => ({ ...prev, loading: false }));
+                }
+            }
+        });
     };
 
-    const markSalaryPaid = async (salaryId: string) => {
-        try {
-            await api.put(`/finance/salary/${salaryId}`, { paidStatus: 'paid' });
-            toast.success("Salary disbursed");
-            fetchFinance();
-        } catch (err) {
-            toast.error("Process failed");
-        }
+    const markSalaryPaid = (salaryId: string, tutorName: string, amount: number) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Disburse Payroll",
+            message: `Initiate salary disbursement of ₹${amount.toLocaleString()} to ${tutorName}? A payslip will be generated and logged.`,
+            loading: false,
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, loading: true }));
+                try {
+                    await api.put(`/finance/salary/${salaryId}`, { paidStatus: 'paid' });
+                    toast.success("Salary disbursed");
+                    fetchFinance();
+                    window.open(`/api/finance/payslip/${salaryId}`, '_blank');
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                } catch (err) {
+                    toast.error("Process failed");
+                    setConfirmModal(prev => ({ ...prev, loading: false }));
+                }
+            }
+        });
     };
 
     const toggleMonth = (month: string) => {
@@ -64,6 +100,10 @@ export default function AdminFinance() {
 
     const downloadInvoice = (feeId: string) => {
         window.open(`/api/finance/invoice/${feeId}`, '_blank');
+    };
+
+    const downloadPayslip = (salaryId: string) => {
+        window.open(`/api/finance/payslip/${salaryId}`, '_blank');
     };
 
     if (loading) return (
@@ -111,7 +151,7 @@ export default function AdminFinance() {
                 </div>
 
                 {/* Economic Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
                     <div className="bg-primary p-8 rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Total Receivables</p>
@@ -122,23 +162,35 @@ export default function AdminFinance() {
                         </div>
                     </div>
 
-                    <div className="bg-secondary p-8 rounded-[2.5rem] text-primary shadow-2xl shadow-secondary/20 relative overflow-hidden group">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Payables</p>
-                        <h2 className="text-4xl font-black italic tracking-tighter mb-4 text-gray-800">₹{summary.totalPayable?.toLocaleString()}</h2>
-                        <div className="flex items-center gap-2 text-xs font-black text-gray-500">
-                            <ArrowDownRight className="w-4 h-4" />
-                            <span>Owed to {unpaidSalaries.length} Tutors</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30 flex flex-col justify-center">
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Total Received Amount</p>
                         <h2 className="text-4xl font-black italic tracking-tighter text-teal-600 mb-4">₹{summary.totalReceived?.toLocaleString()}</h2>
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-2 bg-teal-50 rounded-full flex-1 overflow-hidden">
-                                <div className="bg-teal-500 h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalReceived / (summary.totalReceivable + summary.totalReceived)) * 100)}%` }}></div>
+                                <div className="bg-teal-500 h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalReceived / ((summary.totalReceivable || 0) + (summary.totalReceived || 1))) * 100)}%` }}></div>
                             </div>
                             <span className="text-[10px] font-black text-teal-600 uppercase">Recovery Rate</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-secondary p-8 rounded-[2.5rem] text-primary shadow-2xl shadow-secondary/20 relative overflow-hidden group">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Salary Paid</p>
+                        <h2 className="text-4xl font-black italic tracking-tighter mb-4 text-gray-800">₹{summary.totalDisbursed?.toLocaleString()}</h2>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-2 bg-primary/10 rounded-full flex-1 overflow-hidden">
+                                <div className="bg-primary h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalDisbursed / ((summary.totalPayable || 0) + (summary.totalDisbursed || 1))) * 100)}%` }}></div>
+                            </div>
+                            <span className="text-[10px] font-black text-primary uppercase">₹{summary.totalPayable?.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div className={`p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden group ${summary.profit >= 0 ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-rose-600 text-white shadow-rose-200'}`}>
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Realized Profit</p>
+                        <h2 className="text-4xl font-black italic tracking-tighter mb-4">₹{summary.profit?.toLocaleString()}</h2>
+                        <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                            <TrendingUp className="w-4 h-4" />
+                            <span>Margin: {((summary.profit / (summary.totalReceived || 1)) * 100).toFixed(1)}%</span>
                         </div>
                     </div>
                 </div>
@@ -199,7 +251,7 @@ export default function AdminFinance() {
                                                             </td>
                                                             <td className="py-4 text-right">
                                                                 <button 
-                                                                    onClick={() => markFeePaid(fee._id)}
+                                                                    onClick={() => markFeePaid(fee._id, fee.studentId?.fullName, fee.amount)}
                                                                     className="px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto"
                                                                 >
                                                                     Pay Now <ArrowUpRight className="w-3 h-3" />
@@ -308,12 +360,21 @@ export default function AdminFinance() {
                                                     <td className="py-5 text-center">
                                                         <span className="text-sm font-black text-gray-900 italic">₹{salary.totalSalary}</span>
                                                     </td>
-                                                    <td className="py-5 text-right">
+                                                    <td className="py-5 text-right flex items-center justify-end gap-3">
                                                         {salary.paidStatus === 'paid' ? (
-                                                            <span className="text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">Disbursed</span>
+                                                            <>
+                                                                <button 
+                                                                    onClick={() => downloadPayslip(salary._id)}
+                                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition"
+                                                                    title="Download Payslip"
+                                                                >
+                                                                    <Download className="w-5 h-5" />
+                                                                </button>
+                                                                <span className="text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">Disbursed</span>
+                                                            </>
                                                         ) : (
                                                             <button 
-                                                                onClick={() => markSalaryPaid(salary._id)}
+                                                                onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary)}
                                                                 className="px-5 py-2 bg-secondary hover:bg-secondary/80 text-primary font-black text-[10px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-secondary/10"
                                                             >
                                                                 Disburse
@@ -339,6 +400,38 @@ export default function AdminFinance() {
                     </div>
                 </div>
             </div>
+
+            {/* Premium Confirmation Modal */}
+            {confirmModal.isOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center mb-6">
+                            <AlertCircle className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 italic uppercase tracking-tighter mb-3">
+                            {confirmModal.title}
+                        </h3>
+                        <p className="text-sm font-bold text-gray-400 mb-8 leading-relaxed">
+                            {confirmModal.message}
+                        </p>
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                                className="flex-1 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={confirmModal.onConfirm}
+                                disabled={confirmModal.loading}
+                                className="flex-1 py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition disabled:opacity-50"
+                            >
+                                {confirmModal.loading ? 'Processing...' : 'Confirm'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         const totalReceivable = unpaidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
         const totalPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
         const totalReceived = paidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
+        const totalDisbursed = paidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
 
         return NextResponse.json({
             unpaidFees,
@@ -39,7 +40,9 @@ export async function GET(req: NextRequest) {
                 totalReceivable,
                 totalPayable,
                 totalReceived,
-                netBalance: (totalReceivable + totalReceived) - totalPayable
+                totalDisbursed,
+                profit: totalReceived - totalDisbursed,
+                netBalance: (totalReceivable + totalReceived) - (totalPayable + totalDisbursed)
             }
         });
     } catch (err: any) {
