@@ -74,7 +74,7 @@ export default function IncentiveProgressCard({ teacherId }: { teacherId?: strin
                         </div>
                         <div>
                             <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-1 ${isUnlocked ? 'text-white/60' : 'text-gray-400'}`}>
-                                {isUnlocked ? 'Excellent Work!' : 'Next Intelligence Milestone'}
+                                {isUnlocked ? 'Excellent Work!' : 'Next Incentive Milestone'}
                             </p>
                             <h3 className={`text-xl sm:text-2xl font-black tracking-tight ${isUnlocked ? 'text-white' : 'text-gray-800'} mb-3`}>
                                 {getMotivationMessage(data.progress)}
@@ -132,7 +132,7 @@ export default function IncentiveProgressCard({ teacherId }: { teacherId?: strin
             <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-4 px-4">
                     <div className="h-px flex-1 bg-gray-200"></div>
-                    <span className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Monthly Intelligence Roadmap</span>
+                    <span className="text-xs font-black uppercase tracking-[0.3em] text-gray-400">Monthly Incentive Roadmap</span>
                     <div className="h-px flex-1 bg-gray-200"></div>
                 </div>
 

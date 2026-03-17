@@ -44,8 +44,33 @@ export async function GET(req: NextRequest) {
         });
 
         const earnedIncentivesTotal = reachedIncentives.reduce((acc: number, curr: any) => acc + curr.incentiveAmount, 0);
-        const baseSalary = totalHoursThisMonth * (teacherContent.salaryPerHour || 0);
-        const estimatedSalary = baseSalary + earnedIncentivesTotal;
+        
+        // Dynamic salary calculation based on student/subject rates
+        const attendancesWithStudents = await Attendance.find({
+            teacherId: user.id,
+            date: { $gte: start, $lte: end },
+            status: 'Present'
+        }).populate('studentId');
+
+        let dynamicBaseSalary = 0;
+        for (const attendance of attendancesWithStudents) {
+            const student = attendance.studentId as any;
+            const hours = (attendance.durationMinutes || 0) / 60;
+            let rate = teacherContent.salaryPerHour || 0;
+
+            if (student && student.subjectAssignments) {
+                const assignment = student.subjectAssignments.find((a: any) => 
+                    a.subjectId.toString() === attendance.subjectId?.toString() && 
+                    a.teacherId.toString() === user.id
+                );
+                if (assignment && assignment.billPerHour > 0) {
+                    rate = assignment.billPerHour;
+                }
+            }
+            dynamicBaseSalary += hours * rate;
+        }
+
+        const estimatedSalary = dynamicBaseSalary + earnedIncentivesTotal;
 
         return NextResponse.json({
             totalStudentsAssigned: assignedStudentsCount,

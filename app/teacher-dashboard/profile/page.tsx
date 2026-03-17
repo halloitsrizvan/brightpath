@@ -16,6 +16,7 @@ interface Teacher {
     students: any[];
     salaryPerHour: number;
     totalTeachingHours: number;
+    totalEarnings: number;
 }
 
 export default function TeacherProfile() {
@@ -97,8 +98,6 @@ export default function TeacherProfile() {
             </div>
         );
     }
-
-    const totalEarnings = (teacher?.totalTeachingHours || 0) * (teacher?.salaryPerHour || 0);
 
     return (
         <div className="flex bg-gray-50 min-h-screen font-sans">
@@ -269,7 +268,7 @@ export default function TeacherProfile() {
                                         <p className="text-[#a94442] font-black uppercase tracking-widest text-xs mb-2">Accumulated Earnings</p>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-2xl font-black text-[#a94442]/60">₹</span>
-                                            <h3 className="text-5xl font-black italic">{totalEarnings.toLocaleString()}</h3>
+                                            <h3 className="text-5xl font-black italic">{(teacher?.totalEarnings || 0).toLocaleString()}</h3>
                                         </div>
                                     </div>
                                     <div className="w-16 h-16 bg-[#a94442]/10 rounded-2xl flex items-center justify-center border border-[#a94442]/20">
@@ -326,7 +325,7 @@ export default function TeacherProfile() {
                                 </div>
                                 <div>
                                     <h3 className="text-xl font-black text-gray-800 tracking-tight">Student Directory</h3>
-                                    <p className="text-xs font-bold text-gray-400">Active enrollments & assigned students</p>
+                                    <p className="text-xs font-bold text-gray-400">Assigned students</p>
                                 </div>
                             </div>
 
@@ -336,21 +335,46 @@ export default function TeacherProfile() {
                                         <p className="text-gray-400 font-bold italic px-6">Your student training directory is currently empty.</p>
                                     </div>
                                 ) : (
-                                    teacher.students.map((student: any) => (
-                                        <div key={student._id} className="flex items-center gap-4 p-4 rounded-2xl border border-transparent bg-[#FAFAFA] hover:bg-white hover:border-[#45308D]/20 transition-all duration-300 group shadow-sm hover:shadow-md">
-                                            {/* Small Avatar */}
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#FA8072] to-[#ff9b90] text-white flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform duration-500">
-                                                {student.fullName?.charAt(0)}
+                                    teacher.students.map((student: any) => {
+                                        // Filter assignments for THIS teacher
+                                        const myAssignments = student.subjectAssignments?.filter((a: any) => 
+                                            (a.teacherId?._id || a.teacherId) === teacher._id
+                                        ) || [];
+
+                                        return (
+                                            <div key={student._id} className="flex flex-col p-4 rounded-2xl border border-transparent bg-[#FAFAFA] hover:bg-white hover:border-[#45308D]/20 transition-all duration-300 group shadow-sm hover:shadow-md">
+                                                <div className="flex items-center gap-4">
+                                                    {/* Small Avatar */}
+                                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#FA8072] to-[#ff9b90] text-white flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform duration-500">
+                                                        {student.fullName?.charAt(0)}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h4 className="font-black text-gray-800 leading-none group-hover:text-[#45308D] transition-colors">{student.fullName}</h4>
+                                                        <p className="text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Class Level: {student.class || 'N/A'}</p>
+                                                    </div>
+                                                    <div className="text-[10px] font-black italic text-[#45308D] bg-[#45308D]/5 px-2 py-1 rounded-full">
+                                                        Active
+                                                    </div>
+                                                </div>
+                                                
+                                                {myAssignments.length > 0 && (
+                                                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2">
+                                                        {myAssignments.map((a: any, idx: number) => (
+                                                            <div key={idx} className="bg-white px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm flex items-center gap-2">
+                                                                <span className="text-[10px] font-black text-[#45308D] uppercase tracking-tighter">
+                                                                    {a.subjectId?.subjectName || 'Subject'}
+                                                                </span>
+                                                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                                <span className="text-[10px] font-bold text-green-600">
+                                                                    ₹{a.billPerHour}/hr
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-black text-gray-800 leading-none group-hover:text-[#45308D] transition-colors">{student.fullName}</h4>
-                                                <p className="text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Enrollment: {student.class || 'N/A'}</p>
-                                            </div>
-                                            <div className="text-[10px] font-black italic text-[#45308D] bg-[#45308D]/5 px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                                In Training
-                                            </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>

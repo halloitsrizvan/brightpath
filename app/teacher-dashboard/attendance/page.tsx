@@ -18,6 +18,7 @@ interface AttendanceRecord {
 export default function MarkAttendance() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [teacherName, setTeacherName] = useState('Teacher Name');
+    const [teacherId, setTeacherId] = useState<string>('');
 
     const [students, setStudents] = useState<any[]>([]);
     const [subjects, setSubjects] = useState<any[]>([]);
@@ -42,6 +43,7 @@ export default function MarkAttendance() {
             try {
                 const user = JSON.parse(userStr);
                 if (user.name) setTeacherName(user.name);
+                if (user.id) setTeacherId(user.id);
             } catch (e) { }
         }
 
@@ -246,16 +248,34 @@ export default function MarkAttendance() {
                                                         onChange={(e) => handleRecordChange(record.id, 'subjectId', e.target.value)}
                                                         required
                                                         disabled={!record.studentId}
-                                                    >
-                                                        <option value="" disabled>{record.studentId ? "Select Subject..." : "Select Student First"}</option>
+                                                    >                                                        <option value="" disabled>{record.studentId ? "Select Subject..." : "Select Student First"}</option>
                                                         {record.studentId && (() => {
                                                             const student = students.find(s => s._id === record.studentId);
-                                                            if (!student || !student.subjects) return null;
-                                                            return student.subjects.map((subjId: string | { _id: string, name?: string, subjectName?: string }) => {
+                                                            if (!student) return null;
+
+                                                            // Filter assignments for THIS teacher
+                                                            const myAssignments = (student.subjectAssignments || []).filter((a: any) => 
+                                                                (a.teacherId?._id || a.teacherId) === teacherId
+                                                            );
+
+                                                            if (myAssignments.length > 0) {
+                                                                return myAssignments.map((a: any) => {
+                                                                    const sub = a.subjectId;
+                                                                    const sId = sub?._id || sub;
+                                                                    const sName = sub?.subjectName || sub?.name || "Unknown Subject";
+                                                                    return (
+                                                                        <option key={sId} value={sId}>
+                                                                            {sName}
+                                                                        </option>
+                                                                    );
+                                                                });
+                                                            }
+
+                                                            // Fallback to student's general subjects if no specific assignments (for safety)
+                                                            if (!student.subjects) return null;
+                                                            return student.subjects.map((subjId: any) => {
                                                                 const actualId = typeof subjId === 'object' ? subjId._id : subjId;
                                                                 const subjectFromList = subjects.find(s => s._id === actualId);
-
-                                                                // Grab the name natively or from the subjects list endpoint 
                                                                 const sName = (typeof subjId === 'object' && (subjId.subjectName || subjId.name))
                                                                     || (subjectFromList && (subjectFromList.subjectName || subjectFromList.name))
                                                                     || actualId;
