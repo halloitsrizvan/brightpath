@@ -1,0 +1,21 @@
+
+import { NextRequest, NextResponse } from 'next/server';
+import { checkAuth } from '@/lib/auth';
+import Salary from '@/models/Salary';
+import dbConnect from '@/lib/mongodb';
+
+export async function GET(req: NextRequest) {
+    try {
+        await dbConnect();
+        await checkAuth(req, ['admin', 'teacher']);
+
+        const { searchParams } = new URL(req.url);
+        const teacherId = searchParams.get('teacherId');
+
+        const filter = teacherId ? { teacherId } : {};
+        const salaries = await Salary.find(filter).populate('teacherId', 'name email');
+        return NextResponse.json(salaries);
+    } catch (err: any) {
+        return NextResponse.json({ message: err.message }, { status: 500 });
+    }
+}
