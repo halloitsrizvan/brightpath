@@ -63,8 +63,8 @@ export async function GET(req: NextRequest) {
                     a.subjectId.toString() === attendance.subjectId?.toString() && 
                     a.teacherId.toString() === user.id
                 );
-                if (assignment && assignment.billPerHour > 0) {
-                    rate = assignment.billPerHour;
+                if (assignment && assignment.salaryPerHour > 0) {
+                    rate = assignment.salaryPerHour;
                 }
             }
             dynamicBaseSalary += hours * rate;

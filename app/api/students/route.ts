@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
         }
 
         const students = await Student.find(query)
+            .populate('subjects', 'subjectName')
             .populate('preferredTrainers', 'name salaryPerHour')
             .populate('subjectAssignments.subjectId', 'subjectName')
             .populate('subjectAssignments.teacherId', 'name');

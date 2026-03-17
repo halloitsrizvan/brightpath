@@ -61,7 +61,7 @@ export default function AdminAttendance() {
                                         <td className="p-4 text-gray-600">{new Date(record.date).toLocaleDateString()}</td>
                                         <td className="p-4 font-medium text-gray-800">{record.studentId?.fullName || '-'}</td>
                                         <td className="p-4 text-gray-600">{record.teacherId?.name || '-'}</td>
-                                        <td className="p-4 text-gray-600">{record.subject}</td>
+                                        <td className="p-4 text-gray-600">{record.subjectId?.subjectName || '-'}</td>
                                         <td className="p-4 text-gray-600 font-medium">{record.durationMinutes}</td>
                                     </tr>
                                 ))}

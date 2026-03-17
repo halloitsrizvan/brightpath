@@ -53,8 +53,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     a.subjectId.toString() === attendance.subjectId?.toString() && 
                     a.teacherId.toString() === id
                 );
-                if (assignment && assignment.billPerHour > 0) {
-                    rate = assignment.billPerHour;
+                if (assignment && assignment.salaryPerHour > 0) {
+                    rate = assignment.salaryPerHour;
                 }
             }
             monthlyData[mKey].earnings += hours * rate;

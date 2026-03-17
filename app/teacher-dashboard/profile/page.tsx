@@ -366,7 +366,7 @@ export default function TeacherProfile() {
                                                                 </span>
                                                                 <span className="w-1 h-1 rounded-full bg-gray-300"></span>
                                                                 <span className="text-[10px] font-bold text-green-600">
-                                                                    ₹{a.billPerHour}/hr
+                                                                    ₹{a.salaryPerHour || a.billPerHour}/hr
                                                                 </span>
                                                             </div>
                                                         ))}

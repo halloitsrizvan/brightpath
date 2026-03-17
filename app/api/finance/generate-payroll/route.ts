@@ -37,26 +37,29 @@ export async function POST(req: NextRequest) {
             const sId = student._id.toString();
             const hours = (rec.durationMinutes || 0) / 60;
 
-            // Determine rate (using student-specific assignment)
-            let rate = teacher.salaryPerHour || 0;
+            // Determine rates (using student-specific assignment)
+            let billRate = 0;
+            let salaryRate = teacher.salaryPerHour || 0;
+
             if (student.subjectAssignments) {
                 const assignment = student.subjectAssignments.find((a: any) => 
                     a.subjectId.toString() === rec.subjectId?.toString() && 
                     a.teacherId.toString() === tId
                 );
-                if (assignment && assignment.billPerHour > 0) {
-                    rate = assignment.billPerHour;
+                if (assignment) {
+                    if (assignment.billPerHour > 0) billRate = assignment.billPerHour;
+                    if (assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
                 }
             }
 
-            // Payables (for Teacher)
+            // Payables (for Teacher - uses Salary Rate)
             if (!teacherCalcs[tId]) teacherCalcs[tId] = { earnings: 0, hours: 0, baseRate: teacher.salaryPerHour || 0 };
-            teacherCalcs[tId].earnings += hours * rate;
+            teacherCalcs[tId].earnings += hours * salaryRate;
             teacherCalcs[tId].hours += hours;
 
-            // Receivables (for Student)
+            // Receivables (for Student - uses Bill Rate)
             if (!studentCalcs[sId]) studentCalcs[sId] = { totalBill: 0, hours: 0 };
-            studentCalcs[sId].totalBill += hours * rate;
+            studentCalcs[sId].totalBill += hours * billRate;
             studentCalcs[sId].hours += hours;
         }
 

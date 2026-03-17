@@ -8,7 +8,7 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
         fullName: '', dateOfBirth: '', class: '', syllabus: '', district: '', residentialLocation: 'India',
         parentName: '', contactNumber: '', whatsappNumber: '', email: '', password: '',
         status: 'active', subjects: [] as string[], preferredTrainers: [] as string[],
-        subjectAssignments: [] as { subjectId: string, teacherId: string, billPerHour: number }[]
+        subjectAssignments: [] as { subjectId: string, teacherId: string, billPerHour: number, salaryPerHour: number }[]
     });
 
     const [subjectsList, setSubjectsList] = useState([]);
@@ -41,7 +41,8 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                     subjectAssignments: editData.subjectAssignments ? editData.subjectAssignments.map((a: any) => ({
                         subjectId: a.subjectId?._id || a.subjectId,
                         teacherId: a.teacherId?._id || a.teacherId,
-                        billPerHour: a.billPerHour
+                        billPerHour: a.billPerHour || 0,
+                        salaryPerHour: a.salaryPerHour || 0
                     })) : []
                 });
                 
@@ -131,17 +132,17 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
             } else {
                 return {
                     ...prev,
-                    subjectAssignments: [...prev.subjectAssignments, { subjectId, teacherId, billPerHour: 0 }]
+                    subjectAssignments: [...prev.subjectAssignments, { subjectId, teacherId, billPerHour: 0, salaryPerHour: 0 }]
                 };
             }
         });
     };
 
-    const updateAssignmentRate = (subjectId: string, teacherId: string, rate: number) => {
+    const updateAssignmentRate = (subjectId: string, teacherId: string, value: number, field: 'billPerHour' | 'salaryPerHour') => {
         setFormData(prev => ({
             ...prev,
             subjectAssignments: prev.subjectAssignments.map(a => 
-                (a.subjectId === subjectId && a.teacherId === teacherId) ? { ...a, billPerHour: rate } : a
+                (a.subjectId === subjectId && a.teacherId === teacherId) ? { ...a, [field]: value } : a
             )
         }));
     };
@@ -348,15 +349,27 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                                                                                 <span className="text-xs font-bold text-gray-700">{subject.subjectName}</span>
                                                                             </div>
                                                                             {isAssigned && (
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <span className="text-[10px] text-gray-400 font-bold">Bill:</span>
-                                                                                    <input 
-                                                                                        type="number" 
-                                                                                        placeholder="0"
-                                                                                        className="w-16 px-2 py-0.5 border border-gray-200 rounded text-xs text-black focus:ring-1 focus:ring-secondary/20 outline-none"
-                                                                                        value={assignment.billPerHour}
-                                                                                        onChange={(e) => updateAssignmentRate(subId, tea._id, parseFloat(e.target.value) || 0)}
-                                                                                    />
+                                                                                <div className="flex flex-col gap-1.5 min-w-[120px]">
+                                                                                    <div className="flex items-center justify-end gap-2">
+                                                                                        <span className="text-[9px] text-gray-400 font-black uppercase">Bill:</span>
+                                                                                        <input 
+                                                                                            type="number" 
+                                                                                            placeholder="0"
+                                                                                            className="w-20 px-2 py-0.5 border border-gray-200 rounded text-xs text-black font-bold focus:ring-1 focus:ring-secondary/20 outline-none"
+                                                                                            value={assignment.billPerHour}
+                                                                                            onChange={(e) => updateAssignmentRate(subId, tea._id, parseFloat(e.target.value) || 0, 'billPerHour')}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <div className="flex items-center justify-end gap-2">
+                                                                                        <span className="text-[9px] text-gray-400 font-black uppercase">Salary:</span>
+                                                                                        <input 
+                                                                                            type="number" 
+                                                                                            placeholder="0"
+                                                                                            className="w-20 px-2 py-0.5 border border-gray-200 rounded text-xs text-green-600 font-bold focus:ring-1 focus:ring-green-200 outline-none"
+                                                                                            value={assignment.salaryPerHour}
+                                                                                            onChange={(e) => updateAssignmentRate(subId, tea._id, parseFloat(e.target.value) || 0, 'salaryPerHour')}
+                                                                                        />
+                                                                                    </div>
                                                                                 </div>
                                                                             )}
                                                                         </div>
