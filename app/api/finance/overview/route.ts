@@ -12,27 +12,34 @@ export async function GET(req: NextRequest) {
         await dbConnect();
         await checkAuth(req, ['admin']);
 
-        // Fetch unpaid student bills
-        const unpaidFees = await Fee.find({
-            paymentStatus: { $ne: 'paid' }
-        }).populate('studentId', 'fullName email class residentialLocation');
+        // Fetch student bills
+        const allFees = await Fee.find({}).populate('studentId', 'fullName email class residentialLocation');
+        
+        // Fetch tutor salaries
+        const allSalaries = await Salary.find({}).populate('teacherId', 'name email phone salaryPerHour');
 
-        // Fetch unpaid tutor salaries
-        const unpaidSalaries = await Salary.find({
-            paidStatus: { $ne: 'paid' }
-        }).populate('teacherId', 'name email phone salaryPerHour');
+        // Split into paid/unpaid
+        const unpaidFees = allFees.filter(f => f.paymentStatus !== 'paid');
+        const paidFees = allFees.filter(f => f.paymentStatus === 'paid');
+        
+        const unpaidSalaries = allSalaries.filter(s => s.paidStatus !== 'paid');
+        const paidSalaries = allSalaries.filter(s => s.paidStatus === 'paid');
 
         // Calculate summary statistics
         const totalReceivable = unpaidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
         const totalPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
+        const totalReceived = paidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
 
         return NextResponse.json({
             unpaidFees,
+            paidFees,
             unpaidSalaries,
+            paidSalaries,
             summary: {
                 totalReceivable,
                 totalPayable,
-                netBalance: totalReceivable - totalPayable
+                totalReceived,
+                netBalance: (totalReceivable + totalReceived) - totalPayable
             }
         });
     } catch (err: any) {

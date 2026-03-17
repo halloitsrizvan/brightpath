@@ -4,13 +4,14 @@ import { checkAuth } from '@/lib/auth';
 import Fee from '@/models/Fee';
 import dbConnect from '@/lib/mongodb';
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin']);
+        const { id } = await params;
         const body = await req.json();
 
-        const updatedFee = await Fee.findByIdAndUpdate(params.id, body, { new: true });
+        const updatedFee = await Fee.findByIdAndUpdate(id, body, { returnDocument: 'after' });
         return NextResponse.json(updatedFee);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

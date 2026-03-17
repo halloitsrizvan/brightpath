@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+// @ts-ignore
 import jwt from 'jsonwebtoken';
 import dbConnect from './mongodb';
 
@@ -6,7 +8,22 @@ export async function checkAuth(req: NextRequest, roles: string[] = []) {
     await dbConnect();
 
     const authHeader = req.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    let token = authHeader?.replace('Bearer ', '');
+
+    // Fallback 1: Manual Request Cookies (Fastest)
+    if (!token) {
+        token = req.cookies.get('token')?.value;
+    }
+
+    // Fallback 2: Next.js Headers Cookies (Most Reliable for App Router)
+    if (!token) {
+        try {
+            const cookieStore = await cookies();
+            token = cookieStore.get('token')?.value;
+        } catch (e) {
+            // Silently fail, we already have Fallback 1
+        }
+    }
 
     if (!token) {
         throw new Error('No token, authorization denied');

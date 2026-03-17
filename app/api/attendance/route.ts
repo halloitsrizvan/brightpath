@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
         const attendance = new Attendance({ ...body, teacherId });
         await attendance.save();
 
+        // Automatically sync financials for the month of this attendance
+        try {
+            const attDate = new Date(body.date || new Date());
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthStr = `${monthNames[attDate.getMonth()]} ${attDate.getFullYear()}`;
+            const { syncFinancialsForMonth } = await import('@/lib/finance-sync');
+            await syncFinancialsForMonth(monthStr);
+        } catch (syncErr) {
+            console.error("Auto-sync failed:", syncErr);
+        }
+
         return NextResponse.json(attendance, { status: 201 });
     } catch (err: any) {
         if (err.message && err.message.includes('Forbidden')) {
