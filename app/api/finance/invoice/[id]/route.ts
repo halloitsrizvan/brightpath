@@ -101,7 +101,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         const pdfBytes = await pdfDoc.save();
 
-        return new NextResponse(pdfBytes, {
+        return new NextResponse(pdfBytes as any, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename=Invoice_${student.fullName.replace(/\s+/g, '_')}_${fee.month.replace(/\s+/g, '_')}.pdf`

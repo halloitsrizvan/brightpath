@@ -254,7 +254,7 @@ export default function AdminFinance() {
                                                                     onClick={() => markFeePaid(fee._id, fee.studentId?.fullName, fee.amount)}
                                                                     className="px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto"
                                                                 >
-                                                                    Pay Now <ArrowUpRight className="w-3 h-3" />
+                                                                    Bill Now <ArrowUpRight className="w-3 h-3" />
                                                                 </button>
                                                             </td>
                                                         </tr>
