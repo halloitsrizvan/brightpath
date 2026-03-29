@@ -41,18 +41,38 @@ export async function GET(req: NextRequest) {
     try {
         await dbConnect();
         const user = await checkAuth(req, ['admin', 'student', 'teacher']);
+        const { searchParams } = new URL(req.url);
+        const today = searchParams.get('today') === 'true';
+        const month = searchParams.get('month');
 
-        let query = {};
+        let query: any = {};
         if (user.role === 'student') {
-            query = { studentId: user.id };
+            query.studentId = user.id;
         } else if (user.role === 'teacher') {
-            query = { teacherId: user.id };
+            query.teacherId = user.id;
+        }
+
+        if (today) {
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+            query.date = { $gte: start, $lte: end };
+        } else if (month && month !== 'All Time') {
+            const [mName, year] = month.split(' ');
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const mIndex = monthNames.indexOf(mName);
+            const start = new Date(parseInt(year), mIndex, 1);
+            const end = new Date(parseInt(year), mIndex + 1, 0, 23, 59, 59);
+            query.date = { $gte: start, $lte: end };
         }
 
         const list = await Attendance.find(query)
             .populate('studentId', 'fullName')
             .populate('teacherId', 'name')
-            .populate('subjectId', 'subjectName');
+            .populate('subjectId', 'subjectName')
+            .sort({ date: -1 });
+
         return NextResponse.json(list);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

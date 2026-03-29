@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
 import { IndianRupee, User, Wallet, Calendar, CheckCircle2, AlertCircle, ArrowUpRight, ArrowDownRight, TrendingUp, Download, Eye, Filter, ChevronDown, ChevronRight, FileText } from 'lucide-react';
@@ -10,7 +10,8 @@ export default function AdminFinance() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'pending' | 'paid' | 'payroll'>('pending');
     const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
-    
+    const [selectedMonth, setSelectedMonth] = useState('All Records');
+
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -18,19 +19,34 @@ export default function AdminFinance() {
         message: string;
         onConfirm: () => void;
         loading: boolean;
-    }>({ 
-        isOpen: false, 
-        title: '', 
-        message: '', 
-        onConfirm: () => {}, 
-        loading: false 
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        loading: false
     });
+
+    const monthsOptions = useMemo(() => {
+        const arr = ['All Records'];
+        const date = new Date();
+        date.setDate(1);
+        for (let i = 0; i < 6; i++) {
+            const m = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+            const y = date.getFullYear();
+            arr.push(`${m} ${y}`);
+            date.setMonth(date.getMonth() - 1);
+        }
+        return arr;
+    }, []);
 
     const fetchFinance = async () => {
         try {
-            const { data } = await api.get('/finance/overview');
+            setLoading(true);
+            const query = selectedMonth === 'All Records' ? '' : `?month=${selectedMonth}`;
+            const { data } = await api.get(`/finance/overview${query}`);
             setFinanceData(data);
-            
+
             // Expand latest month by default
             if (data.unpaidFees.length > 0) {
                 const months = Array.from(new Set(data.unpaidFees.map((f: any) => f.month))) as string[];
@@ -46,7 +62,7 @@ export default function AdminFinance() {
 
     useEffect(() => {
         fetchFinance();
-    }, []);
+    }, [selectedMonth]);
 
     const markFeePaid = (feeId: string, studentName: string, amount: number) => {
         setConfirmModal({
@@ -93,7 +109,7 @@ export default function AdminFinance() {
     };
 
     const toggleMonth = (month: string) => {
-        setExpandedMonths(prev => 
+        setExpandedMonths(prev =>
             prev.includes(month) ? prev.filter(m => m !== month) : [...prev, month]
         );
     };
@@ -121,7 +137,7 @@ export default function AdminFinance() {
         return acc;
     }, {});
 
-    const months = Object.keys(groupedPendingFees).sort((a,b) => {
+    const months = Object.keys(groupedPendingFees).sort((a, b) => {
         // Simple sort logic for months
         const m1 = new Date(a).getTime();
         const m2 = new Date(b).getTime();
@@ -142,11 +158,25 @@ export default function AdminFinance() {
                         <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase">Finance Hub</h1>
                         <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 ml-1">Automated Billing & Revenue Control</p>
                     </div>
-                    
-                    <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner">
-                        <button onClick={() => setActiveTab('pending')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Pending AR</button>
-                        <button onClick={() => setActiveTab('paid')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'paid' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Paid Bills</button>
-                        <button onClick={() => setActiveTab('payroll')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'payroll' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Payroll Ledger</button>
+
+                    <div className="flex items-center gap-4">
+                        <div className="relative group min-w-[180px]">
+                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                            <select
+                                className="w-full pl-10 pr-10 py-3 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer appearance-none shadow-sm"
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(e.target.value)}
+                            >
+                                {monthsOptions.map((m: string) => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                        </div>
+
+                        <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner">
+                            <button onClick={() => setActiveTab('pending')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Pending AR</button>
+                            <button onClick={() => setActiveTab('paid')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'paid' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Paid Bills</button>
+                            <button onClick={() => setActiveTab('payroll')} className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'payroll' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Payroll Ledger</button>
+                        </div>
                     </div>
                 </div>
 
@@ -206,7 +236,7 @@ export default function AdminFinance() {
                                 </div>
                             ) : months.map(month => (
                                 <div key={month} className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition">
-                                    <button 
+                                    <button
                                         onClick={() => toggleMonth(month)}
                                         className="w-full px-8 py-5 flex items-center justify-between hover:bg-gray-50/50 transition"
                                     >
@@ -250,7 +280,7 @@ export default function AdminFinance() {
                                                                 <span className="text-sm font-black text-gray-800 italic tracking-tight">₹{fee.amount}</span>
                                                             </td>
                                                             <td className="py-4 text-right">
-                                                                <button 
+                                                                <button
                                                                     onClick={() => markFeePaid(fee._id, fee.studentId?.fullName, fee.amount)}
                                                                     className="px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 flex items-center gap-2 ml-auto"
                                                                 >
@@ -304,7 +334,7 @@ export default function AdminFinance() {
                                                         <span className="text-sm font-black text-teal-600 italic tracking-tight">₹{fee.amount}</span>
                                                     </td>
                                                     <td className="py-5 text-right">
-                                                        <button 
+                                                        <button
                                                             onClick={() => downloadInvoice(fee._id)}
                                                             className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition"
                                                             title="Download PDF Invoice"
@@ -323,7 +353,7 @@ export default function AdminFinance() {
 
                     {activeTab === 'payroll' && (
                         <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden">
-                             <div className="p-8">
+                            <div className="p-8">
                                 <h3 className="text-xl font-black text-gray-800 italic uppercase mb-8 flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center"><IndianRupee className="w-4 h-4" /></div>
                                     Tutor Payout Ledger
@@ -363,7 +393,7 @@ export default function AdminFinance() {
                                                     <td className="py-5 text-right flex items-center justify-end gap-3">
                                                         {salary.paidStatus === 'paid' ? (
                                                             <>
-                                                                <button 
+                                                                <button
                                                                     onClick={() => downloadPayslip(salary._id)}
                                                                     className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition"
                                                                     title="Download Payslip"
@@ -373,7 +403,7 @@ export default function AdminFinance() {
                                                                 <span className="text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">Disbursed</span>
                                                             </>
                                                         ) : (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary)}
                                                                 className="px-5 py-2 bg-secondary hover:bg-secondary/80 text-primary font-black text-[10px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-secondary/10"
                                                             >
@@ -386,7 +416,7 @@ export default function AdminFinance() {
                                         </tbody>
                                     </table>
                                 </div>
-                             </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -415,13 +445,13 @@ export default function AdminFinance() {
                             {confirmModal.message}
                         </p>
                         <div className="flex gap-4">
-                            <button 
+                            <button
                                 onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                 className="flex-1 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition"
                             >
                                 Cancel
                             </button>
-                            <button 
+                            <button
                                 onClick={confirmModal.onConfirm}
                                 disabled={confirmModal.loading}
                                 className="flex-1 py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition disabled:opacity-50"

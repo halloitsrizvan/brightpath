@@ -1,23 +1,22 @@
-2-1 bill
-mins - hr
-invoice logo
-incetive achieved teachers data in admin panel
-to do list in admin panel + target
-line graph for hr 
-selcect month button in Finance Hub on the lest of pending ar
-attendace today in Attendance Records
-hrs today in Attendance Records
-Monthly Revenue functional
-All Exam Records -class not found
-Admin Overview : active std /teachers
-expenses tab -form 
+<!-- in invoice i want to change the minutes to hours and also attach the logo in invoice (path: public/logo.png)
+when a teacher achive a incetive show it in admin panel incentives under that incentive to track acheived teachers data of each incentives -->
+<!-- to do list in admin panel + target -->
+<!-- selcect month button in Finance Hub on the left of pending ar -->
+<!-- attdacene today in Attendance Records -->
+<!-- hrs today in Attendance Records -->
+<!-- Monthly Revenue functional -->
+<!-- Admin Overview : active std /teachers -->
+<!-- expenses tab -form 
 exp categories:-
 [Internet
 Software Subscription
 Marketing
 Payment Gateway Charges
 Equipment
-Miscellaneous]
+Miscellaneous] -->
+2-1 bill
+line graph for hr  
+All Exam Records -class not found 
 founders salary + debt from profit / return debt -form
 profit = revenue - (salary paid +expenses)
 Total Receivables card -> opereational expenses card

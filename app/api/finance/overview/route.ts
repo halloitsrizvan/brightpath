@@ -12,16 +12,21 @@ export async function GET(req: NextRequest) {
         await dbConnect();
         await checkAuth(req, ['admin']);
 
+        const { searchParams } = new URL(req.url);
+        const month = searchParams.get('month');
+
         // Fetch student bills
-        const allFees = await Fee.find({}).populate('studentId', 'fullName email class residentialLocation');
-        
+        const feeQuery = month ? { month } : {};
+        const allFees = await Fee.find(feeQuery).populate('studentId', 'fullName email class residentialLocation');
+
         // Fetch tutor salaries
-        const allSalaries = await Salary.find({}).populate('teacherId', 'name email phone salaryPerHour');
+        const salaryQuery = month ? { month } : {};
+        const allSalaries = await Salary.find(salaryQuery).populate('teacherId', 'name email phone salaryPerHour');
 
         // Split into paid/unpaid
         const unpaidFees = allFees.filter(f => f.paymentStatus !== 'paid');
         const paidFees = allFees.filter(f => f.paymentStatus === 'paid');
-        
+
         const unpaidSalaries = allSalaries.filter(s => s.paidStatus !== 'paid');
         const paidSalaries = allSalaries.filter(s => s.paidStatus === 'paid');
 

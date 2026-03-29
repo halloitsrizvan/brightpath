@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
         await newStudent.save();
         return NextResponse.json(newStudent, { status: 201 });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (POST /api/students):', err);
+        const status = err.message.includes('authorization denied') || err.message.includes('token') ? 401 : 
+                       err.message.includes('Forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }
 
@@ -39,6 +42,9 @@ export async function GET(req: NextRequest) {
             .populate('subjectAssignments.teacherId', 'name');
         return NextResponse.json(students);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (GET /api/students):', err);
+        const status = err.message.includes('authorization denied') || err.message.includes('token') ? 401 : 
+                       err.message.includes('Forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }

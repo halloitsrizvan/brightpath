@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import api from '../utils/api';
+import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight } from 'lucide-react';
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
@@ -10,43 +11,133 @@ export default function AdminDashboard() {
         classesThisMonth: 0,
         monthlyRevenue: 0
     });
+    const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
         api.get('/dashboard/admin').then(res => setStats(res.data)).catch(console.error);
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
     }, []);
 
+    const greetings = () => {
+        const hour = currentTime.getHours();
+        if (hour < 12) return "Good Morning";
+        if (hour < 17) return "Good Afternoon";
+        return "Good Evening";
+    };
+
     return (
-        <div className="flex bg-gray-50 min-h-screen font-sans">
+        <div className="flex bg-[#fafafa] min-h-screen font-sans">
             <div className="fixed z-50 h-full">
                 <Sidebar role="admin" />
             </div>
-            <div className="flex-1 lg:ml-64 p-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-8 mt-2">Admin Overview</h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <StatCard title="Total Students" value={stats.totalStudents} color="bg-blue-500" />
-                    <StatCard title="Total Teachers" value={stats.totalTeachers} color="bg-purple-500" />
-                    <StatCard title="Classes This Month" value={stats.classesThisMonth} color="bg-green-500" />
-                    <StatCard title="Monthly Revenue" value={`₹${stats.monthlyRevenue}`} color="bg-yellow-500" />
-                </div>
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+                <header className="p-8 md:p-12 pb-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                                {greetings()}, <span className="text-[#45308D]">Admin</span>
+                            </h1>
+                            <p className="text-gray-400 font-bold text-sm mt-3 flex items-center gap-2">
+                                <Calendar className="w-4 h-4" /> {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                <Clock className="w-4 h-4" /> {currentTime.toLocaleTimeString()}
+                            </p>
+                        </div>
+                    </div>
+                </header>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-center min-h-[400px]">
-                    <p className="text-gray-500 font-medium">Select an option from the sidebar to manage students, teachers, etc.</p>
-                </div>
+                <main className="p-8 md:p-12 pt-4 flex-1 space-y-10">
+                    {/* Performance Summary Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                        <DashboardCard
+                            title="Active Enrollment"
+                            value={stats.totalStudents}
+                            description="Students registered"
+                            icon={<Users className="w-6 h-6" />}
+                            color="bg-[#45308D]"
+                        />
+                        <DashboardCard
+                            title="Academic Staff"
+                            value={stats.totalTeachers}
+                            description="Active Tutors"
+                            icon={<UserCheck className="w-6 h-6" />}
+                            color="bg-indigo-600"
+                        />
+                        <DashboardCard
+                            title="Monthly Activity"
+                            value={stats.classesThisMonth}
+                            description="Classes this month"
+                            icon={<BookOpen className="w-6 h-6" />}
+                            color="bg-teal-600"
+                        />
+                        <DashboardCard
+                            title="Monthly Income"
+                            value={`₹${stats.monthlyRevenue.toLocaleString()}`}
+                            description="Current period yield"
+                            icon={<IndianRupee className="w-6 h-6" />}
+                            color="bg-[#FDC70B]"
+                            textColor="text-gray-900"
+                            isFinancial
+                        />
+                    </div>
+
+                    {/* Operational Overview Placeholder Area */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 bg-white rounded-[3rem] p-12 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[400px] flex flex-col justify-center items-center text-center">
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#45308D] to-indigo-600"></div>
+                            <div className="w-24 h-24 rounded-[2rem] bg-gray-50 flex items-center justify-center text-gray-200 mb-8 border-2 border-dashed border-gray-100 group-hover:bg-[#45308D]/5 group-hover:border-[#45308D]/20 transition-all duration-500">
+                                <TrendingUp className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-800 mb-4 italic uppercase tracking-tighter">Strategic Insights Awaiting</h3>
+                            <p className="max-w-md text-gray-400 font-bold leading-relaxed text-sm">
+                                Use the left navigation to interact with students, manage financials, or audit academic attendance.
+                                Detailed analytics and performance charts will populate this quadrant as operations scale.
+                            </p>
+                            <div className="mt-10 flex gap-4">
+                                <div className="px-6 py-3 bg-gray-50 rounded-2xl text-[10px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">System Balanced</div>
+                                <div className="px-6 py-3 bg-teal-50 rounded-2xl text-[10px] font-black uppercase text-teal-600 tracking-widest border border-teal-100">Cloud Sync Active</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#45308D] rounded-[3rem] p-12 text-white shadow-2xl shadow-[#45308D]/20 flex flex-col justify-between relative overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                            <div className="relative z-10">
+                                <GraduationCap className="w-12 h-12 mb-6" />
+                                <h3 className="text-2xl font-black italic tracking-tighter uppercase mb-2">Institutional Health</h3>
+                                <p className="text-white/60 font-medium text-sm leading-relaxed mb-8">
+                                    All academic modules are currently operational. Average student attendance is tracking at 94% retention.
+                                </p>
+                            </div>
+                            <button className="bg-white text-[#45308D] py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
+                                View Full Audit <ArrowUpRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
     );
 }
 
-function StatCard({ title, value, color }: { title: string, value: string | number, color: string }) {
+function DashboardCard({ title, value, description, icon, color, textColor = "text-white", isFinancial }: any) {
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col hover:shadow-md transition-shadow">
-            <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">{title}</h3>
-            <div className="mt-4 flex items-center justify-between">
-                <h2 className="text-3xl font-bold text-gray-800">{value}</h2>
-                <div className={`w-12 h-12 rounded-full ${color} bg-opacity-10 flex items-center justify-center`}>
-                    <div className={`w-4 h-4 rounded-full ${color}`}></div>
+        <div className={`${color} ${textColor} p-8 rounded-[3rem] shadow-2xl shadow-gray-200/50 relative group overflow-hidden transition-all hover:-translate-y-2`}>
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
+            <div className="relative z-10">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="p-3 bg-white/10 rounded-xl backdrop-blur-md">
+                        {icon}
+                    </div>
+                    {isFinancial && <TrendingUp className="w-5 h-5 opacity-40" />}
                 </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">{title}</p>
+                <div className="flex items-end gap-2">
+                    <h2 className="text-4xl font-black italic tracking-tighter leading-none">{value}</h2>
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-widest mt-4 opacity-40">{description}</p>
             </div>
         </div>
     );

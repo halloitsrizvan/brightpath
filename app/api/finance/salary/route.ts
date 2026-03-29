@@ -11,8 +11,12 @@ export async function GET(req: NextRequest) {
 
         const { searchParams } = new URL(req.url);
         const teacherId = searchParams.get('teacherId');
+        const month = searchParams.get('month');
 
-        const filter = teacherId ? { teacherId } : {};
+        const filter: any = {};
+        if (teacherId) filter.teacherId = teacherId;
+        if (month) filter.month = month;
+
         const salaries = await Salary.find(filter).populate('teacherId', 'name email');
         return NextResponse.json(salaries);
     } catch (err: any) {

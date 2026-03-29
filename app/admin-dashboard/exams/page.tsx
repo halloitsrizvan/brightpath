@@ -286,7 +286,7 @@ export default function AdminExams() {
                                                     </h4>
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full border border-gray-200">
-                                                            Class {exam.studentId?.class || '-'}
+                                                            Class {exam.studentId?.class || '-'} 
                                                         </span>
                                                         <span className="text-[10px] font-black uppercase tracking-widest bg-[#45308D]/5 text-[#45308D] px-2 py-0.5 rounded-full border border-[#45308D]/10">
                                                             {exam.subject}

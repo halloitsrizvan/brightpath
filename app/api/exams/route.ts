@@ -40,8 +40,9 @@ export async function GET(req: NextRequest) {
         }
 
         const list = await Exam.find(query)
-            .populate('studentId', 'fullName')
-            .populate('teacherId', 'name');
+            .populate('studentId', 'fullName class')
+            .populate('teacherId', 'name')
+            .sort({ createdAt: -1 });
         return NextResponse.json(list);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

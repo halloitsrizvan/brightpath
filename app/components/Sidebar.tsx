@@ -1,8 +1,9 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee, Trophy } from 'lucide-react';
+import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee, Trophy, ListTodo, Receipt } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
+import NextImage from 'next/image';
 import { useEffect, useState } from 'react';
 
 export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student' }) {
@@ -28,7 +29,9 @@ export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student
                 { name: 'Attendance', href: '/admin-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
                 { name: 'Exams', href: '/admin-dashboard/exams', icon: <FileText className="w-5 h-5" /> },
                 { name: 'Finance', href: '/admin-dashboard/finance', icon: <IndianRupee className="w-5 h-5" /> },
+                { name: 'Expenses', href: '/admin-dashboard/expenses', icon: <Receipt className="w-5 h-5" /> },
                 { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
+                { name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
             ];
         }
         if (role === 'teacher') {
@@ -47,14 +50,23 @@ export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student
         ];
     };
 
-    if (!mounted) return null;
+        if (!mounted) return null;
 
     return (
-        <div className="flex flex-col w-64 h-screen bg-primary text-[#e5e5e5] shadow-lg border-r border-white/10">
-            <div className="flex items-center justify-center h-20 border-b border-white/10">
-                <h1 className="text-2xl font-bold text-white tracking-widest">BrightPath</h1>
+        <div className="flex flex-col w-64 h-screen bg-primary text-[#e5e5e5] shadow-2xl border-r border-white/5">
+            <div className="p-4 pt-6 pb-2">
+                <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-[0_10px_30px_rgba(0,0,0,0.2)]  transition-all duration-500 cursor-default group border-4 border-white/10">
+                    <div className="relative w-10 h-10 flex-shrink-0 transition-transform duration-500">
+                        <NextImage src="/logo.png" alt="BrightPath Logo" width={40} height={40} className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <h1 className="text-sm font-black text-primary tracking-widest uppercase italic leading-none">BrightPath</h1>
+                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1 opacity-60">Admin Portal</p>
+                    </div>
+                </div>
             </div>
-            <div className="flex-1 px-4 py-8 space-y-2">
+
+            <div className="flex-1 px-4 py-4 space-y-2">
                 {getLinks().map((link) => {
                     const isActive = link.href === pathname || (link.href !== `/${role}-dashboard` && pathname.startsWith(link.href));
                     return (

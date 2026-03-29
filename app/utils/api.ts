@@ -29,13 +29,15 @@ api.interceptors.response.use(
     (error) => {
         const msg = error.response?.data?.message?.toLowerCase() || '';
 
-        // Log all interceptor errors so we know what is triggering the disconnects
-        console.error('API Interceptor caught error: ', {
+        const errorData = {
             status: error.response?.status,
             message: msg,
             url: error.config?.url,
+            data: error.response?.data,
             originalError: error.message
-        });
+        };
+        
+        console.error('API Interceptor caught error: ', errorData);
         console.dir(error);
 
         if (
