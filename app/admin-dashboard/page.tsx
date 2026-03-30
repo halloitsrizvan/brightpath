@@ -11,15 +11,17 @@ export default function AdminDashboard() {
         classesThisMonth: 0,
         monthlyRevenue: 0
     });
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
     useEffect(() => {
         api.get('/dashboard/admin').then(res => setStats(res.data)).catch(console.error);
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
     const greetings = () => {
+        if (!currentTime) return "Welcome";
         const hour = currentTime.getHours();
         if (hour < 12) return "Good Morning";
         if (hour < 17) return "Good Afternoon";
@@ -41,9 +43,13 @@ export default function AdminDashboard() {
                                 {greetings()}, <span className="text-[#45308D]">Admin</span>
                             </h1>
                             <p className="text-gray-400 font-bold text-sm mt-3 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" /> {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                <Clock className="w-4 h-4" /> {currentTime.toLocaleTimeString()}
+                                {currentTime && (
+                                    <>
+                                        <Calendar className="w-4 h-4" /> {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                        <Clock className="w-4 h-4" /> {currentTime.toLocaleTimeString()}
+                                    </>
+                                )}
                             </p>
                         </div>
                     </div>
