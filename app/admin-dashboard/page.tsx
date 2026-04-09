@@ -11,7 +11,9 @@ export default function AdminDashboard() {
         totalTeachers: 0,
         classesThisMonth: 0,
         monthlyRevenue: 0,
-        hoursPerDay: [] as { day: number, hours: number }[]
+        hoursPerDay: [] as any[],
+        velocityData: [] as any[],
+        latestLogs: [] as any[]
     });
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
@@ -102,17 +104,25 @@ export default function AdminDashboard() {
                                     <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Operational Velocity</p>
                                     <h3 className="text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Strategic Insights</h3>
                                 </div>
-                                <div className="flex gap-2">
-                                    <div className="px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Monthly View</div>
+                                <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-[#45308D]"></div>
+                                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Target Month</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-gray-200"></div>
+                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Previous Cycle</span>
+                                    </div>
+                                    <div className="px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Comparative View</div>
                                 </div>
                             </div>
 
                             <div className="flex-1 w-full h-[300px] mt-2">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.hoursPerDay}>
+                                    <AreaChart data={stats.velocityData}>
                                         <defs>
-                                            <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#45308D" stopOpacity={0.3} />
+                                            <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#45308D" stopOpacity={0.2} />
                                                 <stop offset="95%" stopColor="#45308D" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
@@ -132,49 +142,99 @@ export default function AdminDashboard() {
                                         <Tooltip 
                                             contentStyle={{ 
                                                 backgroundColor: '#fff', 
-                                                borderRadius: '1rem', 
+                                                borderRadius: '1.5rem', 
                                                 border: 'none', 
-                                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                                                boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.15)',
                                                 fontSize: '12px',
-                                                fontWeight: 'bold'
+                                                fontWeight: 'bold',
+                                                padding: '1.25rem'
                                             }}
-                                            itemStyle={{ color: '#45308D' }}
+                                            itemStyle={{ padding: '2px 0' }}
+                                            cursor={{ stroke: '#45308D', strokeWidth: 1, strokeDasharray: '4 4' }}
                                         />
+                                        {/* PREVIOUS MONTH LINE */}
                                         <Area 
                                             type="monotone" 
-                                            dataKey="hours" 
+                                            dataKey="previous" 
+                                            stroke="#e5e7eb" 
+                                            strokeWidth={3}
+                                            strokeDasharray="5 5"
+                                            fill="transparent" 
+                                            dot={false}
+                                            activeDot={{ r: 4, fill: '#e5e7eb', strokeWidth: 0 }}
+                                            name="Previous Month"
+                                        />
+                                        {/* CURRENT MONTH LINE */}
+                                        <Area 
+                                            type="monotone" 
+                                            dataKey="current" 
                                             stroke="#45308D" 
                                             strokeWidth={4}
                                             fillOpacity={1} 
-                                            fill="url(#colorHours)" 
+                                            fill="url(#colorCurrent)" 
                                             dot={{ r: 4, fill: '#45308D', strokeWidth: 2, stroke: '#fff' }}
                                             activeDot={{ r: 6, strokeWidth: 0 }}
+                                            name="Current Month"
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
 
                             <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between">
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Aggregate Teaching Hours / Day</p>
+                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Dual-Period Teaching Velocity (Hours/Day)</p>
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-                                    <span className="text-[10px] font-black uppercase text-teal-600 tracking-widest">Real-time Analytics</span>
+                                    <span className="text-[10px] font-black uppercase text-teal-600 tracking-widest">Deep Analytical Sync</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-[#45308D] rounded-[3rem] p-12 text-white shadow-2xl shadow-[#45308D]/20 flex flex-col justify-between relative overflow-hidden">
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                            <div className="relative z-10">
-                                <GraduationCap className="w-12 h-12 mb-6" />
-                                <h3 className="text-2xl font-black italic tracking-tighter uppercase mb-2">Institutional Health</h3>
-                                <p className="text-white/60 font-medium text-sm leading-relaxed mb-8">
-                                    All academic modules are currently operational. Average student attendance is tracking at 94% retention.
-                                </p>
+                        <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group flex flex-col">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Live Feed</p>
+                                    <h3 className="text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Activity Ledger</h3>
+                                </div>
+                                <button onClick={() => window.location.href='/admin-dashboard/attendance'} className="p-3 bg-gray-50 rounded-2xl hover:bg-primary/5 hover:text-primary transition group/btn">
+                                    <ArrowUpRight className="w-5 h-5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                                </button>
                             </div>
-                            <button className="bg-white text-[#45308D] py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2">
-                                View Full Audit <ArrowUpRight className="w-4 h-4" />
-                            </button>
+
+                            <div className="flex-1 space-y-4">
+                                {stats.latestLogs.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-300 py-10">
+                                        <Clock className="w-12 h-12 mb-4 opacity-20" />
+                                        <p className="text-xs font-black uppercase tracking-widest">No recent sessions</p>
+                                    </div>
+                                ) : (
+                                    stats.latestLogs.map((log: any, idx: number) => (
+                                        <div key={log._id} className="flex items-center gap-4 p-4 rounded-3xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 group/item">
+                                            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black italic shadow-inner">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                                                    <h4 className="text-sm font-black text-gray-800 truncate tracking-tight">{log.studentId?.fullName}</h4>
+                                                    <span className="text-[9px] font-black text-gray-400 whitespace-nowrap uppercase tracking-widest">{new Date(log.date).toLocaleDateString()}</span>
+                                                </div>
+                                                <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1.5 mt-0.5 uppercase tracking-widest">
+                                                    <span className="text-primary/60">{log.subjectId?.subjectName}</span>
+                                                    <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                                                    <span>with {log.teacherId?.name}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            
+                            <div className="mt-8">
+                                <button onClick={() => window.location.href='/admin-dashboard/attendance'} className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-[#45308D] hover:text-white transition-all shadow-sm">
+                                    Analyze Complete History
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </main>

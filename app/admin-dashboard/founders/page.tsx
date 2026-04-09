@@ -2,17 +2,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
-import { 
-    User, 
-    IndianRupee, 
-    Calendar, 
-    CheckCircle2, 
-    Plus, 
-    Trash2, 
-    CreditCard, 
-    TrendingDown, 
-    ShieldCheck, 
-    ChevronDown, 
+import {
+    User,
+    IndianRupee,
+    Calendar,
+    CheckCircle2,
+    Plus,
+    Trash2,
+    CreditCard,
+    TrendingDown,
+    ShieldCheck,
+    ChevronDown,
     ChevronRight,
     Search,
     Filter,
@@ -136,7 +136,7 @@ export default function FoundersFinance() {
         }
     };
 
-    const filteredSalaries = salaries.filter(s => 
+    const filteredSalaries = salaries.filter(s =>
         (s.founderId?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -162,13 +162,13 @@ export default function FoundersFinance() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button 
+                        <button
                             onClick={() => setShowAddFounder(true)}
                             className="px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-primary hover:border-primary transition flex items-center gap-2 shadow-sm"
                         >
                             <Plus className="w-4 h-4" /> Add Founder
                         </button>
-                        <button 
+                        <button
                             onClick={generateMonthlySalaries}
                             className="px-6 py-3 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 transition flex items-center gap-2"
                         >
@@ -212,7 +212,7 @@ export default function FoundersFinance() {
                 <div className="flex flex-col md:flex-row gap-4 mb-8">
                     <div className="relative flex-1 group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-primary transition-colors" />
-                        <input 
+                        <input
                             type="text"
                             placeholder="SEARCH FOUNDER..."
                             className="w-full pl-14 pr-6 py-5 bg-white border-2 border-transparent rounded-[2rem] font-bold text-gray-700 shadow-sm focus:border-primary/20 outline-none transition-all placeholder:text-gray-300 uppercase text-[10px] tracking-widest"
@@ -222,7 +222,7 @@ export default function FoundersFinance() {
                     </div>
                     <div className="relative min-w-[220px]">
                         <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
-                        <select 
+                        <select
                             className="w-full pl-14 pr-12 py-5 bg-white border-2 border-transparent rounded-[2.5rem] font-black text-[10px] uppercase tracking-widest shadow-sm focus:border-primary/20 outline-none transition-all cursor-pointer appearance-none"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
@@ -284,7 +284,7 @@ export default function FoundersFinance() {
                                                         <span className="text-[10px] font-black uppercase tracking-widest">Disbursed</span>
                                                     </div>
                                                 ) : (
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setShowPayModal(salary);
                                                             setPayData({ amount: salary.amount, debtContribution: 0, notes: '' });
@@ -318,41 +318,41 @@ export default function FoundersFinance() {
                         <form onSubmit={handleAddFounder} className="space-y-6">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                                <input 
+                                <input
                                     required
                                     className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
                                     value={newFounder.name}
-                                    onChange={(e) => setNewFounder({...newFounder, name: e.target.value})}
+                                    onChange={(e) => setNewFounder({ ...newFounder, name: e.target.value })}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Designation</label>
-                                    <input 
+                                    <input
                                         className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
                                         value={newFounder.role}
-                                        onChange={(e) => setNewFounder({...newFounder, role: e.target.value})}
+                                        onChange={(e) => setNewFounder({ ...newFounder, role: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Base Salary</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
                                         value={newFounder.baseSalary}
-                                        onChange={(e) => setNewFounder({...newFounder, baseSalary: parseInt(e.target.value)})}
+                                        onChange={(e) => setNewFounder({ ...newFounder, baseSalary: parseInt(e.target.value) })}
                                     />
                                 </div>
                             </div>
                             <div className="space-y-1.5 pb-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">System Email</label>
-                                <input 
+                                <input
                                     className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
                                     value={newFounder.email}
-                                    onChange={(e) => setNewFounder({...newFounder, email: e.target.value})}
+                                    onChange={(e) => setNewFounder({ ...newFounder, email: e.target.value })}
                                 />
                             </div>
-                            <button 
+                            <button
                                 type="submit"
                                 disabled={isProcessing}
                                 className="w-full py-5 bg-primary text-white rounded-[2rem] font-black text-[12px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition disabled:opacity-50"
@@ -377,30 +377,30 @@ export default function FoundersFinance() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Payout Amount</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all"
                                         value={payData.amount}
-                                        onChange={(e) => setPayData({...payData, amount: parseInt(e.target.value)})}
+                                        onChange={(e) => setPayData({ ...payData, amount: parseInt(e.target.value) })}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-rose-400 uppercase tracking-widest ml-1">Debt Cut</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         className="w-full bg-rose-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-rose-200 outline-none transition-all"
                                         value={payData.debtContribution}
-                                        onChange={(e) => setPayData({...payData, debtContribution: parseInt(e.target.value)})}
+                                        onChange={(e) => setPayData({ ...payData, debtContribution: parseInt(e.target.value) })}
                                     />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ledger Notes</label>
-                                <textarea 
+                                <textarea
                                     className="w-full bg-gray-50 border-2 border-transparent p-5 text-sm font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all min-h-[100px]"
                                     placeholder="Add any internal transaction notes..."
                                     value={payData.notes}
-                                    onChange={(e) => setPayData({...payData, notes: e.target.value})}
+                                    onChange={(e) => setPayData({ ...payData, notes: e.target.value })}
                                 />
                             </div>
                             <div className="bg-gray-50 p-6 rounded-3xl flex items-center justify-between border border-gray-100">
@@ -408,13 +408,13 @@ export default function FoundersFinance() {
                                 <span className="text-2xl font-black text-primary italic">₹{(payData.amount - payData.debtContribution).toLocaleString()}</span>
                             </div>
                             <div className="flex gap-4">
-                                <button 
+                                <button
                                     onClick={() => setShowPayModal(null)}
                                     className="flex-1 py-5 bg-gray-100 text-gray-400 rounded-[2rem] font-black text-[12px] uppercase tracking-widest shadow-sm hover:bg-gray-200 transition"
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleSettleSalary}
                                     disabled={isProcessing}
                                     className="flex-2 py-5 bg-primary text-white rounded-[2rem] font-black text-[12px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition disabled:opacity-50"
@@ -433,7 +433,7 @@ export default function FoundersFinance() {
 function AddFounderIcon() {
     return (
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 }

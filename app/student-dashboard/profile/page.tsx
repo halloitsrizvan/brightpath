@@ -34,28 +34,6 @@ export default function StudentProfile() {
         }
     }, []);
 
-    const handleUpdateProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!student) return;
-
-        setIsSaving(true);
-        try {
-            const { data } = await api.put(`/students/${student._id}`, {
-                fullName: student.fullName,
-                parentName: student.parentName,
-                contactNumber: student.contactNumber,
-                whatsappNumber: student.whatsappNumber,
-                district: student.district
-            });
-            setStudent(data);
-            toast.success("Profile updated successfully");
-        } catch (err) {
-            console.error(err);
-            toast.error("Failed to update profile");
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     const fetchFees = async (studentId: string) => {
         try {
@@ -159,51 +137,26 @@ export default function StudentProfile() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 {/* Details Section */}
                                 <div className="lg:col-span-2 space-y-6">
-                                    <form onSubmit={handleUpdateProfile} className="space-y-6">
+                                    <div className="space-y-6">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1.5 bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Parent's Name</label>
-                                                <input
-                                                    className="w-full bg-gray-50 border-2 border-transparent p-4 text-[15px] font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
-                                                    value={student?.parentName}
-                                                    onChange={(e) => setStudent({ ...student, parentName: e.target.value })}
-                                                />
+                                                <p className="px-1 text-[15px] font-bold text-gray-700">{student?.parentName || 'N/A'}</p>
                                             </div>
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1.5 bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact Number</label>
-                                                <input
-                                                    className="w-full bg-gray-50 border-2 border-transparent p-4 text-[15px] font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
-                                                    value={student?.contactNumber}
-                                                    onChange={(e) => setStudent({ ...student, contactNumber: e.target.value })}
-                                                />
+                                                <p className="px-1 text-[15px] font-bold text-gray-700">{student?.contactNumber || 'N/A'}</p>
                                             </div>
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1.5 bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">WhatsApp Number</label>
-                                                <input
-                                                    className="w-full bg-gray-50 border-2 border-transparent p-4 text-[15px] font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
-                                                    value={student?.whatsappNumber}
-                                                    onChange={(e) => setStudent({ ...student, whatsappNumber: e.target.value })}
-                                                />
+                                                <p className="px-1 text-[15px] font-bold text-gray-700">{student?.whatsappNumber || 'N/A'}</p>
                                             </div>
-                                            <div className="space-y-1.5">
+                                            <div className="space-y-1.5 bg-gray-50/50 p-4 rounded-2xl border border-gray-100/50">
                                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">District</label>
-                                                <input
-                                                    className="w-full bg-gray-50 border-2 border-transparent p-4 text-[15px] font-bold text-gray-700 rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all hover:bg-gray-100"
-                                                    value={student?.district}
-                                                    onChange={(e) => setStudent({ ...student, district: e.target.value })}
-                                                />
+                                                <p className="px-1 text-[15px] font-bold text-gray-700">{student?.district || 'N/A'}</p>
                                             </div>
                                         </div>
-                                        <div className="pt-2">
-                                            <button
-                                                type="submit"
-                                                disabled={isSaving}
-                                                className="px-8 py-4 bg-primary text-white font-black text-[12px] uppercase tracking-widest rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 active:scale-95"
-                                            >
-                                                {isSaving ? "Synchronizing..." : "Update Identity Fields"}
-                                            </button>
-                                        </div>
-                                    </form>
+                                    </div>
 
                                     {/* Subjects & Tutors */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

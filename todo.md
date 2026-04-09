@@ -21,9 +21,9 @@ teacher-panel
 Exam Month - exam date -->
 <!-- no Attendance Score in att registry -->
 <!-- Total Receivables card -> opereational expenses card -->
-line graph for hr  
-founders salary + debt from profit / return debt -form
-profit = revenue - (salary paid +expenses)
+<!-- line graph for hr   -->
+<!-- founders salary + debt from profit / return debt -form --> almost (debt form left)
+<!-- profit = revenue - (salary paid +expenses) -->
 
 std-panel  
 pending bill amount 
