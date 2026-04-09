@@ -50,9 +50,9 @@ export async function GET(req: NextRequest) {
             { $sort: { day: 1 } }
         ]);
 
-        // Fill in missing days with 0 hours for current month
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const hoursPerDay = Array.from({ length: daysInMonth }, (_, i) => {
+        // Fill in missing days with 0 hours until today
+        const today = now.getDate();
+        const hoursPerDay = Array.from({ length: today }, (_, i) => {
             const dayNum = i + 1;
             const dayData = hoursByDay.find(d => d.day === dayNum);
             return {
