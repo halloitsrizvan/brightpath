@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
-import { Menu, User, Mail, Phone, Clock, IndianRupee, BookOpen, GraduationCap, Edit3, CheckCircle, Camera, Loader2, Save } from 'lucide-react';
+import { Menu, User, Mail, Phone, Clock, IndianRupee, BookOpen, GraduationCap, Edit3, CheckCircle, Camera, Loader2, Save, FileText, Download } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'react-hot-toast';
 import IncentiveProgressCard from '../../components/IncentiveProgressCard';
@@ -19,12 +19,23 @@ interface Teacher {
     totalEarnings: number;
 }
 
+interface SalaryRecord {
+    _id: string;
+    month: string;
+    totalHours: number;
+    totalSalary: number;
+    paidStatus: 'paid' | 'unpaid';
+    createdAt: string;
+}
+
 export default function TeacherProfile() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [teacher, setTeacher] = useState<Teacher | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [salaries, setSalaries] = useState<SalaryRecord[]>([]);
+    const [loadingSalaries, setLoadingSalaries] = useState(false);
 
     // Form for editing basic info
     const [formData, setFormData] = useState({
@@ -55,11 +66,41 @@ export default function TeacherProfile() {
                 email: data.email || '',
                 phone: data.phone || ''
             });
+            fetchSalaries(id);
         } catch (error) {
             console.error('Failed to fetch profile', error);
             toast.error('Failed to load profile data');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchSalaries = async (teacherId: string) => {
+        try {
+            setLoadingSalaries(true);
+            const { data } = await api.get(`/finance/salary?teacherId=${teacherId}`);
+            setSalaries(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        } catch (error) {
+            console.error('Failed to fetch salaries', error);
+        } finally {
+            setLoadingSalaries(false);
+        }
+    };
+
+    const handleDownloadPayslip = async (salaryId: string, month: string) => {
+        try {
+            const response = await api.get(`/finance/payslip/${salaryId}`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Payslip_${month.replace(' ', '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            toast.error('Failed to download payslip');
         }
     };
 
@@ -241,7 +282,7 @@ export default function TeacherProfile() {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Hours Card */}
                         <div className="bg-[#45308D] rounded-[2rem] p-8 text-white relative overflow-hidden group">
                             <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
@@ -258,6 +299,8 @@ export default function TeacherProfile() {
                                 </div>
                             </div>
                         </div>
+
+                      
 
                         {/* Earnings Card */}
                         <div className="bg-[#F8D7DA] rounded-[2rem] p-8 text-[#721c24] border border-[#f5c6cb] relative overflow-hidden group">
@@ -278,6 +321,25 @@ export default function TeacherProfile() {
                                 <div className="bg-[#d4edda] text-[#155724] px-4 py-2 rounded-xl text-sm font-black inline-flex items-center gap-2 border border-[#c3e6cb]">
                                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                                     Base Salary Rate: ₹ {teacher?.salaryPerHour || 0} /hr
+                                </div>
+                            </div>
+                        </div>
+
+                          {/* Paid Amount Card */}
+                        <div className="bg-white rounded-[2rem] p-8 border-2 border-green-100 shadow-lg shadow-green-500/5 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                            <div className="relative z-10 space-y-4">
+                                <div>
+                                    <p className="text-green-600 font-black uppercase tracking-widest text-[10px] mb-2">Total Salary Paid</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-xl font-black text-green-600/60">₹</span>
+                                        <h3 className="text-4xl font-black italic text-green-700">
+                                            {salaries.filter(s => s.paidStatus === 'paid').reduce((acc, s) => acc + s.totalSalary, 0).toLocaleString()}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 w-fit">
+                                    <CheckCircle className="w-3 h-3" /> Realized Income
                                 </div>
                             </div>
                         </div>
@@ -380,6 +442,87 @@ export default function TeacherProfile() {
                         </div>
 
                     </div>
+
+                    {/* Financial & Payment History Section */}
+                    <div className="w-full bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-[#45308D]/5 border border-gray-100 flex flex-col gap-8 mb-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center border border-green-100">
+                                    <IndianRupee className="text-green-600 w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-800 tracking-tight">Financial Record</h3>
+                                    <p className="text-sm font-bold text-gray-400">Monthly salary & payslip repository</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Real-time ledger</span>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto -mx-4 md:mx-0">
+                            <table className="w-full border-separate border-spacing-y-3">
+                                <thead>
+                                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                        <th className="px-6 py-2 text-left">Billing Month</th>
+                                        <th className="px-6 py-2 text-left">Output</th>
+                                        <th className="px-6 py-2 text-left">Net Amount</th>
+                                        <th className="px-6 py-2 text-left">Transfer Status</th>
+                                        <th className="px-6 py-2 text-right">Documents</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingSalaries ? (
+                                        <tr><td colSpan={5} className="py-12 text-center text-gray-400 font-bold animate-pulse uppercase tracking-widest text-xs">Syncing financial history...</td></tr>
+                                    ) : salaries.length === 0 ? (
+                                        <tr><td colSpan={5} className="py-20 text-center bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-100 text-gray-400 font-bold uppercase tracking-widest text-xs italic">No historical payment records found in registry.</td></tr>
+                                    ) : (
+                                        salaries.map((sal) => (
+                                            <tr key={sal._id} className="group  transition-transform duration-300">
+                                                <td className="px-6 py-4 bg-gray-50 rounded-l-2xl border-y border-l border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <Clock className="w-4 h-4 text-gray-300" />
+                                                        <span className="font-black text-[#45308D]">{sal.month}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 bg-gray-50 border-y border-gray-100 font-bold text-gray-500 italic">
+                                                    {sal.totalHours} hrs output
+                                                </td>
+                                                <td className="px-6 py-4 bg-gray-50 border-y border-gray-100">
+                                                    <span className="font-black text-gray-800 tracking-tighter text-lg">₹{sal.totalSalary.toLocaleString()}</span>
+                                                </td>
+                                                <td className="px-6 py-4 bg-gray-50 border-y border-gray-100">
+                                                    {sal.paidStatus === 'paid' ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-black uppercase tracking-tighter">
+                                                            <CheckCircle className="w-3 h-3" /> Remitted
+                                                        </div>
+                                                    ) : (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 text-amber-700 rounded-lg text-[10px] font-black uppercase tracking-tighter">
+                                                            <Loader2 className="w-3 h-3 animate-spin" /> Processing
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 bg-gray-50 rounded-r-2xl border-y border-r border-gray-100 text-right">
+                                                    {sal.paidStatus === 'paid' ? (
+                                                        <button 
+                                                            onClick={() => handleDownloadPayslip(sal._id, sal.month)}
+                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-[#45308D] font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-[#45308D] hover:text-white hover:border-[#45308D] transition-all shadow-sm active:scale-95"
+                                                        >
+                                                            <FileText className="w-3.5 h-3.5" /> Get PDF
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-gray-300 italic uppercase">Awaiting Approval</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

@@ -26,6 +26,7 @@ function ExamFormInner() {
         phoneInfo: '',
         subject: '',
         examMonth: '',
+        examDate: new Date().toISOString().split('T')[0],
         marks: '',
         maxMarks: '',
         paperImage: '',
@@ -59,6 +60,7 @@ function ExamFormInner() {
                         phoneInfo: e.studentId?.phone || e.studentId?.contactNumber || '',
                         subject: e.subject || '',
                         examMonth: e.examMonth || '',
+                        examDate: e.examDate ? new Date(e.examDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                         marks: e.marks || '',
                         maxMarks: e.maxMarks || '',
                         paperImage: e.paperImage || '',
@@ -115,7 +117,7 @@ function ExamFormInner() {
 
         if (!formData.studentId) return toast.error('Please select a student');
         if (!formData.subject) return toast.error('Please select a subject');
-        if (!formData.examMonth) return toast.error('Please select an exam month');
+        if (!formData.examDate) return toast.error('Please select an exam date');
 
         try {
             setIsLoading(true);
@@ -124,7 +126,8 @@ function ExamFormInner() {
                 subject: formData.subject,
                 marks: Number(formData.marks),
                 maxMarks: Number(formData.maxMarks),
-                examMonth: formData.examMonth,
+                examMonth: new Date(formData.examDate).toLocaleString('en-US', { month: 'long' }),
+                examDate: formData.examDate,
                 progressNote: formData.progressNote,
                 paperImage: formData.paperImage || 'https://via.placeholder.com/600x400'
             };
@@ -298,21 +301,14 @@ function ExamFormInner() {
                                     </div>
 
                                     <div className="relative group w-full">
-                                        <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Exam Month</label>
-                                        <select
-                                            className="w-full bg-white border-2 border-gray-200 p-4 pr-12 text-[16px] text-gray-800 font-medium appearance-none focus:outline-none focus:border-[#45308D] focus:ring-4 focus:ring-[#45308D]/10 transition-all rounded-xl cursor-pointer"
-                                            value={formData.examMonth}
-                                            onChange={(e) => setFormData({ ...formData, examMonth: e.target.value })}
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Exam Date</label>
+                                        <input
+                                            type="date"
+                                            className="w-full bg-white border-2 border-gray-200 p-4 text-[16px] text-gray-800 font-medium focus:outline-none focus:border-[#45308D] focus:ring-4 focus:ring-[#45308D]/10 transition-all rounded-xl cursor-pointer"
+                                            value={formData.examDate}
+                                            onChange={(e) => setFormData({ ...formData, examDate: e.target.value })}
                                             required
-                                        >
-                                            <option value="" disabled>Select Month...</option>
-                                            {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(month => (
-                                                <option key={month} value={month}>{month}</option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute right-4 top-[42px] pointer-events-none text-gray-400 group-hover:text-[#45308D] transition-colors">
-                                            <ChevronDown className="w-5 h-5" />
-                                        </div>
+                                        />
                                     </div>
                                 </div>
 

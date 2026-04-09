@@ -14,9 +14,9 @@ Marketing
 Payment Gateway Charges
 Equipment
 Miscellaneous] -->
+<!-- All Exam Records -class not found  -->
 2-1 bill
 line graph for hr  
-All Exam Records -class not found 
 founders salary + debt from profit / return debt -form
 profit = revenue - (salary paid +expenses)
 Total Receivables card -> opereational expenses card
@@ -29,5 +29,6 @@ no Attendance Score in att registry
 
 teacher-panel
 Exam Month - exam date
+
 
 

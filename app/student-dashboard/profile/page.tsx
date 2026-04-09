@@ -4,13 +4,16 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
 import Cookies from 'js-cookie';
-import { User, Phone, Mail, MapPin, Calendar, Book, ShieldAlert } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Calendar, Book, ShieldAlert, IndianRupee, Clock, CheckCircle, Loader2, FileText, Receipt } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 export default function StudentProfile() {
     const [student, setStudent] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [fees, setFees] = useState<any[]>([]);
+    const [loadingFees, setLoadingFees] = useState(false);
+    const [selectedFees, setSelectedFees] = useState<string[]>([]);
 
     useEffect(() => {
         const userStr = Cookies.get('user');
@@ -21,6 +24,7 @@ export default function StudentProfile() {
                 .then(res => {
                     setStudent(res.data);
                     setLoading(false);
+                    fetchFees(user.id);
                 })
                 .catch(err => {
                     console.error("API Error in Profile:", err);
@@ -48,6 +52,63 @@ export default function StudentProfile() {
         } catch (err) {
             console.error(err);
             toast.error("Failed to update profile");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const fetchFees = async (studentId: string) => {
+        try {
+            setLoadingFees(true);
+            const { data } = await api.get(`/finance/fees?studentId=${studentId}`);
+            setFees(data.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        } catch (error) {
+            console.error('Failed to fetch fees', error);
+        } finally {
+            setLoadingFees(false);
+        }
+    };
+
+    const handleDownloadInvoice = async (feeId: string, month: string) => {
+        try {
+            const response = await api.get(`/finance/invoice/${feeId}`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Receipt_${month.replace(' ', '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            toast.error('Failed to download receipt');
+        }
+    };
+
+    const handleBatchPay = async () => {
+        if (selectedFees.length === 0) return;
+        
+        try {
+            setIsSaving(true);
+            // Settle all selected fees
+            await Promise.all(selectedFees.map(id => 
+                api.put(`/finance/fees/${id}`, { paymentStatus: 'paid', paymentDate: new Date() })
+            ));
+
+            toast.success(`Successfully settled ${selectedFees.length} months`);
+            const idsString = selectedFees.join(',');
+            
+            // Re-fetch to update UI
+            if (student?._id) await fetchFees(student._id);
+            setSelectedFees([]);
+            
+            // Open consolidated invoice
+            const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/finance/invoice/${idsString}`;
+            window.open(downloadUrl, '_blank');
+        } catch (error) {
+            console.error(error);
+            toast.error("Payment synchronization failed");
         } finally {
             setIsSaving(false);
         }
@@ -210,6 +271,110 @@ export default function StudentProfile() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Billing & Payment History Section */}
+                <div className="max-w-4xl mx-auto mt-10 mb-20">
+                    <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-primary/5 border border-gray-100 flex flex-col gap-8">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center border border-green-100">
+                                    <IndianRupee className="text-green-600 w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-black text-gray-800 tracking-tight italic">Billing & Fees</h3>
+                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Financial ledger & receipts</p>
+                                </div>
+                            </div>
+                            {selectedFees.length > 0 ? (
+                                <button 
+                                    onClick={handleBatchPay}
+                                    disabled={isSaving}
+                                    className="px-6 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition flex items-center gap-2"
+                                >
+                                    Settle {selectedFees.length} Months (₹{fees.filter(f => selectedFees.includes(f._id)).reduce((s, f) => s + f.amount, 0).toLocaleString()})
+                                </button>
+                            ) : (
+                                <div className="px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Monthly Statement</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-separate border-spacing-y-3">
+                                <thead>
+                                    <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        <th className="px-6 py-2 text-left w-10">
+                                            <div className="w-5 h-5 rounded-full border-2 border-gray-100"></div>
+                                        </th>
+                                        <th className="px-6 py-2 text-left">Period</th>
+                                        <th className="px-6 py-2 text-left">Amount Due</th>
+                                        <th className="px-6 py-2 text-left">Payment Status</th>
+                                        <th className="px-6 py-2 text-right">Documents</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {loadingFees ? (
+                                        <tr><td colSpan={4} className="py-12 text-center text-gray-400 font-bold animate-pulse text-xs uppercase tracking-widest">Syncing ledger records...</td></tr>
+                                    ) : fees.length === 0 ? (
+                                        <tr><td colSpan={4} className="py-20 text-center bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-100 text-gray-400 font-bold uppercase tracking-widest text-xs italic">No billing history found in registry.</td></tr>
+                                    ) : (
+                                        fees.map((fee) => (
+                                            <tr key={fee._id} className={`group hover:bg-gray-50/50 transition-colors ${selectedFees.includes(fee._id) ? 'bg-primary/5' : ''}`}>
+                                                <td className="px-6 py-5 bg-gray-50 rounded-l-2xl border-y border-l border-gray-100">
+                                                    {fee.paymentStatus !== 'paid' && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                setSelectedFees(prev => 
+                                                                    prev.includes(fee._id) ? prev.filter(id => id !== fee._id) : [...prev, fee._id]
+                                                                );
+                                                            }}
+                                                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${selectedFees.includes(fee._id) ? 'bg-primary border-primary shadow-lg shadow-primary/20' : 'bg-white border-gray-200 hover:border-primary/40'}`}
+                                                        >
+                                                            {selectedFees.includes(fee._id) && <CheckCircle className="w-4 h-4 text-white" />}
+                                                        </button>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-5 bg-gray-50 border-y border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        <Clock className="w-4 h-4 text-primary/40" />
+                                                        <span className="font-black text-gray-800">{fee.month}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 bg-gray-50 border-y border-gray-100">
+                                                    <span className="font-black text-gray-800 text-lg">₹{(fee.amount || 0).toLocaleString()}</span>
+                                                </td>
+                                                <td className="px-6 py-5 bg-gray-50 border-y border-gray-100">
+                                                    {fee.paymentStatus === 'paid' ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-black uppercase tracking-tighter">
+                                                            <CheckCircle className="w-3 h-3" /> Successfully Paid
+                                                        </div>
+                                                    ) : (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-lg text-[10px] font-black uppercase tracking-tighter animate-pulse">
+                                                            <Loader2 className="w-3 h-3 animate-spin" /> Payment Pending
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-5 bg-gray-50 rounded-r-2xl border-y border-r border-gray-100 text-right">
+                                                    {fee.paymentStatus === 'paid' ? (
+                                                        <button 
+                                                            onClick={() => handleDownloadInvoice(fee._id, fee.month)}
+                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-primary font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95"
+                                                        >
+                                                            <Receipt className="w-3.5 h-3.5" /> Download Receipt
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-gray-300 italic uppercase">Awaiting Settlement</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

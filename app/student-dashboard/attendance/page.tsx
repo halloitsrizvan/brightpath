@@ -37,14 +37,14 @@ export default function StudentAttendance() {
                         <p className="text-gray-500 font-medium">Your learning timeline and presence records</p>
                     </div>
                     <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div className="flex flex-col items-end">
+                        {/* <div className="flex flex-col items-end">
                             <span className="text-[10px] font-black uppercase text-gray-400">Attendance Score</span>
                             <span className="text-2xl font-black text-primary italic">{percentage}%</span>
                         </div>
-                        <div className="h-10 w-1 bg-gray-100 rounded-full"></div>
+                        <div className="h-10 w-1 bg-gray-100 rounded-full"></div> */}
                         <div className="flex flex-col">
                             <span className="text-[10px] font-black uppercase text-gray-400">Sessions</span>
-                            <span className="text-2xl font-black text-gray-800 italic">{presentCount}/{totalCount}</span>
+                            <span className="text-2xl font-black text-gray-800 italic">{totalCount}</span> {/* {presentCount}/ */}
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import './Student';
+import './Teacher';
+import './Subject';
 
 const AttendanceSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },

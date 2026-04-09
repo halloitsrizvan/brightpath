@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import './Student';
 
 const FeeSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },

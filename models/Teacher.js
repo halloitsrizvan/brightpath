@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import './Subject';
 
 const TeacherSchema = new mongoose.Schema({
     name: { type: String, required: true },

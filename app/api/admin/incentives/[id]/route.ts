@@ -12,7 +12,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const updated = await IncentiveRule.findByIdAndUpdate(id, body, { new: true });
         return NextResponse.json(updated);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (PUT /api/admin/incentives):', err);
+        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
+                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }
 
@@ -24,6 +27,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await IncentiveRule.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Incentive discarded successfully' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (DELETE /api/admin/incentives):', err);
+        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
+                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }

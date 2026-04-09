@@ -11,7 +11,10 @@ export async function GET(req: NextRequest) {
         const rules = await IncentiveRule.find().populate('targetTeachers', 'name email');
         return NextResponse.json(rules);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (GET /api/admin/incentives):', err);
+        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
+                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }
 
@@ -23,6 +26,9 @@ export async function POST(req: NextRequest) {
         const rule = await IncentiveRule.create(body);
         return NextResponse.json(rule, { status: 201 });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        console.error('API Error (POST /api/admin/incentives):', err);
+        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
+                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
+        return NextResponse.json({ message: err.message }, { status });
     }
 }

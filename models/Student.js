@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import './Teacher';
+import './Subject';
 
 const StudentSchema = new mongoose.Schema({
     fullName: { type: String, required: true },

@@ -11,6 +11,7 @@ export default function AdminFinance() {
     const [activeTab, setActiveTab] = useState<'pending' | 'paid' | 'payroll'>('pending');
     const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
     const [selectedMonth, setSelectedMonth] = useState('All Records');
+    const [selectedFees, setSelectedFees] = useState<string[]>([]);
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -64,19 +65,27 @@ export default function AdminFinance() {
         fetchFinance();
     }, [selectedMonth]);
 
-    const markFeePaid = (feeId: string, studentName: string, amount: number) => {
+    const markFeePaid = (feeIds: string | string[], studentName: string, amount: number) => {
+        const idArray = Array.isArray(feeIds) ? feeIds : [feeIds];
+        const idString = idArray.join(',');
+        
         setConfirmModal({
             isOpen: true,
-            title: "Confirm Receipt",
-            message: `Are you sure you want to mark ₹${amount.toLocaleString()} as received from ${studentName}? This will generate a formal PDF invoice.`,
+            title: idArray.length > 1 ? "Batch Settle" : "Confirm Receipt",
+            message: `Are you sure you want to mark ₹${amount.toLocaleString()} as received from ${studentName}? ${idArray.length > 1 ? 'This will settle ' + idArray.length + ' months and generate a single PDF.' : 'This will generate a formal PDF invoice.'}`,
             loading: false,
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
-                    await api.put(`/finance/fees/${feeId}`, { paymentStatus: 'paid', paymentDate: new Date() });
-                    toast.success("Payment Received Successfully");
+                    // Settle all IDs
+                    await Promise.all(idArray.map(id => 
+                        api.put(`/finance/fees/${id}`, { paymentStatus: 'paid', paymentDate: new Date() })
+                    ));
+                    
+                    toast.success(idArray.length > 1 ? `${idArray.length} months settled` : "Payment Received Successfully");
                     fetchFinance();
-                    window.open(`/api/finance/invoice/${feeId}`, '_blank');
+                    setSelectedFees([]);
+                    window.open(`/api/finance/invoice/${idString}`, '_blank');
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 } catch (err) {
                     toast.error("Process failed");
@@ -188,7 +197,7 @@ export default function AdminFinance() {
                         <h2 className="text-4xl font-black italic tracking-tighter mb-4">₹{summary.totalReceivable?.toLocaleString()}</h2>
                         <div className="flex items-center gap-2 text-xs font-bold text-white/80">
                             <ArrowUpRight className="w-4 h-4" />
-                            <span>Pending from {unpaidFees.length} Students</span>
+                            <span>Pending from {new Set(unpaidFees.map((f: any) => f.studentId?._id)).size} Students</span>
                         </div>
                     </div>
 
@@ -227,6 +236,40 @@ export default function AdminFinance() {
 
                 {/* Main Content Area */}
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {selectedFees.length > 0 && activeTab === 'pending' && (
+                        <div className="mb-6 animate-in slide-in-from-top-4 duration-300">
+                            <div className="bg-primary/5 border-2 border-primary/20 p-6 rounded-[2.5rem] flex items-center justify-between">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-black italic shadow-lg shadow-primary/20">
+                                        {selectedFees.length}
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase text-primary tracking-widest">Multiple Selection Active</p>
+                                        <h4 className="text-lg font-black text-gray-800 italic">Settling ₹{unpaidFees.filter((f: any) => selectedFees.includes(f._id)).reduce((sum: any, f: any) => sum + f.amount, 0).toLocaleString()} </h4>  
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => setSelectedFees([])}
+                                        className="px-6 py-3 bg-white text-gray-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-gray-50 transition"
+                                    >
+                                        Clear Selection
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            const selectedData = unpaidFees.filter((f: any) => selectedFees.includes(f._id));
+                                            const studentNames = Array.from(new Set(selectedData.map((f: any) => f.studentId?.fullName))).join(', ');
+                                            const total = selectedData.reduce((sum: any, f: any) => sum + f.amount, 0);
+                                            markFeePaid(selectedFees, studentNames, total);
+                                        }}
+                                        className="px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition flex items-center gap-2"
+                                    >
+                                        Batch Settle Selected <ArrowUpRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {activeTab === 'pending' && (
                         <div className="space-y-4">
                             {months.length === 0 ? (
@@ -258,6 +301,9 @@ export default function AdminFinance() {
                                             <table className="w-full text-left">
                                                 <thead>
                                                     <tr className="text-[9px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
+                                                        <th className="pb-3 px-4">
+                                                            <div className="w-5 h-5 rounded-full border-2 border-gray-100 bg-gray-50/50"></div>
+                                                        </th>
                                                         <th className="pb-3">Student Profile</th>
                                                         <th className="pb-3 text-center">Location</th>
                                                         <th className="pb-3 text-center">Bill Amount</th>
@@ -266,7 +312,30 @@ export default function AdminFinance() {
                                                 </thead>
                                                 <tbody className="divide-y divide-gray-50">
                                                     {groupedPendingFees[month].map((fee: any) => (
-                                                        <tr key={fee._id}>
+                                                        <tr key={fee._id} className={selectedFees.includes(fee._id) ? 'bg-primary/5' : ''}>
+                                                            <td className="py-4 px-4">
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        const isSelected = selectedFees.includes(fee._id);
+                                                                        if (!isSelected) {
+                                                                            const currentlySelectedData = unpaidFees.filter((f: any) => selectedFees.includes(f._id));
+                                                                            if (currentlySelectedData.length > 0) {
+                                                                                const firstStudentId = currentlySelectedData[0].studentId?._id;
+                                                                                if (fee.studentId?._id !== firstStudentId) {
+                                                                                    toast.error("Please select fees for a single student at a time.");
+                                                                                    return;
+                                                                                }
+                                                                            }
+                                                                            setSelectedFees(prev => [...prev, fee._id]);
+                                                                        } else {
+                                                                            setSelectedFees(prev => prev.filter(id => id !== fee._id));
+                                                                        }
+                                                                    }}
+                                                                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${selectedFees.includes(fee._id) ? 'bg-primary border-primary shadow-lg shadow-primary/20' : 'bg-white border-gray-200 hover:border-primary/40'}`}
+                                                                >
+                                                                    {selectedFees.includes(fee._id) && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                                </button>
+                                                            </td>
                                                             <td className="py-4">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 text-xs font-black italic">{fee.studentId?.fullName?.charAt(0)}</div>

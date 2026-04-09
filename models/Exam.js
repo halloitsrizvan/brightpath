@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import './Student';
+import './Teacher';
 
 const ExamSchema = new mongoose.Schema({
     studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
@@ -8,7 +10,8 @@ const ExamSchema = new mongoose.Schema({
     maxMarks: { type: Number, required: true },
     paperImage: { type: String },
     progressNote: { type: String },
-    examMonth: { type: String, required: true }
+    examMonth: { type: String },
+    examDate: { type: Date, required: true, default: Date.now }
 }, { timestamps: true });
 
 export default mongoose.models.Exam || mongoose.model('Exam', ExamSchema);
