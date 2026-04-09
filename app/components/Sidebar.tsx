@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, usePathname } from 'next/navigation';
-import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee, Trophy, ListTodo, Receipt, ShieldCheck } from 'lucide-react';
+import { Home, Users, UserCheck, BookOpen, Settings, LogOut, FileText, IndianRupee, Trophy, ListTodo, Receipt, ShieldCheck, TrendingUp, BarChart3, CheckCircle, User } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import NextImage from 'next/image';
@@ -38,16 +38,18 @@ export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student
         if (role === 'teacher') {
             return [
                 { name: 'Dashboard', href: '/teacher-dashboard', icon: <Home className="w-5 h-5" /> },
-                { name: 'Attendance', href: '/teacher-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
+                { name: 'Attendance', href: '/teacher-dashboard/attendance', icon: <CheckCircle className="w-5 h-5" /> },
                 { name: 'Manage Exams', href: '/teacher-dashboard/exams', icon: <BookOpen className="w-5 h-5" /> },
-                { name: 'Profile', href: '/teacher-dashboard/profile', icon: <Users className="w-5 h-5" /> },
+                { name: 'Analysis', href: '/teacher-dashboard/analysis', icon: <BarChart3 className="w-5 h-5" /> },
+                { name: 'Profile', href: '/teacher-dashboard/profile', icon: <User className="w-5 h-5" /> },
             ];
         }
         return [
             { name: 'Dashboard', href: '/student-dashboard', icon: <Home className="w-5 h-5" /> },
-            { name: 'Attendance', href: '/student-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
+            { name: 'Attendance', href: '/student-dashboard/attendance', icon: <CheckCircle className="w-5 h-5" /> },
             { name: 'Exams', href: '/student-dashboard/exams', icon: <BookOpen className="w-5 h-5" /> },
-            { name: 'Profile', href: '/student-dashboard/profile', icon: <Users className="w-5 h-5" /> },
+            { name: 'Performance', href: '/student-dashboard/performance', icon: <TrendingUp className="w-5 h-5" /> },
+            { name: 'Profile', href: '/student-dashboard/profile', icon: <User className="w-5 h-5" /> },
         ];
     };
 

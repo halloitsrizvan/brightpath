@@ -5,6 +5,7 @@ import api from '../../utils/api';
 import StudentModal from '../../components/modals/StudentModal';
 import StudentViewModal from '../../components/modals/StudentViewModal';
 import { Eye, Edit2, Trash2, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminStudents() {
     const [students, setStudents] = useState([]);
@@ -13,6 +14,8 @@ export default function AdminStudents() {
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [viewData, setViewData] = useState(null);
+
+    const router = useRouter();
 
     const fetchStudents = () => {
         setLoading(true);
@@ -30,8 +33,7 @@ export default function AdminStudents() {
     };
 
     const handleView = (student: any) => {
-        setViewData(student);
-        setIsViewModalOpen(true);
+        router.push(`/admin-dashboard/students/${student._id}`);
     };
 
     const handleDelete = async (id: string) => {

@@ -21,6 +21,7 @@ interface Exam {
     marks: number;
     maxMarks: number;
     examMonth: string;
+    examDate: string;
     progressNote?: string;
     paperImage?: string;
     createdAt: string;
@@ -61,8 +62,8 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                             <p className="text-lg font-bold text-[#45308D]">{exam.subject}</p>
                         </div>
                         <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Month</p>
-                            <p className="text-lg font-bold text-gray-800">{exam.examMonth}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Exam Date</p>
+                            <p className="text-lg font-bold text-gray-800">{new Date(exam.examDate || exam.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="bg-[#45308D]/5 p-4 rounded-2xl border border-[#45308D]/10">
                             <p className="text-xs font-bold text-[#45308D] uppercase tracking-widest mb-1">Score</p>
@@ -313,11 +314,11 @@ export default function ExamDashboard() {
                                                             {exam.subject}
                                                         </span>
                                                         <span className="text-[10px] font-black uppercase tracking-widest bg-[#FDC70B]/10 text-[#c79c09] px-2 py-0.5 rounded-full border border-[#FDC70B]/20">
-                                                            {exam.examMonth}
+                                                            {new Date(exam.examDate || exam.createdAt).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                     <p className="text-[11px] font-bold text-gray-400 mt-0.5 flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                                                        Exam Portal Entry • {new Date(exam.createdAt).toLocaleDateString()}
+                                                        Exam Portal Entry • {new Date(exam.examDate || exam.createdAt).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                             </div>

@@ -38,10 +38,14 @@ export async function GET(req: NextRequest) {
             
             const percentage = Math.round((exam.marks / exam.maxMarks) * 100);
             
+            const rawDate = exam.examDate || exam.createdAt || new Date();
+            const dateObj = new Date(rawDate);
+            const isValidDate = !isNaN(dateObj.getTime());
+            
             analysis[exam.subject].push({
                 _id: exam._id,
-                date: exam.examDate,
-                formattedDate: new Date(exam.examDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                date: isValidDate ? dateObj : new Date(),
+                formattedDate: isValidDate ? dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A',
                 marks: exam.marks,
                 maxMarks: exam.maxMarks,
                 percentage: percentage,

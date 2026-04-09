@@ -75,10 +75,14 @@ export async function GET(req: NextRequest) {
         const month = searchParams.get('month');
 
         let query: any = {};
+        const studentIdLog = searchParams.get('studentId');
+
         if (user.role === 'student') {
             query.studentId = user.id;
         } else if (user.role === 'teacher') {
             query.teacherId = user.id;
+        } else if (user.role === 'admin' && studentIdLog) {
+            query.studentId = studentIdLog;
         }
 
         if (today) {
