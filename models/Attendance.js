@@ -11,6 +11,8 @@ const AttendanceSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     durationMinutes: { type: Number, required: true },
     status: { type: String, enum: ['Present', 'Absent'], default: 'Present' },
+    billRateAtTime: { type: Number },
+    salaryRateAtTime: { type: Number },
     notes: { type: String }
 }, { timestamps: true });
 

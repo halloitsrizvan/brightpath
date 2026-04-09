@@ -36,15 +36,27 @@ export async function syncFinancialsForMonth(month: string) {
         let billRate = 0;
         let salaryRate = teacher.salaryPerHour || 0;
 
-        if (student.subjectAssignments) {
+        // PRIORITIZE SNAPSHOTS if they exist (new records)
+        if (rec.billRateAtTime !== undefined && rec.billRateAtTime !== null) {
+            billRate = rec.billRateAtTime;
+        } else if (student.subjectAssignments) {
+            // FALLBACK for old records
             const assignment = student.subjectAssignments.find((a: any) => 
                 (a.subjectId.toString() === rec.subjectId?.toString() || a.subjectId?._id?.toString() === rec.subjectId?.toString()) && 
                 a.teacherId.toString() === tId
             );
-            if (assignment) {
-                if (assignment.billPerHour > 0) billRate = assignment.billPerHour;
-                if (assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
-            }
+            if (assignment && assignment.billPerHour > 0) billRate = assignment.billPerHour;
+        }
+
+        if (rec.salaryRateAtTime !== undefined && rec.salaryRateAtTime !== null) {
+            salaryRate = rec.salaryRateAtTime;
+        } else if (student.subjectAssignments) {
+            // FALLBACK for old records
+            const assignment = student.subjectAssignments.find((a: any) => 
+                (a.subjectId.toString() === rec.subjectId?.toString() || a.subjectId?._id?.toString() === rec.subjectId?.toString()) && 
+                a.teacherId.toString() === tId
+            );
+            if (assignment && assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
         }
 
         if (!teacherCalcs[tId]) teacherCalcs[tId] = { earnings: 0, hours: 0, baseRate: teacher.salaryPerHour || 0 };
@@ -67,6 +79,11 @@ export async function syncFinancialsForMonth(month: string) {
 
         const finalMonthlySalary = Math.round(data.earnings + reachedIncentive);
 
+        const existingSalary = await Salary.findOne({ teacherId: tId, month });
+        if (existingSalary && existingSalary.paidStatus === 'paid') {
+            continue; // CRITICAL: Protect paid records from updates
+        }
+
         await Salary.findOneAndUpdate(
             { teacherId: tId, month },
             { 
@@ -82,6 +99,11 @@ export async function syncFinancialsForMonth(month: string) {
     for (const sId in studentCalcs) {
         const data = studentCalcs[sId];
         if (data.totalBill <= 0) continue;
+
+        const existingFee = await Fee.findOne({ studentId: sId, month });
+        if (existingFee && existingFee.paymentStatus === 'paid') {
+            continue; // CRITICAL: Protect paid records from updates
+        }
 
         await Fee.findOneAndUpdate(
             { studentId: sId, month },

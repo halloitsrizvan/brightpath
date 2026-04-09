@@ -14,7 +14,36 @@ export async function POST(req: NextRequest) {
         // they might not have a Teacher profile to augment.
         const teacherId = user.role === 'teacher' ? user.id : body.teacherId || user.id;
 
-        const attendance = new Attendance({ ...body, teacherId });
+        // Capture rates at time of attendance for historical data integrity
+        let billRateAtTime = 0;
+        let salaryRateAtTime = 0;
+
+        const [targetStudent, targetTeacher] = await Promise.all([
+            import('@/models/Student').then(m => m.default.findById(body.studentId)),
+            Teacher.findById(teacherId)
+        ]);
+
+        if (targetTeacher) {
+            salaryRateAtTime = targetTeacher.salaryPerHour || 0;
+        }
+
+        if (targetStudent && targetStudent.subjectAssignments) {
+            const assignment = targetStudent.subjectAssignments.find((a: any) => 
+                a.subjectId.toString() === body.subjectId?.toString() && 
+                a.teacherId.toString() === teacherId.toString()
+            );
+            if (assignment) {
+                if (assignment.billPerHour > 0) billRateAtTime = assignment.billPerHour;
+                if (assignment.salaryPerHour > 0) salaryRateAtTime = assignment.salaryPerHour;
+            }
+        }
+
+        const attendance = new Attendance({ 
+            ...body, 
+            teacherId,
+            billRateAtTime,
+            salaryRateAtTime
+        });
         await attendance.save();
 
         // Automatically sync financials for the month of this attendance
