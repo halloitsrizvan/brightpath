@@ -27,11 +27,46 @@ export async function GET(req: NextRequest) {
         const paidFees = await Fee.find({ month: currentMonthStr, paymentStatus: 'paid' });
         const monthlyRevenue = paidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
 
+        // Calculate Daily Hours for Line Graph
+        const hoursByDay = await Attendance.aggregate([
+            {
+                $match: {
+                    date: { $gte: startOfMonth },
+                    status: 'Present'
+                }
+            },
+            {
+                $group: {
+                    _id: { $dayOfMonth: "$date" },
+                    totalMinutes: { $sum: "$durationMinutes" }
+                }
+            },
+            {
+                $project: {
+                    day: "$_id",
+                    hours: { $round: [{ $divide: ["$totalMinutes", 60] }, 1] }
+                }
+            },
+            { $sort: { day: 1 } }
+        ]);
+
+        // Fill in missing days with 0 hours for current month
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const hoursPerDay = Array.from({ length: daysInMonth }, (_, i) => {
+            const dayNum = i + 1;
+            const dayData = hoursByDay.find(d => d.day === dayNum);
+            return {
+                day: dayNum,
+                hours: dayData ? dayData.hours : 0
+            };
+        });
+
         return NextResponse.json({
             totalStudents,
             totalTeachers,
             classesThisMonth,
-            monthlyRevenue
+            monthlyRevenue,
+            hoursPerDay
         });
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

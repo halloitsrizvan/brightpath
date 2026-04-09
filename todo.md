@@ -15,20 +15,20 @@ Payment Gateway Charges
 Equipment
 Miscellaneous] -->
 <!-- All Exam Records -class not found  -->
-2-1 bill
+<!-- 2-1 bill -->
+<!-- 
+teacher-panel
+Exam Month - exam date -->
+<!-- no Attendance Score in att registry -->
+<!-- Total Receivables card -> opereational expenses card -->
 line graph for hr  
 founders salary + debt from profit / return debt -form
 profit = revenue - (salary paid +expenses)
-Total Receivables card -> opereational expenses card
 
-std-panel
-pending bill amount
+std-panel  
+pending bill amount 
 automated reminder for pending bills
 Academic Performance : improvment comparison (need inprovment,...)
-no Attendance Score in att registry
-
-teacher-panel
-Exam Month - exam date
 
 
 

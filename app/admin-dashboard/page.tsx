@@ -3,13 +3,15 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import api from '../utils/api';
 import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalTeachers: 0,
         classesThisMonth: 0,
-        monthlyRevenue: 0
+        monthlyRevenue: 0,
+        hoursPerDay: [] as { day: number, hours: number }[]
     });
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
@@ -92,19 +94,72 @@ export default function AdminDashboard() {
 
                     {/* Operational Overview Placeholder Area */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 bg-white rounded-[3rem] p-12 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[400px] flex flex-col justify-center items-center text-center">
+                        <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[450px] flex flex-col">
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#45308D] to-indigo-600"></div>
-                            <div className="w-24 h-24 rounded-[2rem] bg-gray-50 flex items-center justify-center text-gray-200 mb-8 border-2 border-dashed border-gray-100 group-hover:bg-[#45308D]/5 group-hover:border-[#45308D]/20 transition-all duration-500">
-                                <TrendingUp className="w-10 h-10" />
+                            
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Operational Velocity</p>
+                                    <h3 className="text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Strategic Insights</h3>
+                                </div>
+                                <div className="flex gap-2">
+                                    <div className="px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Monthly View</div>
+                                </div>
                             </div>
-                            <h3 className="text-2xl font-black text-gray-800 mb-4 italic uppercase tracking-tighter">Strategic Insights Awaiting</h3>
-                            <p className="max-w-md text-gray-400 font-bold leading-relaxed text-sm">
-                                Use the left navigation to interact with students, manage financials, or audit academic attendance.
-                                Detailed analytics and performance charts will populate this quadrant as operations scale.
-                            </p>
-                            <div className="mt-10 flex gap-4">
-                                <div className="px-6 py-3 bg-gray-50 rounded-2xl text-[10px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">System Balanced</div>
-                                <div className="px-6 py-3 bg-teal-50 rounded-2xl text-[10px] font-black uppercase text-teal-600 tracking-widest border border-teal-100">Cloud Sync Active</div>
+
+                            <div className="flex-1 w-full h-[300px] mt-2">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={stats.hoursPerDay}>
+                                        <defs>
+                                            <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#45308D" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#45308D" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                        <XAxis 
+                                            dataKey="day" 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }}
+                                            dy={10}
+                                        />
+                                        <YAxis 
+                                            axisLine={false} 
+                                            tickLine={false} 
+                                            tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }}
+                                        />
+                                        <Tooltip 
+                                            contentStyle={{ 
+                                                backgroundColor: '#fff', 
+                                                borderRadius: '1rem', 
+                                                border: 'none', 
+                                                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                            itemStyle={{ color: '#45308D' }}
+                                        />
+                                        <Area 
+                                            type="monotone" 
+                                            dataKey="hours" 
+                                            stroke="#45308D" 
+                                            strokeWidth={4}
+                                            fillOpacity={1} 
+                                            fill="url(#colorHours)" 
+                                            dot={{ r: 4, fill: '#45308D', strokeWidth: 2, stroke: '#fff' }}
+                                            activeDot={{ r: 6, strokeWidth: 0 }}
+                                        />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between">
+                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Aggregate Teaching Hours / Day</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
+                                    <span className="text-[10px] font-black uppercase text-teal-600 tracking-widest">Real-time Analytics</span>
+                                </div>
                             </div>
                         </div>
 

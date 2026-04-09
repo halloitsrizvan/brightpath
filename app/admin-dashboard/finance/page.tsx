@@ -193,11 +193,11 @@ export default function AdminFinance() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
                     <div className="bg-primary p-8 rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Total Receivables</p>
-                        <h2 className="text-4xl font-black italic tracking-tighter mb-4">₹{summary.totalReceivable?.toLocaleString()}</h2>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Operational Expenses</p>
+                        <h2 className="text-4xl font-black italic tracking-tighter mb-4">₹{summary.totalExpenses?.toLocaleString()}</h2>
                         <div className="flex items-center gap-2 text-xs font-bold text-white/80">
-                            <ArrowUpRight className="w-4 h-4" />
-                            <span>Pending from {new Set(unpaidFees.map((f: any) => f.studentId?._id)).size} Students</span>
+                            <AlertCircle className="w-4 h-4" />
+                            <span>Regular monthly overheads</span>
                         </div>
                     </div>
 
@@ -208,7 +208,7 @@ export default function AdminFinance() {
                             <div className="w-12 h-2 bg-teal-50 rounded-full flex-1 overflow-hidden">
                                 <div className="bg-teal-500 h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalReceived / ((summary.totalReceivable || 0) + (summary.totalReceived || 1))) * 100)}%` }}></div>
                             </div>
-                            <span className="text-[10px] font-black text-teal-600 uppercase">Recovery Rate</span>
+                            <span className="text-[10px] font-black text-teal-600 uppercase">₹{summary.totalReceivable?.toLocaleString()}</span>
                         </div>
                     </div>
 
