@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BrightPath: Institution Management System
 
-## Getting Started
+BrightPath is a premium, high-fidelity management portal designed for modern tuition centers and educational institutions. It provides a comprehensive "Executive Command Center" for administrators, streamlined tools for teachers, and performance-centric dashboards for students.
 
-First, run the development server:
+## 🚀 Core Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🏛️ Admin Command Center
+- **Strategic Insights**: Real-time teaching velocity and operational audit graphs.
+- **Financial Hub**: Complete revenue/expense tracking, automated tutor payroll, and student fee management.
+- **Monthly Analytics**: In-depth performance reports aggregating exams, attendance, and financial health.
+- **Management**: Global control over students, faculty, subjects, and institutional targets.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 👨‍🏫 Faculty Suite
+- **Attendance Ledger**: Live session logging with duration tracking.
+- **Exam Management**: Streamlined mark entry and student progress feedback.
+- **Performance Analysis**: Personal teaching statistics and incentive tracking.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🎓 Student Portal
+- **Academic Dashboard**: Real-time access to attendance records and exam performance.
+- **Progress Reports**: Automated generation of monthly performance dossiers.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Technology Stack
 
-## Learn More
+- **Framework**: Next.js 16 (App Router)
+- **Database**: MongoDB with Mongoose ODM
+- **Visualization**: Recharts (Executive Grade Charts)
+- **Icons**: Lucide React
+- **Styling**: Tailwind CSS
+- **Authentication**: JWT-based Secure Authorization
+- **Reports**: PDF-Lib & PDFKit for automated document generation
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Installation & Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd brightpath
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. **Configure Environment Variables**:
+   Create a `.env.local` file in the root directory and copy the contents from `.env.example`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   Fill in your MongoDB URI, JWT Secret, and Cloudinary credentials.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Launch Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📦 Deployment
+
+This project is optimized for deployment on **Vercel**:
+
+1. Push your code to a GitHub/GitLab/Bitbucket repository.
+2. Import the project into Vercel.
+3. Add the required environment variables.
+4. The build script `next build` will handle the production optimization.
+
+## 📄 License
+Privately owned and developed for BrightPath Tuition Center.

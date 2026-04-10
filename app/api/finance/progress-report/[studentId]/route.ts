@@ -6,12 +6,13 @@ import Attendance from '@/models/Attendance';
 import dbConnect from '@/lib/mongodb';
 import PDFDocument from 'pdfkit';
 
-export async function GET(req: NextRequest, { params }: { params: { studentId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin', 'student', 'teacher']);
 
-        const student = await Student.findById(params.studentId);
+        const { studentId } = await params;
+        const student = await Student.findById(studentId);
         if (!student) return new Response(JSON.stringify({ message: 'Student not found' }), { status: 404 });
 
         const searchParams = req.nextUrl.searchParams;
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest, { params }: { params: { studentId: s
             doc.on('end', () => resolve(Buffer.concat(buffers)));
         });
 
-        return new Response(pdfBuffer, {
+        return new Response(pdfBuffer as any, {
             headers: {
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename=progress_${student.fullName}_${month}.pdf`

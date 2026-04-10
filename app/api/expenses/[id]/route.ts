@@ -3,11 +3,11 @@ import { checkAuth } from '@/lib/auth';
 import Expense from '@/models/Expense';
 import dbConnect from '@/lib/mongodb';
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin']);
-        const { id } = params;
+        const { id } = await params;
 
         await Expense.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Expense record deleted' });
@@ -16,11 +16,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
         await checkAuth(req, ['admin']);
-        const { id } = params;
+        const { id } = await params;
         const body = await req.json();
 
         const updated = await Expense.findByIdAndUpdate(id, body, { new: true });
