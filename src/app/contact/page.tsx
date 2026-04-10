@@ -3,6 +3,8 @@ import { useState } from 'react';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import api from '@/utils/api';
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -11,27 +13,42 @@ export default function ContactPage() {
         module: '',
         requirements: ''
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        // Deep-link optimization: Structure data for institutional CRM/Advisor
-        const now = new Date().toLocaleString();
-        const message = encodeURIComponent(
-            `🏛 *Brightpath Institutional Enquiry*\n` +
-            `----------------------------------\n\n` +
-            `👤 *Parent/Guardian:* ${formData.name}\n` +
-            `📞 *Verified Contact:* ${formData.contact}\n` +
-            `📚 *Target Module:* ${formData.module}\n` +
-            `📝 *Specific Requirements:* ${formData.requirements}\n\n` +
-            `----------------------------------\n` +
-            `⏰ *Timestamp:* ${now}\n` +
-            `🌐 *Source:* Online Portal (Academic Node)`
-        );
+        setIsSubmitting(true);
 
-        // Optimized for both iOS/Android and Desktop
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=918590878148&text=${message}`;
-        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        try {
+            // Institutional Validation & Rate Limiting check
+            const res = await api.post('/contact', formData);
+            
+            if (res.data.success) {
+                // Deep-link optimization: Structure data for institutional CRM/Advisor
+                const now = new Date().toLocaleString();
+                const message = encodeURIComponent(
+                    `🏛 *Brightpath Institutional Enquiry*\n` +
+                    `----------------------------------\n\n` +
+                    `👤 *Parent/Guardian:* ${formData.name}\n` +
+                    `📞 *Verified Contact:* ${formData.contact}\n` +
+                    `📚 *Target Module:* ${formData.module}\n` +
+                    `📝 *Specific Requirements:* ${formData.requirements}\n\n` +
+                    `----------------------------------\n` +
+                    `⏰ *Timestamp:* ${now}\n` +
+                    `🌐 *Source:* Online Portal (Academic Node)`
+                );
+
+                // Optimized for both iOS/Android and Desktop
+                const whatsappUrl = `https://api.whatsapp.com/send?phone=918590878148&text=${message}`;
+                window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                toast.success('Security Clearance Granted. Opening WhatsApp.');
+            }
+        } catch (err: any) {
+            const errorMsg = err.response?.data?.message || 'Verification Node Failure';
+            toast.error(errorMsg);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -122,9 +139,14 @@ export default function ContactPage() {
                                     placeholder="Specific challenges or goals..."
                                 ></textarea>
                             </div>
-                            <button suppressHydrationWarning type="submit" className="w-full py-5 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group">
+                            <button 
+                                suppressHydrationWarning 
+                                type="submit" 
+                                disabled={isSubmitting}
+                                className="w-full py-5 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                            >
                                 <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                Transmit Enquiry Hub
+                                {isSubmitting ? 'Transmitting Enquiry...' : 'Transmit Enquiry Hub'}
                             </button>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center italic">Institutional response latency: &lt; 24 hours</p>
                         </form>

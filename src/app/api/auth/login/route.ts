@@ -5,13 +5,35 @@ import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import Teacher from '@/models/Teacher';
 import Student from '@/models/Student';
+import { RateLimitService } from '@/lib/services/rateLimitService';
+import { loginSchema } from '@/lib/validations/auth';
 
 export async function POST(req: Request) {
     try {
+        // 1. Rate Limiting: 5 attempts per 15 mins per IP
+        const ip = RateLimitService.getIP(req);
+        const rl = RateLimitService.check(`login_${ip}`, 5, 15 * 60 * 1000);
+        
+        const headers = {
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': rl.remaining.toString(),
+            'X-RateLimit-Reset': rl.reset.toString()
+        };
+
+        if (!rl.success) {
+            return NextResponse.json({ message: 'Brute-force protection: Too many attempts. Try again in 15 minutes.' }, { status: 429, headers });
+        }
+
         await dbConnect();
         const body = await req.json();
-        const email = body.email?.toLowerCase().trim();
-        const password = body.password;
+        
+        // 2. Schema Validation
+        const validation = loginSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({ message: 'Institutional Data Violation', errors: validation.error.format() }, { status: 400, headers });
+        }
+
+        const { email, password } = validation.data;
         const role = body.role;
 
         let user;
