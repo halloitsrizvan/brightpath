@@ -23,8 +23,14 @@ const StudentSchema = new mongoose.Schema({
         salaryPerHour: { type: Number, default: 0 }
     }],
     joinedAt: { type: Date, default: Date.now },
-    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active', index: true },
     role: { type: String, default: 'student' }
 }, { timestamps: true });
+
+// Performance Optimization: Indexes for scalable search and reporting
+StudentSchema.index({ email: 1 });
+StudentSchema.index({ status: 1, joinedAt: -1 }); // Optimized for dashboard recent active students
+StudentSchema.index({ subjects: 1 }); // Optimize relationship lookups
+StudentSchema.index({ preferredTrainers: 1 });
 
 export default mongoose.models.Student || mongoose.model('Student', StudentSchema);

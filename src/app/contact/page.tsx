@@ -14,14 +14,24 @@ export default function ContactPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Deep-link optimization: Structure data for institutional CRM/Advisor
+        const now = new Date().toLocaleString();
         const message = encodeURIComponent(
-            `*New Enquiry from Brightpath Portal*\n\n` +
-            `*Parent Name:* ${formData.name}\n` +
-            `*Contact:* ${formData.contact}\n` +
-            `*Module/Grade:* ${formData.module}\n` +
-            `*Requirements:* ${formData.requirements}`
+            `🏛 *Brightpath Institutional Enquiry*\n` +
+            `----------------------------------\n\n` +
+            `👤 *Parent/Guardian:* ${formData.name}\n` +
+            `📞 *Verified Contact:* ${formData.contact}\n` +
+            `📚 *Target Module:* ${formData.module}\n` +
+            `📝 *Specific Requirements:* ${formData.requirements}\n\n` +
+            `----------------------------------\n` +
+            `⏰ *Timestamp:* ${now}\n` +
+            `🌐 *Source:* Online Portal (Academic Node)`
         );
-        window.open(`https://wa.me/918590878148?text=${message}`, '_blank');
+
+        // Optimized for both iOS/Android and Desktop
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=918590878148&text=${message}`;
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

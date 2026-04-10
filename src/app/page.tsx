@@ -1,14 +1,25 @@
 'use client';
-import PublicNavbar from './components/public/Navbar';
-import PublicFooter from './components/public/Footer';
-import Testimonials from './components/public/Testimonials';
-import TutorsGrid from './components/public/TutorsGrid';
-import SubjectsGrid from './components/public/SubjectsGrid';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
+import Testimonials from '@/components/public/Testimonials';
+import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
+import SubjectsGrid from '@/components/public/SubjectsGrid';
 import Image from 'next/image';
 import { Star, ArrowRight, Video, Clock, Users, ShieldCheck, BookOpen, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+import api from '@/utils/api';
+
 export default function LandingPage() {
+    const [tutors, setTutors] = useState([]);
+
+    useEffect(() => {
+        api.get('/teachers').then(res => {
+            // Only show active tutors with completed profiles
+            setTutors(res.data.filter((t: any) => t.status === 'active').slice(0, 3));
+        }).catch(err => console.error("Elite Tutors Fetch failed", err));
+    }, []);
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/10 selection:text-primary">
             {/* SEO Structured Data */}
@@ -118,7 +129,7 @@ export default function LandingPage() {
             </section>
 
             <SubjectsGrid />
-            <TutorsGrid limited />
+            <PublicTutorsGrid limited={true} tutors={tutors} />
             <Testimonials />
 
             <PublicFooter />
