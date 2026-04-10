@@ -6,7 +6,7 @@ import Link from 'next/link';
 import NextImage from 'next/image';
 import { useEffect, useState } from 'react';
 
-export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student' }) {
+export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'teacher' | 'student', isOpen?: boolean, onClose?: () => void }) {
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
@@ -53,41 +53,56 @@ export default function Sidebar({ role }: { role: 'admin' | 'teacher' | 'student
         ];
     };
 
-        if (!mounted) return null;
+    if (!mounted) return null;
 
     return (
-        <div className="flex flex-col w-64 h-screen bg-primary text-[#e5e5e5] shadow-2xl border-r border-white/5">
-            <div className="p-4 pt-6 pb-2">
-                <div className="bg-white rounded-lg p-4 flex items-center gap-3 shadow-[0_10px_30px_rgba(0,0,0,0.2)]  transition-all duration-500 cursor-default group border-4 border-white/10">
-                    <div className="relative w-10 h-10 flex-shrink-0 transition-transform duration-500">
-                        <NextImage src="/logo.png" alt="BrightPath Logo" width={40} height={40} className="w-full h-full object-contain" />
-                    </div>
-                    <div>
-                        <h1 className="text-sm font-black text-primary tracking-widest uppercase italic leading-none">BrightPath</h1>
-                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1 opacity-60">Admin Portal</p>
+        <>
+            {/* Mobile Backdrop */}
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={onClose}
+                />
+            )}
+
+            <div className={`
+                fixed top-0 left-0 h-full w-64 bg-primary text-[#e5e5e5] shadow-2xl border-r border-white/5 z-50 transition-transform duration-300 transform
+                ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                flex flex-col
+            `}>
+                <div className="p-6 pb-2">
+                    <div className="flex items-center gap-4 group cursor-default">
+                        <div className="relative w-12 h-12 flex-shrink-0 bg-white rounded-2xl flex items-center justify-center p-2 shadow-xl shadow-black/20 group-hover:scale-105 transition-transform">
+                            <NextImage src="/logo.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
+                        </div>
+                        <div>
+                            <h1 className="text-base font-black text-white tracking-widest uppercase italic leading-none">BrightPath</h1>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5 opacity-60 italic">{role} Portal</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div className="flex-1 px-4 py-4 space-y-2">
-                {getLinks().map((link) => {
-                    const isActive = link.href === pathname || (link.href !== `/${role}-dashboard` && pathname.startsWith(link.href));
-                    return (
-                        <Link key={link.name} href={link.href}>
-                            <span className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${isActive ? 'bg-secondary text-primary font-bold shadow-md' : 'hover:bg-white/10 hover:text-white'}`}>
-                                {link.icon}
-                                <span className="font-medium">{link.name}</span>
-                            </span>
-                        </Link>
-                    );
-                })}
+                <div className="flex-1 px-4 py-8 space-y-1.5 overflow-y-auto custom-scrollbar">
+                    {getLinks().map((link) => {
+                        const isActive = link.href === pathname || (link.href !== `/${role}-dashboard` && pathname.startsWith(link.href));
+                        return (
+                            <Link key={link.name} href={link.href} onClick={onClose}>
+                                <span className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer ${isActive ? 'bg-secondary text-primary font-bold shadow-md' : 'hover:bg-white/10 hover:text-white'}`}>
+                                    {link.icon}
+                                    <span className="font-medium">{link.name}</span>
+                                </span>
+                            </Link>
+                        );
+                    })}
+                </div>
+
+                <div className="p-4 border-t border-white/10">
+                    <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-[#ff4c4c] hover:bg-[#ff4c4c1a] rounded-lg w-full transition-all duration-200">
+                        <LogOut className="w-5 h-5" />
+                        <span className="font-medium">Logout</span>
+                    </button>
+                </div>
             </div>
-            <div className="p-4 border-t border-white/10">
-                <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-[#ff4c4c] hover:bg-[#ff4c4c1a] rounded-lg w-full transition-all duration-200">
-                    <LogOut className="w-5 h-5" />
-                    <span className="font-medium">Logout</span>
-                </button>
-            </div>
-        </div>
+        </>
     );
 }

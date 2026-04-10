@@ -41,8 +41,8 @@ export default function TeacherDashboard() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="teacher" />
+            <div className="fixed z-50 h-full">
+                <Sidebar role="teacher" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             </div>
 
             {/* Main Content */}

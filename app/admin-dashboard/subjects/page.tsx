@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
 import SubjectModal from '../../components/modals/SubjectModal';
+import { Menu } from 'lucide-react';
 
 export default function AdminSubjects() {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,47 +26,70 @@ export default function AdminSubjects() {
     }, []);
 
     return (
-        <div className="flex bg-gray-50 min-h-screen">
-            <div className="fixed z-50 h-full">
-                <Sidebar role="admin" />
-            </div>
-            <div className="flex-1 lg:ml-64 p-8">
-                <div className="flex justify-between items-center mb-8 mt-2">
-                    <h1 className="text-3xl font-bold text-gray-800">Subjects Management</h1>
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="bg-primary text-white px-4 py-2 rounded-lg font-medium shadow-md hover:bg-primary/90 transition"
-                    >
-                        + Add Subject
-                    </button>
-                </div>
+        <div className="flex bg-gray-50 min-h-screen font-sans">
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
+                    <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white border border-gray-100 rounded-2xl text-[#45308D] shadow-sm active:scale-95 transition-all">
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <div className="text-right">
+                        <h2 className="text-xl font-black text-[#45308D] italic uppercase tracking-tighter leading-none">BrightPath</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                    </div>
+                </header>
+
+                <div className="p-4 md:p-8 mt-20 lg:mt-0">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 mt-4 px-2">
+                        <div>
+                            <h1 className="text-3xl font-black text-[#45308D] tracking-tighter italic uppercase">Academic Units</h1>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1 ml-1">Curriculum & Subject Management</p>
+                        </div>
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-[#45308D] text-white px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#45308D]/20 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2 italic"
+                        >
+                            + Add Subject
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
                     {loading ? (
                         <div className="p-8 text-center text-gray-500">Loading subjects...</div>
                     ) : subjects.length === 0 ? (
                         <div className="p-8 text-center text-gray-500">No subjects found.</div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-100">
-                                    <th className="p-4 font-medium">Subject Name</th>
-                                    <th className="p-4 font-medium">Class Level</th>
-                                    <th className="p-4 font-medium">Syllabus</th>
-                                    <th className="p-4 font-medium">Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subjects.map((sub: any) => (
-                                    <tr key={sub._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                                        <td className="p-4 font-medium text-gray-800">{sub.subjectName}</td>
-                                        <td className="p-4 text-gray-600">{sub.classLevel || '-'}</td>
-                                        <td className="p-4 text-gray-600">{sub.syllabus || '-'}</td>
-                                        <td className="p-4 text-gray-600 max-w-xs truncate">{sub.description || '-'}</td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-100">
+                                        <th className="p-4 font-medium">Subject Name</th>
+                                        <th className="p-4 font-medium">Class Level</th>
+                                        <th className="p-4 font-medium">Syllabus</th>
+                                        <th className="p-4 font-medium">Description</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {subjects.map((sub: any) => (
+                                        <tr key={sub._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                            <td className="p-4 font-medium text-gray-800">{sub.subjectName}</td>
+                                            <td className="p-4 text-gray-600">{sub.classLevel || '-'}</td>
+                                            <td className="p-4 text-gray-600">{sub.syllabus || '-'}</td>
+                                            <td className="p-4 text-gray-600 max-w-xs truncate">{sub.description || '-'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </div>
@@ -73,6 +98,7 @@ export default function AdminSubjects() {
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={fetchSubjects}
             />
+        </div>
         </div>
     );
 }

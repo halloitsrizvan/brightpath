@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import api from '../utils/api';
-import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight, Menu } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 export default function AdminDashboard() {
@@ -16,6 +16,7 @@ export default function AdminDashboard() {
         latestLogs: [] as any[]
     });
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         api.get('/dashboard/admin').then(res => setStats(res.data)).catch(console.error);
@@ -34,19 +35,32 @@ export default function AdminDashboard() {
 
     return (
         <div className="flex bg-[#fafafa] min-h-screen font-sans">
-            <div className="fixed z-50 h-full">
-                <Sidebar role="admin" />
-            </div>
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
-                <header className="p-8 md:p-12 pb-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div>
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm p-4 lg:p-12 pb-6 lg:pb-8 lg:static lg:bg-transparent lg:shadow-none lg:backdrop-blur-none">
+                    <div className="flex flex-col gap-2">
+                        {/* Mobile Header Trigger Row */}
+                        <div className="flex items-center justify-between w-full lg:hidden">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-3 bg-white border border-gray-100 rounded-2xl text-[#45308D] shadow-sm active:scale-95 transition-all"
+                            >
+                                <Menu className="w-6 h-6" />
+                            </button>
+                            <div className="text-right">
+                                <h2 className="text-xl font-black text-[#45308D] italic uppercase tracking-tighter leading-none">BrightPath</h2>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                            </div>
+                        </div>
+
+                        {/* Main Greeting Block - Hidden in mobile top bar, shown below offset */}
+                        <div className="hidden lg:flex flex-col">
                             <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
-                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
                                 {greetings()}, <span className="text-[#45308D]">Admin</span>
                             </h1>
-                            <p className="text-gray-400 font-bold text-sm mt-3 flex items-center gap-2">
+                            <p className="text-gray-400 font-bold text-sm lg:text-base mt-4 flex items-center gap-2">
                                 {currentTime && (
                                     <>
                                         <Calendar className="w-4 h-4" /> {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
@@ -59,35 +73,42 @@ export default function AdminDashboard() {
                     </div>
                 </header>
 
-                <main className="p-8 md:p-12 pt-4 flex-1 space-y-10">
+                <main className="p-4 md:p-12 pt-4 flex-1 space-y-8 md:space-y-10 lg:mt-0 mt-20">
+                    {/* Mobile Only Greeting offset */}
+                    <div className="flex lg:hidden flex-col px-2">
+                             <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
+                            <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                                {greetings()}, <span className="text-[#45308D]">Admin</span>
+                            </h1>
+                    </div>
                     {/* Performance Summary Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-8">
                         <DashboardCard
                             title="Active Enrollment"
                             value={stats.totalStudents}
                             description="Students registered"
-                            icon={<Users className="w-6 h-6" />}
+                            icon={<Users className="w-5 h-5 md:w-6 md:h-6" />}
                             color="bg-[#45308D]"
                         />
                         <DashboardCard
                             title="Academic Staff"
                             value={stats.totalTeachers}
                             description="Active Tutors"
-                            icon={<UserCheck className="w-6 h-6" />}
+                            icon={<UserCheck className="w-5 h-5 md:w-6 md:h-6" />}
                             color="bg-indigo-600"
                         />
                         <DashboardCard
                             title="Monthly Activity"
                             value={stats.classesThisMonth}
                             description="Classes this month"
-                            icon={<BookOpen className="w-6 h-6" />}
+                            icon={<BookOpen className="w-5 h-5 md:w-6 md:h-6" />}
                             color="bg-teal-600"
                         />
                         <DashboardCard
                             title="Monthly Income"
-                            value={`₹${stats.monthlyRevenue.toLocaleString()}`}
+                            value={typeof stats.monthlyRevenue === 'number' ? `₹${(stats.monthlyRevenue / 1000).toFixed(0)}k` : stats.monthlyRevenue}
                             description="Current period yield"
-                            icon={<IndianRupee className="w-6 h-6" />}
+                            icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6" />}
                             color="bg-[#FDC70B]"
                             textColor="text-gray-900"
                             isFinancial
@@ -96,24 +117,24 @@ export default function AdminDashboard() {
 
                     {/* Operational Overview Placeholder Area */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[450px] flex flex-col">
+                        <div className="lg:col-span-2 bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[400px] md:min-h-[450px] flex flex-col">
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#45308D] to-indigo-600"></div>
                             
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                                 <div>
                                     <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Operational Velocity</p>
-                                    <h3 className="text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Strategic Insights</h3>
+                                    <h3 className="text-xl md:text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Strategic Insights</h3>
                                 </div>
-                                <div className="flex items-center gap-6">
+                                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-[#45308D]"></div>
-                                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Target Month</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#45308D]"></div>
+                                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Target</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Previous Cycle</span>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div>
+                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Cycle</span>
                                     </div>
-                                    <div className="px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Comparative View</div>
+                                    <div className="hidden sm:block px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Comparative View</div>
                                 </div>
                             </div>
 
@@ -245,20 +266,20 @@ export default function AdminDashboard() {
 
 function DashboardCard({ title, value, description, icon, color, textColor = "text-white", isFinancial }: any) {
     return (
-        <div className={`${color} ${textColor} p-8 rounded-[3rem] shadow-2xl shadow-gray-200/50 relative group overflow-hidden transition-all hover:-translate-y-2`}>
+        <div className={`${color} ${textColor} p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-2xl shadow-gray-200/50 relative group overflow-hidden transition-all hover:-translate-y-2`}>
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
             <div className="relative z-10">
-                <div className="flex items-center justify-between mb-8">
-                    <div className="p-3 bg-white/10 rounded-xl backdrop-blur-md">
+                <div className="flex items-center justify-between mb-4 md:mb-8">
+                    <div className="p-2 md:p-3 bg-white/10 rounded-xl backdrop-blur-md">
                         {icon}
                     </div>
-                    {isFinancial && <TrendingUp className="w-5 h-5 opacity-40" />}
+                    {isFinancial && <TrendingUp className="w-4 h-4 md:w-5 md:h-5 opacity-40" />}
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">{title}</p>
-                <div className="flex items-end gap-2">
-                    <h2 className="text-4xl font-black italic tracking-tighter leading-none">{value}</h2>
+                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1 md:mb-2">{title}</p>
+                <div className="flex items-end gap-1 md:gap-2">
+                    <h2 className="text-2xl md:text-4xl font-black italic tracking-tighter leading-none">{value}</h2>
                 </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest mt-4 opacity-40">{description}</p>
+                <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest mt-2 md:mt-4 opacity-40">{description}</p>
             </div>
         </div>
     );

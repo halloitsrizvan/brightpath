@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import api from '../utils/api';
 import Cookies from 'js-cookie';
-import { BookOpen, Settings } from 'lucide-react';
+import { BookOpen, Settings, Menu } from 'lucide-react';
 
 export default function StudentDashboard() {
     const [stats, setStats] = useState({
@@ -25,12 +25,27 @@ export default function StudentDashboard() {
         api.get('/dashboard/student').then(res => setStats(res.data)).catch(console.error);
     }, []);
 
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
     return (
         <div className="flex bg-gray-50 min-h-screen font-sans">
             <div className="fixed z-50 h-full">
-                <Sidebar role="student" />
+                <Sidebar role="student" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             </div>
             <div className="flex-1 lg:ml-64 p-4 md:p-8 flex flex-col">
+                <header className="flex items-center justify-between py-4 lg:hidden">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <div className="text-right">
+                        <h2 className="text-lg font-black text-primary italic uppercase tracking-tighter leading-none">BrightPath</h2>
+                        <p className="text-[10px] font-bold text-gray-400 capitalize">{studentName}</p>
+                    </div>
+                </header>
+
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 mt-4">
                     <div>
                         <h1 className="text-3xl font-black text-gray-800 tracking-tight italic">Welcome, {studentName}!</h1>

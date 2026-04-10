@@ -165,20 +165,29 @@ export default function AdminTasks() {
             <Toaster position="top-center" />
 
             {/* Sidebar */}
-            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="admin" />
-            </div>
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+            {/* Mobile Sidebar Overlay */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
             {/* Main Content */}
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative">
-                <header className="flex items-center justify-between p-4 bg-white shadow-sm lg:hidden">
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
-                        <Menu className="w-8 h-8 text-[#45308D]" />
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
+                    <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white border border-gray-100 rounded-2xl text-[#45308D] shadow-sm active:scale-95 transition-all">
+                        <Menu className="w-6 h-6" />
                     </button>
-                    <h1 className="text-xl font-bold text-[#45308D]">BrightPath Admin</h1>
+                    <div className="text-right">
+                        <h2 className="text-xl font-black text-[#45308D] italic uppercase tracking-tighter leading-none">BrightPath</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                    </div>
                 </header>
 
-                <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-10">
+                <div className="p-6 md:p-10 max-w-7xl mx-auto w-full space-y-10 mt-20 lg:mt-0">
                     {/* Page Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                         <div>

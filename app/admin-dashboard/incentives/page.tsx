@@ -2,14 +2,23 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
-import { Menu, Plus, Trash2, Edit3, Trophy, Target, DollarSign, Users, CheckCircle, XCircle, Save, Loader2, X, Calendar, ChevronRight, Award } from 'lucide-react';
+import { 
+    Trophy, 
+    Plus, 
+    Edit3, 
+    Trash2, 
+    Star, 
+    TrendingUp, 
+    Users, 
+    Menu, 
+    Calendar,
+    ChevronDown,
+    X,
+    Filter,
+    CheckCircle2,
+    CalendarDays
+} from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
-
-interface Teacher {
-    _id: string;
-    name: string;
-    email: string;
-}
 
 interface IncentiveRule {
     _id: string;
@@ -17,16 +26,26 @@ interface IncentiveRule {
     targetHours: number;
     incentiveAmount: number;
     active: boolean;
-    targetTeachers: Teacher[];
+    targetTeachers: string[];
+}
+
+interface Teacher {
+    _id: string;
+    name: string;
 }
 
 interface SalaryRecord {
-    teacherId: { _id: string, name: string };
+    _id: string;
+    teacherId: {
+        _id: string;
+        name: string;
+    };
     totalHours: number;
+    incentives: number;
     month: string;
 }
 
-export default function AdminIncentives() {
+export default function IncentivesManager() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [rules, setRules] = useState<IncentiveRule[]>([]);
     const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -48,6 +67,19 @@ export default function AdminIncentives() {
         active: true,
         targetTeachers: [] as string[]
     });
+
+    const months = useMemo(() => {
+        const arr = [];
+        const date = new Date();
+        date.setDate(1);
+        for (let i = 0; i < 6; i++) {
+            const m = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+            const y = date.getFullYear();
+            arr.push(`${m} ${y}`);
+            date.setMonth(date.getMonth() - 1);
+        }
+        return arr;
+    }, []);
 
     useEffect(() => {
         fetchInitialData();
@@ -90,7 +122,7 @@ export default function AdminIncentives() {
                 targetHours: rule.targetHours,
                 incentiveAmount: rule.incentiveAmount,
                 active: rule.active,
-                targetTeachers: rule.targetTeachers.map(t => t._id)
+                targetTeachers: rule.targetTeachers || []
             });
         } else {
             setEditingRule(null);
@@ -111,205 +143,150 @@ export default function AdminIncentives() {
             setIsSaving(true);
             if (editingRule) {
                 await api.put(`/admin/incentives/${editingRule._id}`, formData);
-                toast.success('Incentive updated');
+                toast.success('Incentive plan updated');
             } else {
                 await api.post('/admin/incentives', formData);
-                toast.success('Incentive created');
+                toast.success('New incentive plan launched');
             }
-            setIsModalOpen(false);
             fetchInitialData();
+            setIsModalOpen(false);
         } catch (error) {
-            toast.error('Operation failed');
+            toast.error('Matrix update failed');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Discard this incentive permanently?')) return;
+        if (!window.confirm('Erase this reward matrix permanently?')) return;
         try {
             await api.delete(`/admin/incentives/${id}`);
-            toast.success('Incentive discarded');
-            setRules(rules.filter(r => r._id !== id));
+            toast.success('Plan purged');
+            fetchInitialData();
         } catch (error) {
-            toast.error('Deletion failed');
+            toast.error('Purge failed');
         }
     };
 
-    const toggleTeacher = (id: string) => {
-        setFormData(prev => ({
-            ...prev,
-            targetTeachers: prev.targetTeachers.includes(id)
-                ? prev.targetTeachers.filter(t => t !== id)
-                : [...prev.targetTeachers, id]
-        }));
-    };
-
-    // Calculate achievers for a rule based on the fetched salaries
     const getAchieversForRule = (rule: IncentiveRule) => {
-        const salaryMap = new Map<string, number>();
-        salaries.forEach(s => {
-            const tId = typeof s.teacherId === 'object' ? s.teacherId._id : s.teacherId;
-            salaryMap.set(tId, s.totalHours);
-        });
-
-        return rule.targetTeachers.filter(teacher => {
-            const hours = salaryMap.get(teacher._id) || 0;
-            return hours >= rule.targetHours;
+        return salaries.filter(s => {
+            const matchesTeacher = rule.targetTeachers.length === 0 || rule.targetTeachers.includes(s.teacherId?._id);
+            return matchesTeacher && s.totalHours >= rule.targetHours;
         });
     };
-
-    const months = useMemo(() => {
-        const arr = [];
-        const date = new Date();
-        date.setDate(1); // Set to 1st of month to avoid overflow (e.g. March 29 -> Feb 29 -> March 1)
-        for (let i = 0; i < 6; i++) {
-            const m = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
-            const y = date.getFullYear();
-            arr.push(`${m} ${y}`);
-            date.setMonth(date.getMonth() - 1);
-        }
-        return arr;
-    }, []);
 
     return (
-        <div className="flex bg-gray-50 min-h-screen font-sans">
-            <Toaster position="top-center" />
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
+            <Toaster position="top-right" />
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="admin" />
-            </div>
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
-            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
-                <header className="flex items-center justify-between p-4 bg-white shadow-sm lg:hidden">
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
-                        <Menu className="w-8 h-8 text-[#45308D]" />
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
+                    <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all">
+                        <Menu className="w-6 h-6" />
                     </button>
-                    <h1 className="text-xl font-bold text-[#45308D]">BrightPath Admin</h1>
+                    <div className="text-right">
+                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Incentives Hub</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                    </div>
                 </header>
 
-                <div className="p-6 md:p-10 max-w-6xl mx-auto w-full">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 bg-white p-6 rounded-[2.5rem] shadow-sm border border-gray-100">
+                <div className="p-4 md:p-12 mt-20 lg:mt-0">
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 mt-4 px-2">
                         <div>
-                            <h1 className="text-3xl font-black text-[#45308D] tracking-tight">Incentive Tracking</h1>
-                            <p className="text-gray-500 font-medium">Analyze and manage faculty rewards.</p>
+                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Rewards Matrix</h1>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 ml-1">Faculty Performance Incentive Engine</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#45308D]" />
+
+                        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+                            <div className="relative group w-full md:min-w-[200px]">
+                                <CalendarDays className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary z-10" />
                                 <select 
+                                    className="w-full pl-11 pr-10 py-3.5 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer appearance-none shadow-sm"
                                     value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(e.target.value)}
-                                    className="pl-10 pr-4 py-3 bg-gray-50 border-2 border-transparent rounded-2xl font-black text-sm focus:border-[#45308D] outline-none transition-all cursor-pointer"
                                 >
                                     {months.map(m => <option key={m} value={m}>{m}</option>)}
                                 </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
-                            <button
+                            
+                            <button 
                                 onClick={() => handleOpenModal()}
-                                className="bg-[#45308D] text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 hover:shadow-xl hover:scale-105 transition-all"
+                                className="w-full md:w-auto px-8 py-3.5 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 italic"
                             >
-                                <Plus className="w-5 h-5" /> New Plan
+                                <Plus className="w-4 h-4" /> Initialize Plan
                             </button>
                         </div>
                     </div>
 
                     {isLoading ? (
-                        <div className="flex justify-center p-20 text-[#45308D] animate-pulse font-black">Syncing system...</div>
+                         <div className="p-32 text-center text-primary font-black italic uppercase tracking-widest animate-pulse">Synchronizing performance data...</div>
                     ) : rules.length === 0 ? (
-                        <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-gray-200">
-                            <Trophy className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                            <p className="text-gray-400 font-bold">No incentive rules configured yet.</p>
+                        <div className="bg-white rounded-[2rem] p-24 text-center border-2 border-dashed border-gray-100 mx-2">
+                            <Trophy className="w-16 h-16 text-gray-100 mx-auto mb-6" />
+                            <p className="text-gray-400 font-bold italic uppercase tracking-widest text-[9px]">No incentive matrices configured in the system.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-2">
                             {rules.map(rule => {
                                 const achievers = getAchieversForRule(rule);
                                 return (
-                                    <div key={rule._id} className={`bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm hover:shadow-2xl transition-all relative overflow-hidden group ${!rule.active ? 'opacity-60 grayscale' : ''}`}>
-                                        <div className="absolute top-0 right-0 p-6 flex gap-2">
-                                            <button onClick={() => handleOpenModal(rule)} className="text-gray-400 hover:text-[#45308D] transition-colors bg-gray-50 p-2 rounded-xl"><Edit3 className="w-5 h-5" /></button>
-                                            <button onClick={() => handleDelete(rule._id)} className="text-gray-400 hover:text-red-500 transition-colors bg-gray-50 p-2 rounded-xl"><Trash2 className="w-5 h-5" /></button>
+                                    <div key={rule._id} className={`bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 ${!rule.active ? 'opacity-60 grayscale' : ''}`}>
+                                        <div className="absolute top-0 right-0 p-6 md:p-10 flex gap-2 z-10">
+                                            <button onClick={() => handleOpenModal(rule)} className="p-3 bg-gray-50 text-gray-300 hover:text-primary hover:bg-primary/5 rounded-xl transition shadow-sm"><Edit3 className="w-4 h-4" /></button>
+                                            <button onClick={() => handleDelete(rule._id)} className="p-3 bg-gray-50 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition shadow-sm"><Trash2 className="w-4 h-4" /></button>
                                         </div>
 
-                                        <div className="flex items-center gap-4 mb-8">
-                                            <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center ${rule.active ? 'bg-[#45308D]/10 text-[#45308D]' : 'bg-gray-100 text-gray-400'}`}>
-                                                <Trophy className="w-8 h-8" />
+                                        <div className="flex items-center gap-6 mb-10">
+                                            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center shadow-inner transition-colors ${rule.active ? 'bg-primary/5 text-primary' : 'bg-gray-100 text-gray-400'}`}>
+                                                <Trophy className="w-8 h-8 md:w-10 md:h-10" />
                                             </div>
                                             <div>
-                                                <h3 className="text-2xl font-black text-gray-800 tracking-tight">{rule.ruleName}</h3>
-                                                <div className="flex items-center gap-2">
+                                                <h3 className="text-lg md:text-2xl font-black text-gray-800 tracking-tighter italic uppercase">{rule.ruleName}</h3>
+                                                <div className="flex items-center gap-2 mt-2">
                                                     {rule.active ? (
-                                                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Active Plan</span>
+                                                        <span className="bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic border border-green-200">Active</span>
                                                     ) : (
-                                                        <span className="bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Draft / Stopped</span>
+                                                        <span className="bg-gray-100 text-gray-400 px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest italic">Disabled</span>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 mb-8">
-                                            <div className="bg-gray-50/50 p-5 rounded-[2rem] border border-gray-100">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <Target className="w-4 h-4 text-[#45308D] opacity-40" />
-                                                    <p className="text-[10px] font-black uppercase text-gray-400">Target</p>
-                                                </div>
-                                                <p className="text-3xl font-black text-[#45308D] italic">{rule.targetHours}<span className="text-base not-italic text-gray-400 ml-1">hrs</span></p>
+                                        <div className="grid grid-cols-2 gap-4 mb-10">
+                                            <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2"><Star className="w-3 h-3" /> Hourly Target</p>
+                                                <p className="text-xl font-black text-primary italic uppercase tracking-tighter">{rule.targetHours}h</p>
                                             </div>
-                                            <div className="bg-[#FDC70B]/5 p-5 rounded-[2rem] border border-[#FDC70B]/10">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <DollarSign className="w-4 h-4 text-[#FDC70B]" />
-                                                    <p className="text-[10px] font-black uppercase text-[#c79c09]">Bonus</p>
-                                                </div>
-                                                <p className="text-3xl font-black text-[#c79c09] italic">₹{rule.incentiveAmount.toLocaleString()}</p>
+                                            <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-2"><TrendingUp className="w-3 h-3" /> Reward Quantum</p>
+                                                <p className="text-xl font-black text-teal-600 italic uppercase tracking-tighter">₹{(rule.incentiveAmount || 0).toLocaleString()}</p>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-6">
-                                            <div>
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Award className="w-5 h-5 text-yellow-500" />
-                                                        <h4 className="text-sm font-black text-gray-800 uppercase tracking-tighter">Achievers ({selectedMonth})</h4>
-                                                    </div>
-                                                    <span className="text-2xl font-black text-green-500 bg-green-50 px-4 py-1 rounded-2xl">{achievers.length}</span>
-                                                </div>
-                                                
-                                                {achievers.length > 0 ? (
-                                                    <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                                                        {achievers.map(teacher => (
-                                                            <div key={teacher._id} className="flex items-center justify-between p-4 bg-green-50/50 rounded-2xl border border-green-100 group/item hover:bg-green-50 transition-colors">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-green-200 flex items-center justify-center text-green-700 font-black text-xs">
-                                                                        {teacher.name.charAt(0)}
-                                                                    </div>
-                                                                    <p className="text-sm font-black text-gray-700">{teacher.name}</p>
-                                                                </div>
-                                                                <CheckCircle className="w-5 h-5 text-green-500" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                                                        <p className="text-xs font-bold text-gray-400">No teachers have met this target for {selectedMonth} yet.</p>
-                                                    </div>
-                                                )}
+                                        <div className="pt-6 border-t border-gray-50">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">{selectedMonth} Achievers</p>
+                                                <span className="text-xs font-black text-primary">{achievers.length} Facult.</span>
                                             </div>
-
-                                            <div className="pt-6 border-t border-gray-50">
-                                                <p className="text-[10px] font-black uppercase text-gray-300 mb-3 flex items-center gap-2">
-                                                    <Users className="w-3 h-3" /> Target Group ({rule.targetTeachers.length} assigned)
-                                                </p>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {rule.targetTeachers.slice(0, 5).map(teacher => (
-                                                        <div key={teacher._id} className="text-[10px] font-bold bg-white text-gray-400 px-3 py-1 rounded-full border border-gray-100 italic">
-                                                            {teacher.name}
-                                                        </div>
-                                                    ))}
-                                                    {rule.targetTeachers.length > 5 && (
-                                                        <div className="text-[10px] font-bold bg-white text-gray-400 px-3 py-1 rounded-full border border-gray-100 font-mono">+{rule.targetTeachers.length - 5} more</div>
-                                                    )}
-                                                </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {achievers.length === 0 ? (
+                                                    <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">No threshold breaches detected yet.</p>
+                                                ) : achievers.map(s => (
+                                                    <span key={s._id} className="px-3 py-1.5 bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest rounded-lg border border-primary/10">
+                                                        {s.teacherId?.name}
+                                                    </span>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
@@ -320,149 +297,117 @@ export default function AdminIncentives() {
                 </div>
             </div>
 
-            {/* Incentive Editor Modal */}
+            {/* Modal Redesign */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[#45308D]/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in slide-in-from-bottom duration-300 border-4 border-white">
-                        <div className="bg-[#45308D] p-10 text-white relative">
-                            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-white/60 hover:text-white hover:rotate-90 transition-all">
-                                <X className="w-10 h-10" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-primary/20 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] w-full max-w-xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
+                        <div className="bg-primary p-8 md:p-10 text-white relative">
+                            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
-                            <h2 className="text-4xl font-black italic tracking-tighter mb-2">{editingRule ? 'Modify Plan' : 'New Strategic Plan'}</h2>
-                            <p className="text-white/60 font-bold uppercase tracking-widest text-xs">Architecture & Governance</p>
+                            <div className="w-16 h-16 bg-white/10 rounded-[1.5rem] flex items-center justify-center text-3xl mb-6 border border-white/20 italic">
+                                T
+                            </div>
+                            <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase">{editingRule ? 'Modify Reward' : 'New Reward Plan'}</h2>
+                            <p className="text-white/60 font-black text-[10px] uppercase tracking-[0.2em] mt-1">Institutional Performance Matrix</p>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-4">
-                                <label className="block text-sm font-black text-gray-700 ml-1 uppercase tracking-wider">Plan Identifier</label>
-                                <input
-                                    className="w-full bg-gray-50 border-4 border-transparent rounded-3xl p-5 font-black text-xl text-black focus:outline-none focus:border-[#45308D] focus:bg-white transition-all shadow-inner"
+                        <form onSubmit={handleSave} className="p-8 md:p-10 space-y-8 bg-[#fafafa]">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Display Designation</label>
+                                <input 
+                                    className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm outline-none focus:border-primary transition-all shadow-sm"
+                                    placeholder="e.g. Master Instructor Incentive"
                                     value={formData.ruleName}
-                                    placeholder="e.g. Master Mentor Bonus"
-                                    onChange={e => setFormData({ ...formData, ruleName: e.target.value })}
+                                    onChange={(e) => setFormData({...formData, ruleName: e.target.value})}
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                                <div className="space-y-4">
-                                    <label className="block text-sm font-black text-gray-700 ml-1 uppercase tracking-wider">Target Cap (Hrs)</label>
-                                    <div className="relative group">
-                                        <Target className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 group-focus-within:text-[#45308D] transition-colors" />
-                                        <input
-                                            type="number"
-                                            className="w-full bg-gray-50 border-4 border-transparent rounded-3xl p-5 pl-14 font-black text-xl text-black focus:outline-none focus:border-[#45308D] focus:bg-white transition-all shadow-inner"
-                                            value={formData.targetHours}
-                                            onChange={e => setFormData({ ...formData, targetHours: Number(e.target.value) })}
-                                            required
-                                        />
-                                    </div>
+                            <div className="grid grid-cols-2 gap-6 md:gap-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hourly Threshold</label>
+                                    <input 
+                                        type="number"
+                                        className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm outline-none focus:border-primary transition-all shadow-sm"
+                                        value={formData.targetHours}
+                                        onChange={(e) => setFormData({...formData, targetHours: Number(e.target.value)})}
+                                        required
+                                    />
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="block text-sm font-black text-gray-700 ml-1 uppercase tracking-wider">Bonus Yield (₹)</label>
-                                    <div className="relative group">
-                                        <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 group-focus-within:text-[#45308D] transition-colors" />
-                                        <input
-                                            type="number"
-                                            className="w-full bg-gray-50 border-4 border-transparent rounded-3xl p-5 pl-14 font-black text-xl text-black focus:outline-none focus:border-[#45308D] focus:bg-white transition-all shadow-inner"
-                                            value={formData.incentiveAmount}
-                                            onChange={e => setFormData({ ...formData, incentiveAmount: Number(e.target.value) })}
-                                            required
-                                        />
-                                    </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantum (₹)</label>
+                                    <input 
+                                        type="number"
+                                        className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm outline-none focus:border-primary transition-all shadow-sm"
+                                        value={formData.incentiveAmount}
+                                        onChange={(e) => setFormData({...formData, incentiveAmount: Number(e.target.value)})}
+                                        required
+                                    />
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-black text-gray-700 ml-1 uppercase tracking-wider">Assigned Faculty ({formData.targetTeachers.length})</label>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, targetTeachers: teachers.map(t => t._id) })}
-                                        className="text-[10px] font-black uppercase text-[#45308D] hover:underline"
-                                    >
-                                        Select All Candidates
-                                    </button>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-56 overflow-y-auto p-1 pr-4 custom-scrollbar">
-                                    {teachers.map(teacher => (
-                                        <div
-                                            key={teacher._id}
-                                            onClick={() => toggleTeacher(teacher._id)}
-                                            className={`p-4 rounded-[2rem] border-4 cursor-pointer flex items-center gap-4 transition-all ${formData.targetTeachers.includes(teacher._id)
-                                                ? 'bg-[#45308D]/5 border-[#45308D] scale-95'
-                                                : 'bg-white border-gray-100 hover:border-gray-200 opacity-60 hover:opacity-100'}`}
-                                        >
-                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black ${formData.targetTeachers.includes(teacher._id)
-                                                ? 'bg-[#45308D] text-white'
-                                                : 'bg-gray-200 text-gray-500'}`}>
-                                                {teacher.name.charAt(0)}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Faculty Audience</label>
+                                <div className="bg-white border-2 border-gray-100 p-6 rounded-2xl max-h-40 overflow-y-auto no-scrollbar shadow-sm">
+                                    <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-50">
+                                        <input 
+                                            type="checkbox" 
+                                            className="w-5 h-5 accent-primary cursor-pointer"
+                                            checked={formData.targetTeachers.length === 0}
+                                            onChange={() => setFormData({...formData, targetTeachers: []})}
+                                        />
+                                        <span className="text-[10px] font-black text-primary uppercase italic">Universal Faculty Tier (All)</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {teachers.map(t => (
+                                            <div key={t._id} className="flex items-center gap-3">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="w-5 h-5 accent-primary cursor-pointer"
+                                                    checked={formData.targetTeachers.includes(t._id)}
+                                                    onChange={(e) => {
+                                                        const newArr = e.target.checked 
+                                                            ? [...formData.targetTeachers, t._id]
+                                                            : formData.targetTeachers.filter(id => id !== t._id);
+                                                        setFormData({...formData, targetTeachers: newArr});
+                                                    }}
+                                                />
+                                                <span className="text-xs font-bold text-gray-600">{t.name}</span>
                                             </div>
-                                            <div className="flex-1 overflow-hidden">
-                                                <p className="text-sm font-black truncate">{teacher.name}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 truncate uppercase">{teacher.email}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 py-4">
-                                <label className="flex items-center gap-4 cursor-pointer group">
-                                    <div className="relative">
-                                        <input
-                                            type="checkbox"
-                                            className="sr-only"
-                                            checked={formData.active}
-                                            onChange={e => setFormData({ ...formData, active: e.target.checked })}
-                                        />
-                                        <div className={`w-16 h-8 rounded-full transition-all ${formData.active ? 'bg-green-500 shadow-lg shadow-green-200' : 'bg-gray-300'}`}></div>
-                                        <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all shadow-md ${formData.active ? 'translate-x-8' : ''}`}></div>
-                                    </div>
-                                    <div>
-                                        <span className="text-sm font-black text-gray-800 block uppercase tracking-tight">Active Deployment</span>
-                                        <span className="text-[10px] font-bold text-gray-400 block uppercase">Incentive logic will apply to current metrics</span>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div className="flex gap-6 pt-10 border-t-4 border-gray-50">
-                                <button
-                                    type="submit"
-                                    disabled={isSaving}
-                                    className="flex-[2] bg-[#45308D] text-white py-6 rounded-[2rem] font-black shadow-2xl shadow-[#45308D]/30 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 text-xl"
-                                >
-                                    {isSaving ? <Loader2 className="w-8 h-8 animate-spin" /> : <Save className="w-7 h-7" />}
-                                    {editingRule ? 'Save Changes' : 'Publish Plan'}
-                                </button>
-                                <button
+                            <div className="flex gap-4 pt-4">
+                                <button 
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 bg-gray-100 text-gray-500 py-6 rounded-[2rem] font-black hover:bg-gray-200 transition-all border-4 border-white text-xl"
+                                    className="flex-1 py-4 bg-white border border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all font-sans"
                                 >
-                                    Exit
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={isSaving}
+                                    className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 italic disabled:opacity-50"
+                                >
+                                    {isSaving ? 'Synching...' : (editingRule ? 'Modify Matrix' : 'Launch Matrix')} <CheckCircle2 className="w-4 h-4" />
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-
             <style jsx>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 8px;
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
                 }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #F3F4F6;
-                    border-radius: 9999px;
-                    border: 2px solid white;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #E5E7EB;
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
                 }
             `}</style>
         </div>
