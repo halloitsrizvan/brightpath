@@ -5,7 +5,8 @@ import Testimonials from './components/public/Testimonials';
 import TutorsGrid from './components/public/TutorsGrid';
 import SubjectsGrid from './components/public/SubjectsGrid';
 import Image from 'next/image';
-import { Star, ArrowRight, Video, Clock, Users, ShieldCheck, BookOpen, CheckCircle2 } from 'lucide-react';
+import { Star, ArrowRight, Video, Clock, Users, ShieldCheck, BookOpen, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
     return (
@@ -92,6 +93,9 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Banner Slider Section */}
+            <BannerCarousel />
+
             {/* Why Sections */}
             <section className="py-32 bg-white">
                 <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -119,6 +123,68 @@ export default function LandingPage() {
 
             <PublicFooter />
         </div>
+    );
+}
+
+function BannerCarousel() {
+    const images = ['/banner1.png', '/banner2.png', '/banner3.png'];
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <section className="relative w-full overflow-hidden bg-gray-50 py-12">
+            <div className="container mx-auto px-6">
+                <div className="relative h-[300px] md:h-[500px] rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white group">
+                    <div 
+                        className="flex h-full transition-transform duration-1000 ease-out"
+                        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                    >
+                        {images.map((src, idx) => (
+                            <div key={idx} className="relative min-w-full h-full">
+                                <Image 
+                                    src={src} 
+                                    alt={`Banner ${idx + 1}`} 
+                                    fill 
+                                    className="object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Navigation Dots */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                        {images.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentIndex(idx)}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${currentIndex === idx ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'}`}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Navigation Arrows */}
+                    <button 
+                        onClick={() => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)}
+                        className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+                    <button 
+                        onClick={() => setCurrentIndex((prev) => (prev + 1) % images.length)}
+                        className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white flex items-center justify-center hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+                </div>
+            </div>
+        </section>
     );
 }
 
