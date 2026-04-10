@@ -18,6 +18,7 @@ import {
     Search
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
+import { FinanceSkeleton } from './Skeleton';
 
 export default function FinanceHub() {
     const [financeData, setFinanceData] = useState<any>(null);
@@ -147,8 +148,9 @@ export default function FinanceHub() {
     };
 
     if (loading) return (
-        <div className="flex justify-center items-center h-screen bg-gray-50 italic font-black text-primary animate-pulse">
-            CALCULATING RESERVES...
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            <FinanceSkeleton />
         </div>
     );
 

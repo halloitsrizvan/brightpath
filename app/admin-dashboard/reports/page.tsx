@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { ReportsSkeleton } from './Skeleton';
 
 export default function MonthlyReport() {
     const [reportData, setReportData] = useState<any>(null);
@@ -70,8 +71,9 @@ export default function MonthlyReport() {
 
     if (loading && !reportData) {
         return (
-            <div className="flex h-screen bg-[#0A0A0B] items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            <div className="flex bg-[#0A0A0B] min-h-screen font-sans text-white">
+                <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+                <ReportsSkeleton />
             </div>
         );
     }
