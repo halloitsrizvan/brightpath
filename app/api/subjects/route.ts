@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '../../../lib/auth';
-import Subject from '../../../models/Subject';
-import dbConnect from '../../../lib/mongodb';
+import { checkAuth } from '@/lib/auth';
+import Subject from '@/models/Subject';
+import dbConnect from '@/lib/mongodb';
 
 export async function POST(req: NextRequest) {
     try {

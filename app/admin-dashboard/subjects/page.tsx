@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../../components/Sidebar';
 import api from '../../utils/api';
 import SubjectModal from '../../components/modals/SubjectModal';
-import { Menu } from 'lucide-react';
+import { Menu, Trash2 } from 'lucide-react';
 
 export default function AdminSubjects() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -19,6 +19,18 @@ export default function AdminSubjects() {
                 setLoading(false);
             })
             .catch(console.error);
+    };
+    
+    const handleDelete = async (id: string) => {
+        if (window.confirm('Are you certain you want to remove this academic unit? This action cannot be undone.')) {
+            try {
+                await api.delete(`/subjects/${id}`);
+                fetchSubjects();
+            } catch (err) {
+                console.error(err);
+                alert('Command failed: Could not purge subject record.');
+            }
+        }
     };
 
     useEffect(() => {
@@ -71,20 +83,30 @@ export default function AdminSubjects() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-100">
+                                    <tr className="bg-gray-50 text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] border-b border-gray-100 italic">
                                         <th className="p-4 font-medium">Subject Name</th>
                                         <th className="p-4 font-medium">Class Level</th>
                                         <th className="p-4 font-medium">Syllabus</th>
                                         <th className="p-4 font-medium">Description</th>
+                                        <th className="p-4 font-medium text-right">Operations</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {subjects.map((sub: any) => (
-                                        <tr key={sub._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                                        <tr key={sub._id} className="border-b border-gray-50 hover:bg-gray-50/50 transition group">
                                             <td className="p-4 font-medium text-gray-800">{sub.subjectName}</td>
                                             <td className="p-4 text-gray-600">{sub.classLevel || '-'}</td>
                                             <td className="p-4 text-gray-600">{sub.syllabus || '-'}</td>
-                                            <td className="p-4 text-gray-600 max-w-xs truncate">{sub.description || '-'}</td>
+                                            <td className="p-4 text-gray-600 max-w-xs">{sub.description || '-'}</td>
+                                            <td className="p-4 text-right">
+                                                <button 
+                                                    onClick={() => handleDelete(sub._id)}
+                                                    className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90"
+                                                    title="Purge Subject"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
