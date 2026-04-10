@@ -33,6 +33,7 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
                 { name: 'Founders', href: '/admin-dashboard/founders', icon: <ShieldCheck className="w-5 h-5" /> },
                 { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
                 { name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
+                { name: 'Monthly Report', href: '/admin-dashboard/reports', icon: <BarChart3 className="w-5 h-5" /> },
             ];
         }
         if (role === 'teacher') {
