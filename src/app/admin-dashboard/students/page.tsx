@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
-import StudentModal from '../../components/modals/StudentModal';
-import StudentViewModal from '../../components/modals/StudentViewModal';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
+import StudentModal from '@/features/students/components/StudentModal';
+import StudentViewModal from '@/features/students/components/StudentViewModal';
 import { Eye, Edit2, Trash2, User, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 

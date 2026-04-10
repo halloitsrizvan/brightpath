@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, Plus, Trash2, Edit3, Target, DollarSign, Clock, CheckCircle2, Circle, Calendar, Save, Loader2, X, ListTodo, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 

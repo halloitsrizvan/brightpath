@@ -1,6 +1,6 @@
 'use client';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 

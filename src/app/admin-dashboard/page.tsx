@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '@/components/Sidebar';
 import Cookies from 'js-cookie';
-import api from '../utils/api';
+import api from '@/utils/api';
 import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight, Menu } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import Cookies from 'js-cookie';
 import { Menu, User, Phone, Mail, MapPin, Calendar, Book, ShieldAlert, IndianRupee, Clock, CheckCircle, Loader2, FileText, Receipt } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';

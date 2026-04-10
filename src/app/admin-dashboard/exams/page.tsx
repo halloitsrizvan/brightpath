@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, Filter, Trash2, Edit3, Eye, PlusCircle, Search, Calendar, BookOpen, User, CheckCircle } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 

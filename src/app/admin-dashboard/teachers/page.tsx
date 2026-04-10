@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
-import TeacherModal from '../../components/modals/TeacherModal';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
+import TeacherModal from '@/features/teachers/components/TeacherModal';
 import { Menu, Edit3, Trash2 } from 'lucide-react';
 
 export default function AdminTeachers() {

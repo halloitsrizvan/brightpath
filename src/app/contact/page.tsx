@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
 import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
 
 export default function ContactPage() {

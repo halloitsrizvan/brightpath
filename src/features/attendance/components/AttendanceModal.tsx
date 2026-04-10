@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import api from '@/utils/api';
 
 export default function AttendanceModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
     const [formData, setFormData] = useState({ studentId: '', teacherId: '', subjectId: '', sessionId: '', date: '', durationMinutes: 60, status: 'Present', notes: '' });

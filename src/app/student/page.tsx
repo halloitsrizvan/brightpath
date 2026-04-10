@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import LoginForm from '../components/auth/LoginForm';
+import LoginForm from '@/features/auth/components/LoginForm';
 
 export const metadata: Metadata = {
     robots: { index: false, follow: false }

@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
-import AttendanceModal from '../../components/modals/AttendanceModal';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
+import AttendanceModal from '@/features/attendance/components/AttendanceModal';
 import { Menu, Calendar, Clock, ChevronDown, User, BookOpen, UserCheck, Search, Filter, AlertCircle, Plus } from 'lucide-react';
 
 export default function AdminAttendance() {

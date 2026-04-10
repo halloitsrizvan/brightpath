@@ -1,6 +1,6 @@
 'use client';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
 import { Target, Zap, ShieldCheck, Users, BookOpen } from 'lucide-react';
 
 export default function AboutPage() {

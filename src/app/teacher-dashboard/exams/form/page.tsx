@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
-import Sidebar from '../../../components/Sidebar';
-import api from '../../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, ChevronDown, CheckCircle, ArrowLeft, UploadCloud } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'react-hot-toast';

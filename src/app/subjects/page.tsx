@@ -1,7 +1,7 @@
 'use client';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
-import SubjectsGrid from '../components/public/SubjectsGrid';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
+import SubjectsGrid from '@/components/public/SubjectsGrid';
 import { BookOpen, GraduationCap, Globe, Zap } from 'lucide-react';
 
 export default function SubjectsPage() {

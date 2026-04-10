@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
-import SubjectModal from '../../components/modals/SubjectModal';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
+import SubjectModal from '@/features/subjects/components/SubjectModal';
 import { Menu, Trash2 } from 'lucide-react';
 
 export default function AdminSubjects() {

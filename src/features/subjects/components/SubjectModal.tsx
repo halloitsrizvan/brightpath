@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import api from '../../utils/api';
+import api from '@/utils/api';
 
 export default function SubjectModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
     const [formData, setFormData] = useState({ subjectName: '', description: '', classLevel: '', syllabus: '' });

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, Calendar, Clock, CheckCircle2, XCircle, TrendingUp } from 'lucide-react';
 import Cookies from 'js-cookie';
 

@@ -1,10 +1,16 @@
-'use client';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
-import TutorsGrid from '../components/public/TutorsGrid';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
+import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
 import { Star, ShieldCheck, GraduationCap } from 'lucide-react';
+import { PublicService } from '@/lib/services/publicService';
 
-export default function TutorsPage() {
+export const revalidate = 3600; // Revalidate every hour
+
+export default async function TutorsPage() {
+    const rawTutors = await PublicService.getEliteTutors();
+    // Convert Mongo objects for Next.js Serializability
+    const tutors = JSON.parse(JSON.stringify(rawTutors));
+
     return (
         <div className="min-h-screen bg-white">
             <PublicNavbar />
@@ -24,6 +30,7 @@ export default function TutorsPage() {
 
             <section className="py-20 bg-gray-50/50 border-b border-gray-100">
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                    {/* ... (Keep features grid same) */}
                     <div className="space-y-4">
                         <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm"><ShieldCheck /></div>
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Strict Verification</h4>
@@ -42,7 +49,7 @@ export default function TutorsPage() {
                 </div>
             </section>
 
-            <TutorsGrid />
+            <PublicTutorsGrid tutors={tutors} />
 
             <section className="py-32 bg-gray-900 text-white relative overflow-hidden">
                 <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">

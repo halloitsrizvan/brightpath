@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import api from '../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import Cookies from 'js-cookie';
 import { BookOpen, Settings, Menu, TrendingUp, Calendar, Clock, GraduationCap, Users, UserCheck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';

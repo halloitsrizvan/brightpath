@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/Sidebar';
-import api from '../../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, User, Mail, Phone, Clock, IndianRupee, BookOpen, GraduationCap, Edit3, CheckCircle, Camera, Loader2, Save, FileText, Download } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { toast, Toaster } from 'react-hot-toast';
-import IncentiveProgressCard from '../../components/IncentiveProgressCard';
+import IncentiveProgressCard from '@/components/IncentiveProgressCard';
 
 interface Teacher {
     _id: string;

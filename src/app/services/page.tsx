@@ -1,7 +1,7 @@
 'use client';
-import PublicNavbar from '../components/public/Navbar';
-import PublicFooter from '../components/public/Footer';
-import ServicesSection from '../components/public/ServicesSection';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
+import ServicesSection from '@/components/public/ServicesSection';
 import { ShieldCheck, Video, Clock, TrendingUp } from 'lucide-react';
 
 export default function ServicesPage() {

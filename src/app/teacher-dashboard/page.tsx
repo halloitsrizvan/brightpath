@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import api from '../utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { Menu, Users, Calendar, Clock, IndianRupee } from 'lucide-react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
-import IncentiveProgressCard from '../components/IncentiveProgressCard';
+import IncentiveProgressCard from '@/components/IncentiveProgressCard';
 
 export default function TeacherDashboard() {
     const [stats, setStats] = useState({

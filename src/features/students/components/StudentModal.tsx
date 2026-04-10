@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import api from '../../utils/api';
+import api from '@/utils/api';
 import { Search, Book, User, CheckCircle2 } from 'lucide-react';
 
 export default function StudentModal({ isOpen, onClose, onSuccess, editData }: { isOpen: boolean, onClose: () => void, onSuccess: () => void, editData?: any }) {

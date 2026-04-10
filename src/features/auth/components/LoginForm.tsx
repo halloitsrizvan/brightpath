@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import api from '../../utils/api';
+import api from '@/utils/api';
 import { ShieldCheck, Lock, Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
