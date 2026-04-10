@@ -7,6 +7,7 @@ import Teacher from '@/models/Teacher';
 import Student from '@/models/Student';
 import { RateLimitService } from '@/lib/services/rateLimitService';
 import { loginSchema } from '@/lib/validations/auth';
+import { AuditService } from '@/lib/services/auditService';
 
 export async function POST(req: Request) {
     try {
@@ -57,10 +58,28 @@ export async function POST(req: Request) {
         const payload = { id: user._id, role: user.role };
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
 
-        return NextResponse.json({
-            token,
+        await AuditService.log('USER_LOGIN_SUCCESS', {
+            id: user._id,
+            email: user.email,
+            role: user.role,
+            name: user.name || user.fullName
+        }, { ip }, req);
+
+        const response = NextResponse.json({
             user: { id: user._id, name: user.name || user.fullName, email: user.email, role: user.role }
         });
+
+        response.cookies.set({
+            name: 'token',
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/',
+            maxAge: 60 * 60 * 24 // 1 day
+        });
+
+        return response;
     } catch (error: any) {
         return NextResponse.json({ message: error.message || 'Server error' }, { status: 500 });
     }

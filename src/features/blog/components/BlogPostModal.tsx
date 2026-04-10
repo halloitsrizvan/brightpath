@@ -2,8 +2,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import api from '@/utils/api';
+import { toast } from 'react-hot-toast';
 import { Layout, Type, FileText, Send, User, Search, Globe } from 'lucide-react';
 import 'react-quill-new/dist/quill.snow.css';
+import { sanitizeHTML } from '@/lib/utils/sanitizer';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
@@ -56,16 +58,25 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+
+        const sanitizedData = {
+            ...formData,
+            content: sanitizeHTML(formData.content),
+            excerpt: sanitizeHTML(formData.excerpt)
+        };
+
         try {
             if (editData) {
-                await api.put(`/admin/blog/${editData._id}`, formData);
+                await api.put(`/admin/blog/${editData._id}`, sanitizedData);
+                toast.success('Narrative Updated & Secured');
             } else {
-                await api.post('/admin/blog', formData);
+                await api.post('/admin/blog', sanitizedData);
+                toast.success('Narrative Published & Secured');
             }
             onSuccess();
             onClose();
-        } catch (err) {
-            console.error(err);
+        } catch (error: any) {
+            console.error(error);
         } finally {
             setLoading(false);
         }
