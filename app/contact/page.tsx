@@ -1,9 +1,34 @@
 'use client';
+import { useState } from 'react';
 import PublicNavbar from '../components/public/Navbar';
 import PublicFooter from '../components/public/Footer';
 import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
 
 export default function ContactPage() {
+    const [formData, setFormData] = useState({
+        name: '',
+        contact: '',
+        module: '',
+        requirements: ''
+    });
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const message = encodeURIComponent(
+            `*New Enquiry from Brightpath Portal*\n\n` +
+            `*Parent Name:* ${formData.name}\n` +
+            `*Contact:* ${formData.contact}\n` +
+            `*Module/Grade:* ${formData.module}\n` +
+            `*Requirements:* ${formData.requirements}`
+        );
+        window.open(`https://wa.me/918590878148?text=${message}`, '_blank');
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     return (
         <div className="min-h-screen bg-white">
             <PublicNavbar />
@@ -27,7 +52,7 @@ export default function ContactPage() {
                 <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-20">
                     <div className="space-y-12">
                         <div className="grid grid-cols-1 gap-8">
-                            <ContactCard icon={<Smartphone className="w-6 h-6" />} label="Institutional Hotline" value="+91-000-000-0000" desc="Direct support for parents & partners" />
+                            <ContactCard icon={<Smartphone className="w-6 h-6" />} label="Institutional Hotline" value="+91 85908 78148" desc="Direct support for parents & partners" />
                             <ContactCard icon={<Mail className="w-6 h-6" />} label="Email Dispatch" value="enquiry@brightpath.eduvora" desc="For detailed academic proposals" />
                             <ContactCard icon={<MapPin className="w-6 h-6" />} label="Operational Node" value="Brightpath Kerala | Online Academy" desc="Serving students across the state" />
                         </div>
@@ -44,7 +69,7 @@ export default function ContactPage() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Sunday</span>
-                                    <span className="text-sm font-bold italic italic">Revision Only</span>
+                                    <span className="text-sm font-bold italic">Revision Only</span>
                                 </div>
                             </div>
                         </div>
@@ -52,17 +77,42 @@ export default function ContactPage() {
 
                     <div className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-primary/5 border border-gray-100 flex flex-col justify-center">
                         <h2 className="text-3xl font-black text-gray-800 italic uppercase tracking-tighter mb-10 leading-none">Diagnostic <br /><span className="text-primary italic-glow">Request.</span></h2>
-                        <form className="space-y-8">
+                        <form className="space-y-8" onSubmit={handleSubmit}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <EnquiryField label="Parent/Guardian Name" placeholder="Full Identity" />
-                                <EnquiryField label="Contact Identifier" placeholder="+91 XXX XXX XXXX" />
+                                <EnquiryField 
+                                    label="Parent/Guardian Name" 
+                                    placeholder="Full Identity" 
+                                    name="name" 
+                                    value={formData.name} 
+                                    onChange={handleChange} 
+                                />
+                                <EnquiryField 
+                                    label="Contact Identifier" 
+                                    placeholder="+91 XXX XXX XXXX" 
+                                    name="contact" 
+                                    value={formData.contact} 
+                                    onChange={handleChange} 
+                                />
                             </div>
-                            <EnquiryField label="Academic Module / Grade" placeholder="e.g. 10th Grade CBSE Physics" />
+                            <EnquiryField 
+                                label="Academic Module / Grade" 
+                                placeholder="e.g. 10th Grade CBSE Physics" 
+                                name="module" 
+                                value={formData.module} 
+                                onChange={handleChange} 
+                            />
                             <div className="space-y-2">
                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Learning Requirements</label>
-                                <textarea className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-3xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm min-h-[150px] italic" placeholder="Specific challenges or goals..."></textarea>
+                                <textarea 
+                                    name="requirements"
+                                    value={formData.requirements}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-3xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm min-h-[150px] italic text-gray-900 placeholder:text-gray-400 shadow-sm" 
+                                    placeholder="Specific challenges or goals..."
+                                ></textarea>
                             </div>
-                            <button suppressHydrationWarning className="w-full py-5 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group">
+                            <button suppressHydrationWarning type="submit" className="w-full py-5 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group">
                                 <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                 Transmit Enquiry Hub
                             </button>
@@ -92,14 +142,18 @@ function ContactCard({ icon, label, value, desc }: { icon: any, label: string, v
     );
 }
 
-function EnquiryField({ label, placeholder }: { label: string, placeholder: string }) {
+function EnquiryField({ label, placeholder, name, value, onChange }: { label: string, placeholder: string, name: string, value: string, onChange: any }) {
     return (
         <div className="space-y-2 w-full">
             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
             <input 
                 type="text" 
+                name={name}
+                value={value}
+                onChange={onChange}
+                required
                 suppressHydrationWarning 
-                className="w-full px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic" 
+                className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-gray-900 placeholder:text-gray-400 shadow-sm" 
                 placeholder={placeholder} 
             />
         </div>
