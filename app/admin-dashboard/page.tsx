@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
+import Cookies from 'js-cookie';
 import api from '../utils/api';
 import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight, Menu } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
@@ -17,9 +18,20 @@ export default function AdminDashboard() {
     });
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [userName, setUserName] = useState('Admin');
 
     useEffect(() => {
         api.get('/dashboard/admin').then(res => setStats(res.data)).catch(console.error);
+        
+        // Get admin name from cookie
+        const userCookie = Cookies.get('user');
+        if (userCookie) {
+            try {
+                const user = JSON.parse(userCookie);
+                if (user.name) setUserName(user.name);
+            } catch (e) {}
+        }
+
         setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
@@ -58,7 +70,7 @@ export default function AdminDashboard() {
                         <div className="hidden lg:flex flex-col">
                             <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
-                                {greetings()}, <span className="text-[#45308D]">Admin</span>
+                                {greetings()}, <span className="text-[#45308D]">{userName}</span>
                             </h1>
                             <p className="text-gray-400 font-bold text-sm lg:text-base mt-4 flex items-center gap-2">
                                 {currentTime && (
@@ -78,7 +90,7 @@ export default function AdminDashboard() {
                     <div className="flex lg:hidden flex-col px-2">
                              <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
                             <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
-                                {greetings()}, <span className="text-[#45308D]">Admin</span>
+                                {greetings()}, <span className="text-[#45308D]">{userName}</span>
                             </h1>
                     </div>
                     {/* Performance Summary Grid */}
