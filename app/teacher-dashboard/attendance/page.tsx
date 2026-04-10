@@ -185,28 +185,26 @@ export default function AttendancePage() {
             )}
 
             {/* Sidebar */}
-            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="teacher" />
-            </div>
+            <Sidebar role="teacher" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main Content */}
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
                 {/* Header (matches teacher dashboard) */}
-                <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 shadow-sm lg:hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
                     <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 -ml-2 text-primary hover:bg-primary/10 rounded-lg lg:hidden"
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all"
                     >
-                        <Menu className="w-8 h-8" />
+                        <Menu className="w-6 h-6" />
                     </button>
 
                     <div className="text-right">
-                        <h1 className="text-xl font-bold text-primary">BrightPath</h1>
-                        <p className="text-sm text-gray-500 font-medium">{teacherName}</p>
+                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Attendance</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{teacherName}</p>
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full flex flex-col items-center lg:mt-6">
+                <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full flex flex-col items-center mt-20 lg:mt-6">
                     {/* Desktop Title & Tab Switcher */}
                     <div className="hidden lg:flex w-full items-center justify-between mb-8">
                         <div>

@@ -48,25 +48,27 @@ export default function TeacherDashboard() {
             {/* Main Content */}
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
                 {/* Header (matches wireframe) */}
-                <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 shadow-sm lg:hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden font-sans">
                     <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 -ml-2 text-primary hover:bg-primary/10 rounded-lg lg:hidden"
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all"
                     >
-                        <Menu className="w-8 h-8" />
+                        <Menu className="w-6 h-6" />
                     </button>
 
                     <div className="text-right">
-                        <h1 className="text-xl font-bold text-primary">BrightPath</h1>
-                        <p className="text-sm text-gray-500 font-medium">{teacherName}</p>
+                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Faculty Hub</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{teacherName}</p>
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-8 max-w-5xl lg:max-w-7xl mx-auto w-full space-y-4 sm:space-y-6 lg:mt-6">
-                    {/* Desktop Title (Hidden on mobile as it's in the header) */}
-                    <div className="hidden lg:flex items-center justify-between mb-4">
-                        <h1 className="text-3xl font-bold text-primary tracking-tight">Teacher Dashboard</h1>
-                        <p className="text-lg font-medium text-gray-600">Welcome back, {teacherName}!</p>
+                <div className="flex-1 p-4 md:p-8 max-w-5xl lg:max-w-7xl mx-auto w-full space-y-4 sm:space-y-6 lg:mt-6 mt-20 font-sans">
+                    {/* Desktop Title (Hidden on mobile) */}
+                    <div className="hidden lg:flex flex-col mb-8">
+                        <p className="text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Academic Control Center</p>
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                            Welcome, <span className="text-primary">{teacherName}</span>
+                        </h1>
                     </div>
 
                     {/* Mark Attendance Hero Card */}

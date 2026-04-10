@@ -131,7 +131,6 @@ export default function ExamDashboard() {
             try {
                 const user = JSON.parse(userStr);
                 if (user.name) setTeacherName(user.name);
-
                 fetchExams(user.id);
             } catch (e) { }
         }
@@ -173,17 +172,16 @@ export default function ExamDashboard() {
     });
 
     return (
-        <div className="flex bg-gray-50 min-h-screen font-sans">
-            <Toaster position="top-center" toastOptions={{
-                duration: 3000,
-                style: { background: '#fff', color: '#45308D', fontWeight: 'bold', borderRadius: '9999px' },
-            }} />
-
+        <div className="flex bg-gray-50 min-h-screen font-sans overflow-x-hidden">
+            <Toaster position="top-right" />
+            
             <ViewExamModal
                 exam={selectedExam}
                 isOpen={isViewModalOpen}
                 onClose={() => setIsViewModalOpen(false)}
             />
+
+            <Sidebar role="teacher" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
@@ -193,39 +191,34 @@ export default function ExamDashboard() {
                 />
             )}
 
-            {/* Sidebar */}
-            <div className={`fixed z-50 h-full transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <Sidebar role="teacher" />
-            </div>
-
             {/* Main Content */}
-            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
                 {/* Header for Mobile */}
-                <header className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-md sticky top-0 z-30 shadow-sm lg:hidden">
+                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
                     <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="p-2 -ml-2 text-primary hover:bg-primary/10 rounded-lg lg:hidden"
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all"
                     >
-                        <Menu className="w-8 h-8" />
+                        <Menu className="w-6 h-6" />
                     </button>
 
                     <div className="text-right">
-                        <h1 className="text-xl font-bold text-primary">BrightPath</h1>
-                        <p className="text-sm text-gray-500 font-medium">{teacherName}</p>
+                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Exams</h2>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{teacherName}</p>
                     </div>
                 </header>
 
-                <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full flex flex-col lg:mt-6">
+                <div className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full flex flex-col mt-20 lg:mt-6">
                     {/* Desktop Title */}
                     <div className="hidden lg:flex w-full items-center justify-between mb-6">
-                        <h1 className="text-3xl font-bold text-primary tracking-tight">Exam Portal</h1>
-                        <p className="text-lg font-medium text-gray-600">Welcome back, {teacherName}!</p>
+                        <h1 className="text-4xl font-black text-primary tracking-tighter italic uppercase">Exam Registry</h1>
+                        <p className="text-lg font-medium text-gray-600">Welcome back, {teacherName}</p>
                     </div>
 
                     {/* Giant Entry Portal Button (Matches Reference) */}
                     <Link
                         href="/teacher-dashboard/exams/form"
-                        className="w-full relative overflow-hidden group mb-10 transition-transform transform  hover:shadow-2xl shadow-xl rounded-[1rem] bg-white border border-gray-100 flex items-center justify-center min-h-[220px]"
+                        className="w-full relative overflow-hidden group mb-10 transition-all transform hover:shadow-2xl shadow-xl rounded-[2rem] bg-white border border-gray-100 flex items-center justify-center min-h-[220px]"
                     >
                         {/* Elegant background gradients aligned with theme */}
                         <div className="absolute inset-0 bg-gradient-to-br from-[#45308D]/5 to-[#45308D]/10 opacity-70 transition-opacity group-hover:opacity-100"></div>
@@ -233,11 +226,11 @@ export default function ExamDashboard() {
                         <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#45308D]/10 rounded-full blur-3xl"></div>
 
                         <div className="relative z-10 flex flex-col items-center justify-center p-8 text-center gap-4">
-                            <h2 className="text-4xl sm:text-5xl font-extrabold text-[#45308D] tracking-tight text-balance leading-tight">
+                            <h2 className="text-4xl sm:text-5xl font-extrabold text-[#45308D] tracking-tighter italic uppercase leading-none">
                                 Exam Mark <br className="hidden sm:block" />
                                 Entry Portal
                             </h2>
-                            <div className="text-[#FDC70B] bg-[#45308D] text-sm px-6 py-2 rounded-full font-bold shadow-md shadow-[#45308D]/20 mt-2 flex items-center gap-2">
+                            <div className="text-[#FDC70B] bg-[#45308D] text-xs px-8 py-3 rounded-full font-black uppercase tracking-widest shadow-xl shadow-[#45308D]/20 mt-2 flex items-center gap-2 group-hover:scale-105 transition-transform">
                                 <PlusCircle className="w-4 h-4" /> Go to Form
                             </div>
                         </div>
@@ -246,128 +239,91 @@ export default function ExamDashboard() {
                     <div className="flex flex-col w-full">
                         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 px-1 gap-4">
                             <div>
-                                <h3 className="text-2xl font-bold text-gray-800 tracking-tight">History</h3>
-                                <p className="text-sm text-gray-500 font-medium mt-1">Search through past exam records</p>
+                                <h3 className="text-2xl font-black text-primary italic uppercase tracking-tighter">History</h3>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Registry Audit & Search</p>
                             </div>
 
                             <div className="relative group min-w-[300px]">
                                 <input
                                     type="text"
                                     placeholder="Search student, subject or class..."
-                                    className="w-full bg-white border-2 border-gray-100 py-3 pl-11 pr-4 rounded-2xl text-sm font-bold text-black focus:outline-none focus:border-[#45308D] focus:ring-4 focus:ring-[#45308D]/10 transition-all shadow-sm"
+                                    className="w-full bg-white border-2 border-gray-100 py-3.5 pl-11 pr-4 rounded-2xl text-[13px] font-bold text-black focus:outline-none focus:border-[#45308D] focus:ring-4 focus:ring-[#45308D]/10 transition-all shadow-sm"
                                     value={filterQuery}
                                     onChange={(e) => setFilterQuery(e.target.value)}
                                 />
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#45308D] transition-colors" />
-                                {filterQuery && (
-                                    <button
-                                        onClick={() => setFilterQuery('')}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 hover:text-red-500"
-                                    >
-                                        Clear
-                                    </button>
-                                )}
                             </div>
                         </div>
 
-                        {/* Exam History Cards */}
-                        <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {isLoading ? (
-                                <div className="text-center p-12 text-gray-400 font-medium animate-pulse">Loading exam history...</div>
+                                <div className="col-span-2 py-20 text-center text-gray-400 font-bold italic tracking-widest animate-pulse">SYNCHRONIZING EXAM RECORDS...</div>
                             ) : filteredExams.length === 0 ? (
-                                <div className="text-center p-12 bg-white rounded-3xl border-2 border-dashed border-gray-100 flex flex-col items-center gap-3">
-                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                                        <Search className="w-8 h-8 text-gray-300" />
-                                    </div>
-                                    <p className="text-gray-500 font-bold">{filterQuery ? `No results match "${filterQuery}"` : "No exam records found."}</p>
-                                    {filterQuery && (
-                                        <button
-                                            onClick={() => setFilterQuery('')}
-                                            className="text-[#45308D] font-black text-sm hover:underline"
-                                        >
-                                            View all records
-                                        </button>
-                                    )}
+                                <div className="col-span-2 py-20 bg-white rounded-[2rem] border border-dashed border-gray-200 text-center">
+                                    <p className="text-gray-400 font-bold italic uppercase tracking-widest">No matching records found</p>
                                 </div>
-                            ) : (
-                                (
-                                    filteredExams.map((exam) => (
-                                        <div key={exam._id} className="bg-white hover:border-[#45308D]/30 transition-all duration-300 border border-gray-100 rounded-[1rem] p-5 flex flex-col sm:flex-row items-center justify-between gap-5 group shadow-sm hover:shadow-xl  relative overflow-hidden">
-                                            {/* Subtle internal gradient accent */}
-                                            <div className="absolute top-0 left-0 w-1 h-full bg-[#45308D]/20 group-hover:bg-[#45308D] transition-colors"></div>
-
-                                            <div className="flex items-center gap-5 w-full sm:w-auto">
-                                                {/* Sophisticated Avatar */}
-                                                <div className="w-16 h-16 shrink-0 bg-gradient-to-br from-[#45308D] to-[#45308D]/80 text-white flex items-center justify-center rounded-2xl text-2xl font-black shadow-lg shadow-[#45308D]/20 group-hover:scale-105 transition-transform duration-500">
-                                                    {exam.studentId?.fullName?.charAt(0) || '?'}
-                                                </div>
-
-                                                <div className="flex flex-col gap-1.5 transition-all">
-                                                    <h4 className="text-xl font-black text-gray-900 leading-tight group-hover:text-[#45308D] transition-colors tracking-tight">
-                                                        {exam.studentId?.fullName || 'Unknown Student'}
-                                                    </h4>
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <span className="text-[10px] font-black uppercase tracking-widest bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full border border-gray-200">
-                                                            Class {exam.studentId?.class || '-'}
-                                                        </span>
-                                                        <span className="text-[10px] font-black uppercase tracking-widest bg-[#45308D]/5 text-[#45308D] px-2 py-0.5 rounded-full border border-[#45308D]/10">
-                                                            {exam.subject}
-                                                        </span>
-                                                        <span className="text-[10px] font-black uppercase tracking-widest bg-[#FDC70B]/10 text-[#c79c09] px-2 py-0.5 rounded-full border border-[#FDC70B]/20">
-                                                            {new Date(exam.examDate || exam.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[11px] font-bold text-gray-400 mt-0.5 flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                                                        Exam Portal Entry • {new Date(exam.examDate || exam.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
+                            ) : filteredExams.map((exam) => (
+                                <div
+                                    key={exam._id}
+                                    className="group bg-white rounded-[1.5rem] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all relative overflow-hidden"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-primary font-black text-sm italic border border-gray-100 group-hover:bg-primary group-hover:text-white transition-colors">
+                                                {exam.studentId?.fullName?.charAt(0)}
                                             </div>
-
-                                            <div className="flex items-center gap-8 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-gray-50 pt-4 sm:pt-0">
-                                                {/* Score Visualization */}
-                                                <div className="flex flex-col items-end gap-1 min-w-[100px]">
-                                                    <div className="text-sm font-black text-gray-400 uppercase tracking-tighter mb-0.5">Score</div>
-                                                    <div className="text-3xl font-black text-gray-800 flex items-baseline gap-1 leading-none group-hover:text-[#45308D] transition-colors">
-                                                        {exam.marks}
-                                                        <span className="text-xs text-gray-400 font-bold">/ {exam.maxMarks}</span>
-                                                    </div>
-                                                    <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden shadow-inner border border-gray-200/50">
-                                                        <div
-                                                            className="h-full bg-gradient-to-r from-[#45308D] to-[#FDC70B] rounded-full transition-all duration-1000 ease-out"
-                                                            style={{ width: `${Math.min(100, Math.max(0, (exam.marks / exam.maxMarks) * 100))}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Elegant Icon Actions */}
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }}
-                                                        className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-[#45308D] hover:bg-[#45308D]/10 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="View Full Details"
-                                                    >
-                                                        <Eye className="w-5 h-5" />
-                                                    </button>
-                                                    <Link
-                                                        href={`/teacher-dashboard/exams/form?id=${exam._id}`}
-                                                        className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-[#FDC70B] hover:bg-[#FDC70B]/10 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="Edit Entry"
-                                                    >
-                                                        <Edit3 className="w-5 h-5" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(exam._id)}
-                                                        className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 hover:text-red-500 hover:bg-red-50 hover:shadow-md rounded-xl transition-all active:scale-95"
-                                                        title="Delete Record"
-                                                    >
-                                                        <Trash2 className="w-5 h-5" />
-                                                    </button>
-                                                </div>
+                                            <div>
+                                                <h4 className="font-black text-gray-800 text-sm md:text-md">{exam.studentId?.fullName}</h4>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Class: {exam.studentId?.class || 'N/A'}</p>
                                             </div>
                                         </div>
-                                    ))
-                                )
-                            )}
+                                        <div className="text-right">
+                                            <div className="text-xl font-black text-primary italic leading-none">{exam.marks} <span className="text-[10px] text-gray-300 font-bold opacity-70">/ {exam.maxMarks}</span></div>
+                                            <p className={`text-[8px] font-black uppercase tracking-widest mt-1 ${(exam.marks / exam.maxMarks) >= 0.8 ? 'text-teal-500' : 'text-primary/60'}`}>
+                                                {(exam.marks / exam.maxMarks * 100).toFixed(0)}% Proficiency
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50/50 rounded-xl p-3 mb-4 flex items-center justify-between border border-gray-100">
+                                        <div className="flex flex-col">
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">Subject</span>
+                                            <span className="text-[11px] font-black text-primary uppercase italic">{exam.subject}</span>
+                                        </div>
+                                        <div className="flex flex-col text-right">
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">Exam Date</span>
+                                            <span className="text-[10px] font-bold text-gray-600">{new Date(exam.examDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2">
+                                        <div className="flex items-center gap-1.5 overflow-hidden">
+                                             {exam.paperImage && (
+                                                <div className="w-5 h-5 rounded-md bg-teal-50 text-teal-500 flex items-center justify-center">
+                                                    <Edit3 className="w-3 h-3" />
+                                                </div>
+                                             )}
+                                             <span className="text-[10px] font-bold text-gray-300 italic truncate max-w-[150px] uppercase tracking-tighter">
+                                                {exam.progressNote || "No Notes attached"}
+                                             </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }}
+                                                className="p-2 bg-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(exam._id)}
+                                                className="p-2 bg-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
