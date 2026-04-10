@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, Star } from 'lucide-react';
 
 export default function PublicNavbar() {
@@ -27,9 +28,9 @@ export default function PublicNavbar() {
             scrolled ? 'bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-100 py-3' : 'bg-transparent py-5'
         }`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 rotate-3 group-hover:rotate-6 transition-all">
-                        B
+                <Link href="/" className="flex items-center gap-3 group">
+                    <div className="relative w-12 h-12 bg-white rounded-2xl p-2 shadow-xl shadow-black/10 group-hover:scale-110 transition-transform flex items-center justify-center">
+                        <Image src="/logo.png" alt="BrightPath Logo" width={40} height={40} className="w-full h-full object-contain" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xl font-black tracking-tighter text-gray-900 leading-none">BRIGHTPATH</span>

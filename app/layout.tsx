@@ -49,6 +49,15 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  icons: {
+    icon: [
+      { url: '/icon.png?v=2', type: 'image/png' },
+      { url: '/favicon.ico?v=2', type: 'image/x-icon' }
+    ],
+    apple: [
+      { url: '/icon.png?v=2', type: 'image/png' }
+    ]
+  }
 };
 
 export const viewport: Viewport = {
