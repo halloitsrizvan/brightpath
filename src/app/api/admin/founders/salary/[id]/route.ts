@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/auth';
-import dbConnect from '@/lib/mongodb';
+import { checkAuth } from '@/lib/api/auth';
+import dbConnect from '@/lib/db/mongodb';
 import FounderSalary from '@/models/FounderSalary';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

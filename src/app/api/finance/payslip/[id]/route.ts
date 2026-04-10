@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/auth';
+import { checkAuth } from '@/lib/api/auth';
 import Salary from '@/models/Salary';
 import Attendance from '@/models/Attendance';
 import IncentiveRule from '@/models/IncentiveRule';
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/lib/db/mongodb';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

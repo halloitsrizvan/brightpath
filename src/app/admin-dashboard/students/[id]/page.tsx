@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Sidebar from '@/app/components/Sidebar';
-import api from '@/app/utils/api';
+import Sidebar from '@/components/Sidebar';
+import api from '@/utils/api';
 import { 
     User, 
     IndianRupee, 

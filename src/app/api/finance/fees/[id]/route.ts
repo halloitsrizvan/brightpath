@@ -1,8 +1,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/auth';
+import { checkAuth } from '@/lib/api/auth';
 import Fee from '@/models/Fee';
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/lib/db/mongodb';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
-import IncentiveRule from '@/models/IncentiveRule';
+import IncentiveRule from '../../../../models/IncentiveRule';
 import Teacher from '@/models/Teacher';
-
+ 
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();

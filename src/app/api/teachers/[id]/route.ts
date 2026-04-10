@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { checkAuth } from '@/lib/auth';
+import { checkAuth } from '@/lib/api/auth';
 import Teacher from '@/models/Teacher';
 import Subject from '@/models/Subject';
 import Student from '@/models/Student';
 import Attendance from '@/models/Attendance';
 import IncentiveRule from '@/models/IncentiveRule';
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/lib/db/mongodb';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {

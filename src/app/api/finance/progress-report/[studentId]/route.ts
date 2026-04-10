@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { checkAuth } from '@/lib/auth';
+import { checkAuth } from '@/lib/api/auth';
 import Student from '@/models/Student';
 import Exam from '@/models/Exam';
 import Attendance from '@/models/Attendance';
-import dbConnect from '@/lib/mongodb';
+import dbConnect from '@/lib/db/mongodb';
 import PDFDocument from 'pdfkit';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
