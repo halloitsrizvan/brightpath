@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
 import SubjectModal from '@/features/subjects/components/SubjectModal';
-import { Menu, Trash2 } from 'lucide-react';
+import { Menu, Trash2, Pencil } from 'lucide-react';
 
 export default function AdminSubjects() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState<any>(null);
 
     const fetchSubjects = () => {
         setLoading(true);
@@ -31,6 +32,16 @@ export default function AdminSubjects() {
                 alert('Command failed: Could not purge subject record.');
             }
         }
+    };
+
+    const handleEdit = (subject: any) => {
+        setSelectedSubject(subject);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedSubject(null);
     };
 
     useEffect(() => {
@@ -98,7 +109,14 @@ export default function AdminSubjects() {
                                             <td className="p-4 text-gray-600">{sub.classLevel || '-'}</td>
                                             <td className="p-4 text-gray-600">{sub.syllabus || '-'}</td>
                                             <td className="p-4 text-gray-600 max-w-xs">{sub.description || '-'}</td>
-                                            <td className="p-4 text-right">
+                                            <td className="p-4 text-right flex items-center justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleEdit(sub)}
+                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"
+                                                    title="Modify Subject"
+                                                >
+                                                    <Pencil className="w-4 h-4" />
+                                                </button>
                                                 <button 
                                                     onClick={() => handleDelete(sub._id)}
                                                     className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90"
@@ -117,8 +135,9 @@ export default function AdminSubjects() {
             </div>
             <SubjectModal
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={handleCloseModal}
                 onSuccess={fetchSubjects}
+                subject={selectedSubject}
             />
         </div>
         </div>

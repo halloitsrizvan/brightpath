@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
 import AttendanceModal from '@/features/attendance/components/AttendanceModal';
-import { Menu, Calendar, Clock, ChevronDown, User, BookOpen, UserCheck, Search, Filter, AlertCircle, Plus } from 'lucide-react';
+import { Menu, Calendar, Clock, ChevronDown, User, BookOpen, UserCheck, Search, Filter, AlertCircle, Plus, Trash2 } from 'lucide-react';
 
 export default function AdminAttendance() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -22,6 +22,18 @@ export default function AdminAttendance() {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you absolutely certain you want to purge this session log? This action is permanent.')) return;
+        
+        try {
+            await api.delete(`/attendance/${id}`);
+            fetchAttendance();
+        } catch (err) {
+            console.error(err);
+            alert('Operation failed: Could not delete record.');
         }
     };
 
@@ -150,7 +162,8 @@ export default function AdminAttendance() {
                                             <th className="px-4 py-6">Student Enrollment</th>
                                             <th className="px-4 py-6 hidden md:table-cell">Assigned Tutor</th>
                                             <th className="px-4 py-6">Subject Module</th>
-                                            <th className="px-6 md:px-8 py-6 text-right">Duration</th>
+                                            <th className="px-4 py-6 text-right">Duration</th>
+                                            <th className="px-6 md:px-8 py-6 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
@@ -183,8 +196,17 @@ export default function AdminAttendance() {
                                                         {record.subjectId?.subjectName || '-'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 md:px-8 py-5 text-right font-black text-gray-800 italic tracking-tight text-xs md:text-sm">
+                                                <td className="px-4 py-5 text-right font-black text-gray-800 italic tracking-tight text-xs md:text-sm">
                                                     {(record.durationMinutes / 60).toFixed(1)} <span className="text-[10px] not-italic opacity-40">Hrs</span>
+                                                </td>
+                                                <td className="px-6 md:px-8 py-5 text-right">
+                                                    <button 
+                                                        onClick={() => handleDelete(record._id)}
+                                                        className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-95"
+                                                        title="Delete Log"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </td>
                                             </tr>
                                         ))}

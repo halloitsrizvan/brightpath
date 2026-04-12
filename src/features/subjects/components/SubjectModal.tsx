@@ -1,10 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '@/utils/api';
 
-export default function SubjectModal({ isOpen, onClose, onSuccess }: { isOpen: boolean, onClose: () => void, onSuccess: () => void }) {
+export default function SubjectModal({ isOpen, onClose, onSuccess, subject }: { isOpen: boolean, onClose: () => void, onSuccess: () => void, subject?: any }) {
     const [formData, setFormData] = useState({ subjectName: '', description: '', classLevel: '', syllabus: '' });
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (subject) {
+            setFormData({
+                subjectName: subject.subjectName || '',
+                description: subject.description || '',
+                classLevel: subject.classLevel || '',
+                syllabus: subject.syllabus || ''
+            });
+        } else {
+            setFormData({ subjectName: '', description: '', classLevel: '', syllabus: '' });
+        }
+    }, [subject, isOpen]);
 
     if (!isOpen) return null;
 
@@ -12,7 +25,11 @@ export default function SubjectModal({ isOpen, onClose, onSuccess }: { isOpen: b
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/subjects', formData);
+            if (subject?._id) {
+                await api.put(`/subjects/${subject._id}`, formData);
+            } else {
+                await api.post('/subjects', formData);
+            }
             onSuccess();
             onClose();
         } catch (err) {
@@ -26,7 +43,7 @@ export default function SubjectModal({ isOpen, onClose, onSuccess }: { isOpen: b
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">Add New Subject</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{subject ? 'Edit Subject' : 'Add New Subject'}</h2>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
                 </div>
 
@@ -75,7 +92,7 @@ export default function SubjectModal({ isOpen, onClose, onSuccess }: { isOpen: b
                     <div className="pt-4 flex justify-end gap-3">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-lg transition">Cancel</button>
                         <button type="submit" disabled={loading} className="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition disabled:opacity-50">
-                            {loading ? 'Saving...' : 'Save Subject'}
+                            {loading ? 'Saving...' : subject ? 'Update Subject' : 'Save Subject'}
                         </button>
                     </div>
                 </form>

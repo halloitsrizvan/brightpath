@@ -28,7 +28,6 @@ const StudentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Performance Optimization: Indexes for scalable search and reporting
-StudentSchema.index({ email: 1 });
 StudentSchema.index({ status: 1, joinedAt: -1 }); // Optimized for dashboard recent active students
 StudentSchema.index({ subjects: 1 }); // Optimize relationship lookups
 StudentSchema.index({ preferredTrainers: 1 });
