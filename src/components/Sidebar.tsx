@@ -16,7 +16,13 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
     const handleLogout = () => {
         Cookies.remove('token');
         Cookies.remove('user');
-        router.push('/');
+        // Redirect to the role-specific login page
+        const loginMap: Record<string, string> = {
+            admin: '/admin',
+            teacher: '/teacher',
+            student: '/student'
+        };
+        router.push(loginMap[role] || '/');
     };
 
     const getLinks = () => {
