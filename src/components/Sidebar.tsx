@@ -13,16 +13,27 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
 
     useEffect(() => setMounted(true), []);
 
-    const handleLogout = () => {
-        Cookies.remove('token');
-        Cookies.remove('user');
-        // Redirect to the role-specific login page
+    const handleLogout = async () => {
+        try {
+            // Call the server-side logout to clear httpOnly cookies
+            // Using direct fetch to avoid any interceptor interference
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            console.error('Logout failed:', e);
+        }
+
+        // Clear local cookies
+        Cookies.remove('token', { path: '/' });
+        Cookies.remove('user', { path: '/' });
+        
         const loginMap: Record<string, string> = {
             admin: '/admin',
             teacher: '/teacher',
             student: '/student'
         };
-        router.push(loginMap[role] || '/');
+        
+        // Hard redirect to clear all states and trigger middleware
+        window.location.href = loginMap[role] || '/';
     };
 
     const getLinks = () => {
@@ -34,12 +45,12 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
                 { name: 'Subjects', href: '/admin-dashboard/subjects', icon: <BookOpen className="w-5 h-5" /> },
                 { name: 'Attendance', href: '/admin-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
                 { name: 'Exams', href: '/admin-dashboard/exams', icon: <FileText className="w-5 h-5" /> },
-                { name: 'Blog Management', href: '/admin-dashboard/blog', icon: <BookOpen className="w-5 h-5" /> },
                 { name: 'Finance', href: '/admin-dashboard/finance', icon: <IndianRupee className="w-5 h-5" /> },
                 { name: 'Expenses', href: '/admin-dashboard/expenses', icon: <Receipt className="w-5 h-5" /> },
                 { name: 'Founders', href: '/admin-dashboard/founders', icon: <ShieldCheck className="w-5 h-5" /> },
                 { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
                 { name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
+                { name: 'Blog Management', href: '/admin-dashboard/blog', icon: <BookOpen className="w-5 h-5" /> },
                 { name: 'Monthly Report', href: '/admin-dashboard/reports', icon: <BarChart3 className="w-5 h-5" /> },
             ];
         }
