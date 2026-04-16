@@ -151,20 +151,26 @@ export default function MonthlyReport() {
                                 </div>
                             </div>
 
-                            <div className="bg-[#161618] border border-gray-800 p-6 rounded-2xl hover:border-emerald-500/30 transition-all group">
+                            <div className={`bg-[#161618] border border-gray-800 p-6 rounded-2xl hover:border-${reportData.financials.summary.netProfit < 0 ? 'rose' : 'emerald'}-500/30 transition-all group`}>
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className="p-3 bg-emerald-500/10 rounded-xl">
-                                        <TrendingUp className="w-6 h-6 text-emerald-500" />
+                                    <div className={`p-3 ${reportData.financials.summary.netProfit < 0 ? 'bg-rose-500/10' : 'bg-emerald-500/10'} rounded-xl`}>
+                                        {reportData.financials.summary.netProfit < 0 ? (
+                                            <ArrowDownRight className="w-6 h-6 text-rose-500" />
+                                        ) : (
+                                            <TrendingUp className="w-6 h-6 text-emerald-500" />
+                                        )}
                                     </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">Profit</span>
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${reportData.financials.summary.netProfit < 0 ? 'text-rose-500 bg-rose-500/10' : 'text-emerald-500 bg-emerald-500/10'} px-2 py-1 rounded-full`}>
+                                        {reportData.financials.summary.netProfit < 0 ? 'Loss' : 'Profit'}
+                                    </span>
                                 </div>
                                 <div className="space-y-1">
-                                    <h3 className="text-2xl font-bold">₹{reportData.financials.summary.netProfit.toLocaleString()}</h3>
+                                    <h3 className={`text-2xl font-bold ${reportData.financials.summary.netProfit < 0 ? 'text-rose-500' : 'text-white'}`}>₹{reportData.financials.summary.netProfit.toLocaleString()}</h3>
                                     <p className="text-sm text-gray-400">Net operating margin</p>
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-gray-800/50 flex items-center justify-between text-xs">
                                     <span className="text-gray-400">Pre-tax estimate</span>
-                                    <div className="flex items-center text-emerald-500 font-medium">
+                                    <div className={`flex items-center ${reportData.financials.summary.netProfit < 0 ? 'text-rose-500' : 'text-emerald-500'} font-medium`}>
                                         {((reportData.financials.summary.netProfit / (reportData.financials.summary.totalReceived || 1)) * 100).toFixed(0)}% Margin
                                     </div>
                                 </div>
@@ -415,7 +421,7 @@ export default function MonthlyReport() {
                                         <div className="mt-8 pt-6 border-t border-gray-800">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-lg font-bold">Net Profit</span>
-                                                <span className="text-lg font-bold text-emerald-500">₹{reportData.financials.summary.netProfit.toLocaleString()}</span>
+                                                <span className={`text-lg font-bold ${reportData.financials.summary.netProfit < 0 ? 'text-rose-500' : 'text-emerald-500'}`}>₹{reportData.financials.summary.netProfit.toLocaleString()}</span>
                                             </div>
                                             <p className="text-[10px] text-gray-500">Calculation: (Collected Income) - (Payroll + Expenses + Founder Salaries)</p>
                                         </div>
