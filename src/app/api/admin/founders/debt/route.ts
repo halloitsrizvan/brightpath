@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
-import Founder from '@/models/Founder';
+import Admin from '@/models/Admin';
 import FounderDebt from '@/models/FounderDebt';
 
 export async function POST(req: NextRequest) {
@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
         // 1. Create the transaction record
         const transaction = await FounderDebt.create({ founderId, type, amount, reason });
 
-        // 2. Update the founder's aggregate debt
+        // 2. Update the admin's aggregate debt
         const adjustment = type === 'debt' ? amount : -amount;
-        await Founder.findByIdAndUpdate(founderId, { $inc: { debtRemaining: adjustment } });
+        await Admin.findByIdAndUpdate(founderId, { $inc: { debtRemaining: adjustment } });
 
         return NextResponse.json(transaction);
     } catch (err: any) {
@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// Optional: GET history for a founder
 export async function GET(req: NextRequest) {
     try {
         await dbConnect();

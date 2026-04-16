@@ -29,7 +29,7 @@ export default function DebtTransactionModal({ isOpen, onClose, onSuccess, found
                 founderId: founder._id,
                 type,
                 amount,
-                reason
+                reason: isDebt ? reason : (reason || 'Manual Return')
             });
             toast.success(type === 'debt' ? 'Debt recorded' : 'Return processed');
             setAmount(0);
@@ -84,20 +84,22 @@ export default function DebtTransactionModal({ isOpen, onClose, onSuccess, found
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Justification / Reason</label>
-                            <div className="relative">
-                                <FileText className="absolute left-4 top-4 w-4 h-4 text-gray-300" />
-                                <textarea
-                                    required
-                                    rows={3}
-                                    className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 font-bold text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none"
-                                    placeholder="Enter administrative reason..."
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                />
+                        {isDebt && (
+                            <div className="space-y-2">
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Justification / Reason</label>
+                                <div className="relative">
+                                    <FileText className="absolute left-4 top-4 w-4 h-4 text-gray-300" />
+                                    <textarea
+                                        required
+                                        rows={3}
+                                        className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 font-bold text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none"
+                                        placeholder="Enter administrative reason..."
+                                        value={reason}
+                                        onChange={(e) => setReason(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <button
                             type="submit"

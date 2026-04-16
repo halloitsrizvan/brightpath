@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import FounderSalary from '@/models/FounderSalary';
-import Founder from '@/models/Founder';
+import Admin from '@/models/Admin';
 
 export async function GET(req: NextRequest) {
     try {

@@ -15,6 +15,7 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        password: '',
         role: '',
         baseSalary: 0,
         debtRemaining: 0
@@ -27,6 +28,7 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
                 setFormData({
                     name: editData.name || '',
                     email: editData.email || '',
+                    password: '', // Never populate password
                     role: editData.role || '',
                     baseSalary: editData.baseSalary || 0,
                     debtRemaining: editData.debtRemaining || 0
@@ -35,6 +37,7 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
                 setFormData({
                     name: '',
                     email: '',
+                    password: '',
                     role: '',
                     baseSalary: 0,
                     debtRemaining: 0
@@ -148,7 +151,20 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
                                         onChange={(e) => setFormData({ ...formData, baseSalary: parseFloat(e.target.value) || 0 })}
                                     />
                                 </div>
+                                <div className="space-y-2">
+                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Account Access (Password)</label>
+                                <div className="relative">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                    <input
+                                        type="password"
+                                        className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 font-bold text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                                        placeholder={editData ? "•••••••• (Leave blank to keep)" : "••••••••"}
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                </div>
                             </div>
+                        </div>
 
                         </div>
 

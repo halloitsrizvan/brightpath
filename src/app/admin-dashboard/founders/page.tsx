@@ -159,13 +159,6 @@ export default function FoundersManagement() {
                 </header>
 
                 <div className="p-4 md:p-12 mt-20 lg:mt-0">
-                    <FounderModal 
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        onSuccess={fetchData}
-                        editData={editData}
-                    />
-
                     <DebtTransactionModal 
                         isOpen={isDebtModalOpen}
                         onClose={() => setIsDebtModalOpen(false)}
@@ -177,8 +170,8 @@ export default function FoundersManagement() {
                     {/* Header Section */}
                     <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-10 mt-4 px-2">
                         <div>
-                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Founders Core</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 ml-1">Executive Equity & Payroll Matrix</p>
+                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Admin Core</h1>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 ml-1">Administrative Equity & Payroll Matrix</p>
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
@@ -193,13 +186,6 @@ export default function FoundersManagement() {
                                 </select>
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
-
-                            <button
-                                onClick={() => { setEditData(null); setIsModalOpen(true); }}
-                                className="w-full md:w-auto px-8 py-3.5 bg-white border-2 border-gray-100 text-primary rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-primary transition-all flex items-center justify-center gap-2 italic"
-                            >
-                                <Users className="w-4 h-4" /> Add Trustee
-                            </button>
 
                             <button
                                 onClick={generateMonthlySalaries}
@@ -261,7 +247,7 @@ export default function FoundersManagement() {
                                     <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
                                         <thead>
                                             <tr className="bg-white text-gray-300 text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-gray-50">
-                                                <th className="px-8 py-6">Founder Node</th>
+                                                <th className="px-8 py-6">Admin Node</th>
                                                 <th className="px-4 py-6">Cycle</th>
                                                 <th className="px-4 py-6">Gross Flow</th>
                                                 <th className="px-4 py-6">Debt Recov.</th>
@@ -304,7 +290,7 @@ export default function FoundersManagement() {
                                     <table className="w-full text-left border-collapse min-w-[700px] md:min-w-0">
                                         <thead>
                                             <tr className="bg-white text-gray-300 text-[10px] font-black uppercase tracking-widest border-b border-gray-50">
-                                                <th className="px-8 py-6">Executive Profile</th>
+                                                <th className="px-8 py-6">Admin Profile</th>
                                                 <th className="px-4 py-6">Base Tier (₹)</th>
                                                 <th className="px-4 py-6">Principal Debt (₹)</th>
                                                 <th className="px-8 py-6 text-right">Actions</th>
@@ -346,12 +332,6 @@ export default function FoundersManagement() {
                                                             </div>
                                                             <div className="flex gap-1">
                                                                 <button 
-                                                                    onClick={() => { setEditData(f); setIsModalOpen(true); }}
-                                                                    className="p-2 hover:bg-primary/10 text-gray-400 hover:text-primary rounded-xl transition-all"
-                                                                >
-                                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                                </button>
-                                                                <button 
                                                                     onClick={() => handleDeleteFounder(f._id)}
                                                                     className="p-2 hover:bg-rose-50 text-gray-400 hover:text-rose-500 rounded-xl transition-all"
                                                                 >
@@ -371,7 +351,7 @@ export default function FoundersManagement() {
                         {/* Insight Panel */}
                         <div className="bg-primary/5 rounded-[2rem] p-6 border border-primary/10 flex items-center gap-4 text-primary">
                             <ShieldCheck className="w-6 h-6 flex-shrink-0" />
-                            <p className="text-[9px] font-bold italic leading-relaxed">Executive payroll is automatically adjusted for debt recovery. Distributions are logged in the master ledger for fiscal audit integrity.</p>
+                            <p className="text-[9px] font-bold italic leading-relaxed">Administrative payroll is automatically adjusted for debt recovery. Distributions are logged in the master ledger for fiscal audit integrity.</p>
                         </div>
                     </div>
                 </div>

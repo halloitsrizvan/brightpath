@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const FounderDebtSchema = new mongoose.Schema({
-    founderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Founder', required: true },
+    founderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
     type: { type: String, enum: ['debt', 'return'], required: true }, // 'debt' to increase, 'return' to decrease
     amount: { type: Number, required: true },
     reason: { type: String, required: true },

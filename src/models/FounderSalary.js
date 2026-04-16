@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const FounderSalarySchema = new mongoose.Schema({
-    founderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Founder', required: true },
+    founderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
     amount: { type: Number, required: true },
     month: { type: String, required: true }, // "April 2026"
     status: { type: String, enum: ['pending', 'paid'], default: 'pending' },
