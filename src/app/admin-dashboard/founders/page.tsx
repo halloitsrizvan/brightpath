@@ -17,14 +17,21 @@ import {
     Download,
     Eye,
     ChevronRight,
-    Search
+    Search,
+    Edit2,
+    Trash2,
+    ArrowUpRight,
+    ArrowDownRight
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
+import FounderModal from '@/features/founders/components/FounderModal';
+import DebtTransactionModal from '@/features/founders/components/DebtTransactionModal';
 
 interface Founder {
     _id: string;
     name: string;
     email: string;
+    role: string;
     baseSalary: number;
     debtRemaining: number;
 }
@@ -47,6 +54,14 @@ export default function FoundersManagement() {
     const [loading, setLoading] = useState(true);
     const [selectedMonth, setSelectedMonth] = useState('All Periods');
     const [activeTab, setActiveTab] = useState<'directory' | 'salaries'>('directory');
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editData, setEditData] = useState<any>(null);
+
+    // Debt states
+    const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
+    const [debtModalType, setDebtModalType] = useState<'debt' | 'return'>('debt');
+    const [targetFounder, setTargetFounder] = useState<any>(null);
 
     const monthsOptions = useMemo(() => {
         const arr = ['All Periods'];
@@ -83,7 +98,7 @@ export default function FoundersManagement() {
     const generateMonthlySalaries = async () => {
         try {
             const targetMonth = monthsOptions[1];
-            await api.post('/api/finance/generate-payroll', { month: targetMonth, type: 'founder' });
+            await api.post('/finance/generate-payroll', { month: targetMonth, type: 'founder' });
             toast.success(`Payroll generated for ${targetMonth}`);
             fetchData();
         } catch (err) {
@@ -99,6 +114,24 @@ export default function FoundersManagement() {
         } catch (err) {
             toast.error("Settlement failed");
         }
+    };
+
+    const handleDeleteFounder = async (id: string) => {
+        if (window.confirm('Are you sure you want to remove this trustee? This action is irreversible.')) {
+            try {
+                await api.delete(`/admin/founders/${id}`);
+                toast.success('Trustee removed from core');
+                fetchData();
+            } catch (err) {
+                toast.error('Deletion failed');
+            }
+        }
+    };
+
+    const handleDebtAction = (founder: any, type: 'debt' | 'return') => {
+        setTargetFounder(founder);
+        setDebtModalType(type);
+        setIsDebtModalOpen(true);
     };
 
     return (
@@ -126,6 +159,21 @@ export default function FoundersManagement() {
                 </header>
 
                 <div className="p-4 md:p-12 mt-20 lg:mt-0">
+                    <FounderModal 
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        onSuccess={fetchData}
+                        editData={editData}
+                    />
+
+                    <DebtTransactionModal 
+                        isOpen={isDebtModalOpen}
+                        onClose={() => setIsDebtModalOpen(false)}
+                        onSuccess={fetchData}
+                        founder={targetFounder}
+                        type={debtModalType}
+                    />
+
                     {/* Header Section */}
                     <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 mb-10 mt-4 px-2">
                         <div>
@@ -145,6 +193,13 @@ export default function FoundersManagement() {
                                 </select>
                                 <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
+
+                            <button
+                                onClick={() => { setEditData(null); setIsModalOpen(true); }}
+                                className="w-full md:w-auto px-8 py-3.5 bg-white border-2 border-gray-100 text-primary rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:border-primary transition-all flex items-center justify-center gap-2 italic"
+                            >
+                                <Users className="w-4 h-4" /> Add Trustee
+                            </button>
 
                             <button
                                 onClick={generateMonthlySalaries}
@@ -252,7 +307,7 @@ export default function FoundersManagement() {
                                                 <th className="px-8 py-6">Executive Profile</th>
                                                 <th className="px-4 py-6">Base Tier (₹)</th>
                                                 <th className="px-4 py-6">Principal Debt (₹)</th>
-                                                <th className="px-8 py-6 text-right">Registry Status</th>
+                                                <th className="px-8 py-6 text-right">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
@@ -274,7 +329,36 @@ export default function FoundersManagement() {
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-6 text-right">
-                                                        <span className="px-4 py-1.5 bg-gray-100 text-[9px] font-black uppercase tracking-widest text-gray-400 rounded-lg">Primary Trustee</span>
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <div className="flex bg-gray-50 p-1 rounded-xl gap-1 mr-2">
+                                                                <button 
+                                                                    onClick={() => handleDebtAction(f, 'debt')}
+                                                                    className="px-3 py-1.5 bg-white border border-gray-100 text-rose-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-rose-50 transition-all flex items-center gap-1 shadow-sm"
+                                                                >
+                                                                    <ArrowUpRight className="w-3 h-3" /> Debt
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => handleDebtAction(f, 'return')}
+                                                                    className="px-3 py-1.5 bg-white border border-gray-100 text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all flex items-center gap-1 shadow-sm"
+                                                                >
+                                                                    <ArrowDownRight className="w-3 h-3" /> Return
+                                                                </button>
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <button 
+                                                                    onClick={() => { setEditData(f); setIsModalOpen(true); }}
+                                                                    className="p-2 hover:bg-primary/10 text-gray-400 hover:text-primary rounded-xl transition-all"
+                                                                >
+                                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => handleDeleteFounder(f._id)}
+                                                                    className="p-2 hover:bg-rose-50 text-gray-400 hover:text-rose-500 rounded-xl transition-all"
+                                                                >
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
