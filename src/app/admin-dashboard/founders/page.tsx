@@ -24,8 +24,8 @@ import {
     ArrowDownRight
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
-import FounderModal from '@/features/founders/components/FounderModal';
 import DebtTransactionModal from '@/features/founders/components/DebtTransactionModal';
+import AdminModal from '@/features/founders/components/AdminModal';
 
 interface Founder {
     _id: string;
@@ -159,6 +159,13 @@ export default function FoundersManagement() {
                 </header>
 
                 <div className="p-4 md:p-12 mt-20 lg:mt-0">
+                    <AdminModal 
+                        isOpen={isModalOpen}
+                        onClose={() => setIsModalOpen(false)}
+                        onSuccess={fetchData}
+                        editData={editData}
+                    />
+
                     <DebtTransactionModal 
                         isOpen={isDebtModalOpen}
                         onClose={() => setIsDebtModalOpen(false)}
@@ -331,6 +338,12 @@ export default function FoundersManagement() {
                                                                 </button>
                                                             </div>
                                                             <div className="flex gap-1">
+                                                                <button 
+                                                                    onClick={() => { setEditData(f); setIsModalOpen(true); }}
+                                                                    className="p-2 hover:bg-primary/10 text-gray-400 hover:text-primary rounded-xl transition-all"
+                                                                >
+                                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                                </button>
                                                                 <button 
                                                                     onClick={() => handleDeleteFounder(f._id)}
                                                                     className="p-2 hover:bg-rose-50 text-gray-400 hover:text-rose-500 rounded-xl transition-all"

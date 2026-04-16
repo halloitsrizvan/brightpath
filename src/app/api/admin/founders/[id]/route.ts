@@ -9,7 +9,7 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
         await dbConnect();
         await checkAuth(req, ['admin']);
         const { id } = await params;
-        const founder = await Admin.findOne({ _id: id, isFounder: true });
+        const founder = await Admin.findById(id);
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json(founder);
     } catch (err: any) {
@@ -30,8 +30,8 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
             delete body.password; // Don't overwrite if not provided
         }
 
-        const founder = await Admin.findOneAndUpdate(
-            { _id: id, isFounder: true }, 
+        const founder = await Admin.findByIdAndUpdate(
+            id, 
             body, 
             { returnDocument: 'after' }
         );
@@ -50,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: { params: any }) {
         
         // We probably don't want to actually delete an admin, maybe just remove isFounder?
         // But the user asked for "founders and admins are same", so deleting a founder should probably remove their record.
-        const founder = await Admin.findOneAndDelete({ _id: id, isFounder: true });
+        const founder = await Admin.findByIdAndDelete(id);
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json({ message: 'Founder deleted successfully' });
     } catch (err: any) {

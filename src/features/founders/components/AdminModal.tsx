@@ -4,14 +4,14 @@ import api from '@/utils/api';
 import { X, Shield, Mail, Briefcase, IndianRupee, Wallet } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-interface FounderModalProps {
+interface AdminModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
     editData?: any;
 }
 
-export default function FounderModal({ isOpen, onClose, onSuccess, editData }: FounderModalProps) {
+export default function AdminModal({ isOpen, onClose, onSuccess, editData }: AdminModalProps) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -54,10 +54,10 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
         try {
             if (editData) {
                 await api.put(`/admin/founders/${editData._id}`, formData);
-                toast.success('Executive profile updated');
+                toast.success('Administrative profile updated');
             } else {
                 await api.post('/admin/founders', formData);
-                toast.success('New trustee registered');
+                toast.success('New administrator registered');
             }
             onSuccess();
             onClose();
@@ -85,11 +85,11 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
                                 <Shield className="w-6 h-6" />
                             </div>
                             <h2 className="text-3xl font-black text-gray-900 italic uppercase tracking-tighter leading-none">
-                                Executive <span className="text-primary">Registry</span>
+                                Admin <span className="text-primary">Registry</span>
                             </h2>
                         </div>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                            {editData ? 'Modify Core Trustee Details' : 'Onboard New Principal Founder'}
+                            {editData ? 'Modify Core Administrative Details' : 'Onboard New Principal Administrator'}
                         </p>
                     </div>
 
@@ -181,7 +181,7 @@ export default function FounderModal({ isOpen, onClose, onSuccess, editData }: F
                                 disabled={loading}
                                 className="flex-[2] py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                             >
-                                {loading ? 'Synchronizing...' : editData ? 'Update Executive Core' : 'Confirm Trustee Registration'}
+                                {loading ? 'Synchronizing...' : editData ? 'Update Administration Core' : 'Confirm Admin Registration'}
                             </button>
                         </div>
                     </form>
