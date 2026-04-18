@@ -15,15 +15,14 @@ export default function LandingPage() {
     const [tutors, setTutors] = useState([]);
     const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
-
-    const heroImages = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg', '/brightpath-hero.png'];
+    const heroImages = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
 
     useEffect(() => {
         const timer = setInterval(() => {
             setHeroIndex((prev) => (prev + 1) % heroImages.length);
         }, 4000);
         return () => clearInterval(timer);
-    }, []);
+    }, [heroImages.length]);
 
     useEffect(() => {
         api.get('/teachers').then(res => {
@@ -79,7 +78,7 @@ export default function LandingPage() {
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
                             <div className="flex -space-x-3 items-center">
-                                {[1, 2, 3, 4].map(i => (
+                                {[1, 2, 3,4  ].map(i => (
                                     <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative">
                                         <Image
                                             src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`}
@@ -98,7 +97,7 @@ export default function LandingPage() {
 
                     <div className="relative animate-in fade-in slide-in-from-right-8 duration-700 text-center flex justify-center">
 
-                        <div className="relative bg-white rounded-[1.5rem] shadow-2xl overflow-hidden border-4 border-white aspect-[4/5] md:aspect-square flex items-center justify-center max-w-[450px] w-full group">
+                        <div className="relative bg-white rounded-[1rem] overflow-hidden border-4 border-white aspect-[4/5] md:aspect-square flex items-center justify-center max-w-[450px] w-full group">
                             <div className="absolute inset-0 flex transition-transform duration-1000 ease-in-out" style={{ transform: `translateX(-${heroIndex * 100}%)` }}>
                                 {heroImages.map((src, idx) => (
                                     <div key={idx} className="relative min-w-full h-full">
@@ -108,12 +107,12 @@ export default function LandingPage() {
                             </div>
                             <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-40 pointer-events-none" />
 
-                            <div className="absolute bottom-8 left-8 right-8 bg-white/90 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-white/50">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center"><Video className="w-6 h-6" /></div>
+                            <div className="absolute bottom-6 left-6 right-6 bg-white/20 backdrop-blur-2xl p-4 rounded-2xl shadow-2xl border border-white/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg"><Video className="w-5 h-5" /></div>
                                     <div className="text-left">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] mb-1 leading-none">Live Now</p>
-                                        <p className="text-sm font-black text-gray-800 uppercase italic tracking-tighter leading-none">1:1 Mentorship Session</p>
+                                        <p className="text-[9px] font-black text-primary/60 uppercase tracking-[0.25em] mb-0.5 leading-none">Live Now</p>
+                                        <p className="text-xs font-black text-gray-900 uppercase italic tracking-tighter leading-none">1:1 Mentorship Session</p>
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +156,7 @@ export default function LandingPage() {
 }
 
 function BannerCarousel() {
-    const images = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
+    const images = ['/banner5.png', '/banner6.png', '/banner7.png'];
     const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
@@ -170,7 +169,7 @@ function BannerCarousel() {
     return (
         <section className="relative w-full overflow-hidden bg-gray-50 py-10">
             <div className="container mx-auto px-6">
-                <div className="relative h-[250px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-xl border-4 border-white group">
+                <div className="relative h-[250px] md:h-[400px] rounded-[1rem] overflow-hidden border-4 border-white group">
                     <div
                         className="flex h-full transition-transform duration-1000 ease-out"
                         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
@@ -183,7 +182,7 @@ function BannerCarousel() {
                                     fill
                                     className="object-cover"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+                                
                             </div>
                         ))}
                     </div>
