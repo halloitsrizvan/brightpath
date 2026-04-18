@@ -5,18 +5,18 @@ export default function PublicTutorsGrid({ tutors, limited = false }: { tutors: 
     const displayTutors = limited ? tutors?.slice(0, 3) : tutors;
 
     return (
-        <section className="py-32 bg-white">
-            <div className="container mx-auto px-6 text-center mb-20">
+        <section className="py-20 bg-white">
+            <div className="container mx-auto px-6 text-center mb-12">
                 <p className="text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-4">Elite Mentors</p>
-                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none">The Academy <span className="text-primary">Faculty.</span></h2>
+                <h2 className="text-3xl md:text-4xl font-black italic uppercase tracking-tighter leading-none">The Academy <span className="text-primary">Faculty.</span></h2>
             </div>
 
-            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {displayTutors.map((t) => (
                     <div key={t._id} className="group relative">
-                        <div className="absolute inset-0 bg-primary/5 rounded-[3.5rem] rotate-3 group-hover:rotate-6 transition-all duration-500" />
-                        <div className="relative bg-white p-10 rounded-[3rem] border border-gray-100 shadow-xl shadow-gray-200/20 flex flex-col items-center text-center">
-                            <div className="w-24 h-24 rounded-[2rem] bg-gray-100 mb-6 overflow-hidden border-4 border-white shadow-lg relative">
+                        <div className="absolute inset-0 bg-primary/5 rounded-[2.5rem] rotate-3 group-hover:rotate-6 transition-all duration-500" />
+                        <div className="relative bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/20 flex flex-col items-center text-center">
+                            <div className="w-20 h-20 rounded-[1.5rem] bg-gray-100 mb-6 overflow-hidden border-4 border-white shadow-lg relative">
                                 <Image src={t.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${t.name}`} alt={t.name} fill unoptimized />
                             </div>
                             <div className="flex gap-1 mb-4">

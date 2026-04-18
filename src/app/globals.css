@@ -13,6 +13,33 @@
   --font-mono: var(--font-geist-mono);
   --color-primary: #45308D;
   --color-secondary: #FDC70B;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-in-from-top {
+    from { transform: translateY(-10px); }
+    to { transform: translateY(0); }
+  }
+  @keyframes slide-in-from-left {
+    from { transform: translateX(-20px); }
+    to { transform: translateX(0); }
+  }
+  @keyframes slide-in-from-right {
+    from { transform: translateX(20px); }
+    to { transform: translateX(0); }
+  }
+  @keyframes zoom-in {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-in-top: slide-in-from-top 0.3s ease-out;
+  --animate-slide-in-left: slide-in-from-left 0.3s ease-out;
+  --animate-slide-in-right: slide-in-from-right 0.3s ease-out;
+  --animate-zoom-in: zoom-in 0.3s ease-out;
 }
 
 @media (prefers-color-scheme: dark) {

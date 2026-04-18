@@ -3,9 +3,9 @@ import Link from 'next/link';
 
 export default function PublicFooter() {
     return (
-        <footer className="bg-white border-t border-gray-100 pt-32 pb-16 relative overflow-hidden">
+        <footer className="bg-white border-t border-gray-100 pt-20 pb-12 relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-16 w-32 h-32 bg-primary/5 rounded-full blur-2xl" />
-            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-16 lg:gap-32 mb-20 text-center md:text-left">
+            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-24 mb-12 text-center md:text-left">
                 <div className="space-y-6">
                     <div className="flex items-center justify-center md:items-start md:justify-start gap-2">
                         <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-black text-lg">B</div>
