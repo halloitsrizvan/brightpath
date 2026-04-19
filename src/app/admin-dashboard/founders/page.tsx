@@ -35,6 +35,7 @@ interface Founder {
     role: string;
     baseSalary: number;
     debtRemaining: number;
+    lastDebtReason?: string;
 }
 
 export default function FoundersManagement() {
@@ -50,6 +51,8 @@ export default function FoundersManagement() {
     const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
     const [debtModalType, setDebtModalType] = useState<'debt' | 'return'>('debt');
     const [targetFounder, setTargetFounder] = useState<any>(null);
+    const [debtLogs, setDebtLogs] = useState<any[]>([]);
+    const [logsLoading, setLogsLoading] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -65,10 +68,23 @@ export default function FoundersManagement() {
                 const profile = data.find((f: Founder) => f.email === loggedInUser.email);
                 if (profile) setCurrentUser(profile);
             }
+            fetchLogs();
         } catch (err) {
             toast.error("Synchronization failed");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchLogs = async () => {
+        try {
+            setLogsLoading(true);
+            const res = await api.get('/admin/founders/debt');
+            setDebtLogs(res.data);
+        } catch (err) {
+            console.error("Failed to fetch logs", err);
+        } finally {
+            setLogsLoading(false);
         }
     };
 
@@ -218,7 +234,12 @@ export default function FoundersManagement() {
                                                     <td className="px-4 py-6">
                                                         <div className="flex flex-col gap-2">
                                                             <span className="text-sm font-black text-rose-500 italic">₹{(f.debtRemaining || 0).toLocaleString()}</span>
-                                                            <div className="w-32 h-1 bg-gray-100 rounded-full overflow-hidden">
+                                                            {f.lastDebtReason && (
+                                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight italic bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100/50 w-fit">
+                                                                    {f.lastDebtReason}
+                                                                </span>
+                                                            )}
+                                                            <div className="w-32 h-1 bg-gray-100 rounded-full overflow-hidden mt-1">
                                                                 <div className="h-full bg-rose-500" style={{ width: '40%' }}></div>
                                                             </div>
                                                         </div>
@@ -271,6 +292,75 @@ export default function FoundersManagement() {
                         <div className="bg-primary/5 rounded-[2rem] p-6 border border-primary/10 flex items-center gap-4 text-primary">
                             <ShieldCheck className="w-6 h-6 flex-shrink-0" />
                             <p className="text-[9px] font-bold italic leading-relaxed">Administrative payroll is automatically adjusted for debt recovery. Distributions are logged in the master ledger for fiscal audit integrity.</p>
+                        </div>
+
+                        {/* Debt History Logs */}
+                        <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden mt-12 mb-20">
+                            <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-800 italic uppercase">Administrative Debt Registry</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Audit Trail of Core Capital Flows</p>
+                                </div>
+                                <div className="p-3 bg-gray-50 rounded-2xl text-gray-400">
+                                    <FileText className="w-5 h-5" />
+                                </div>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
+                                    <thead>
+                                        <tr className="bg-gray-50/50 text-gray-400 text-[9px] font-black uppercase tracking-[0.2em] border-b border-gray-50">
+                                            <th className="px-8 py-5">Date</th>
+                                            <th className="px-4 py-5">Target Admin</th>
+                                            <th className="px-4 py-5">Event</th>
+                                            <th className="px-4 py-5">Quantum</th>
+                                            <th className="px-8 py-5">Justification</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {logsLoading ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-8 py-20 text-center text-primary font-black italic uppercase tracking-widest animate-pulse">Retrieving historical data matrices...</td>
+                                            </tr>
+                                        ) : debtLogs.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="px-8 py-20 text-center text-gray-300 font-bold italic uppercase tracking-widest text-[9px]">No historical capital entries detected in the registry.</td>
+                                            </tr>
+                                        ) : (
+                                            debtLogs.map((log: any) => (
+                                                <tr key={log._id} className="hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-8 py-6 text-[10px] font-bold text-gray-400 uppercase italic">
+                                                        {new Date(log.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </td>
+                                                    <td className="px-4 py-6">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-black text-gray-800">{log.founderId?.name || 'Admin Core'}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{log.founderId?.email}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-6">
+                                                        {log.type === 'debt' ? (
+                                                            <div className="flex items-center gap-2 text-rose-500 font-black text-[10px] uppercase tracking-widest italic bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100">
+                                                                <ArrowUpRight className="w-3 h-3" /> Debt
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2 text-emerald-500 font-black text-[10px] uppercase tracking-widest italic bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+                                                                <ArrowDownRight className="w-3 h-3" /> Return
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className={`px-4 py-6 font-black text-sm italic ${log.type === 'debt' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                                        {log.type === 'debt' ? '+' : '-'}₹{log.amount.toLocaleString()}
+                                                    </td>
+                                                    <td className="px-8 py-6">
+                                                        <p className="text-[10px] font-bold text-gray-400 italic leading-relaxed max-w-xs">{log.reason || 'Institutional adjustment'}</p>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

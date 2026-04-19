@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         const founderId = searchParams.get('founderId');
 
         const query = founderId ? { founderId } : {};
-        const logs = await FounderDebt.find(query).sort({ createdAt: -1 }).populate('founderId', 'name');
+        const logs = await FounderDebt.find(query).sort({ createdAt: -1 }).populate('founderId', 'name email');
         
         return NextResponse.json(logs);
     } catch (err: any) {

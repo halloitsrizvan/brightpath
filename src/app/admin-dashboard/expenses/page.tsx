@@ -310,17 +310,17 @@ export default function ExpensesManager() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-primary/20 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] w-full max-w-xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
-                        <div className="bg-primary p-8 md:p-10 text-white relative">
-                            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
+                        <div className="bg-primary p-6 md:p-8 text-white relative">
+                            <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
-                            <Receipt className="w-16 h-16 bg-white/10 rounded-[1.5rem] flex items-center justify-center text-3xl mb-6 border border-white/20 italic" />
-                            <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase mb-1">Add Expense Node</h2>
-                            <p className="text-white/60 font-black text-[10px] uppercase tracking-[0.2em]">Institutional Outflow Sync</p>
+                            <Receipt className="w-12 h-12 bg-white/10 rounded-[1.2rem] flex items-center justify-center text-3xl mb-4 border border-white/20 italic" />
+                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase mb-1">Add Expense Node</h2>
+                            <p className="text-white/60 font-black text-[9px] uppercase tracking-[0.2em]">Institutional Outflow Sync</p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8 bg-[#fafafa]">
+                        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5 bg-[#fafafa]">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                                 <div className="space-y-3">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Spending Cluster</label>
@@ -367,7 +367,7 @@ export default function ExpensesManager() {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Registry Context</label>
                                 <textarea 
-                                    className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm outline-none focus:border-primary transition-all min-h-[100px] md:min-h-[120px] resize-none shadow-sm"
+                                    className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm outline-none focus:border-primary transition-all min-h-[100px] resize-none shadow-sm"
                                     placeholder="Institutional context for this expenditure..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}

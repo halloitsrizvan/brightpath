@@ -301,19 +301,19 @@ export default function IncentivesManager() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-primary/20 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="bg-white rounded-[2.5rem] md:rounded-[3.5rem] w-full max-w-xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
-                        <div className="bg-primary p-8 md:p-10 text-white relative">
-                            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
+                        <div className="bg-primary p-6 lg:p-8 text-white relative">
+                            <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
-                            <div className="w-16 h-16 bg-white/10 rounded-[1.5rem] flex items-center justify-center text-3xl mb-6 border border-white/20 italic">
+                            <div className="w-12 h-12 bg-white/10 rounded-[1.2rem] flex items-center justify-center text-2xl mb-4 border border-white/20 italic">
                                 T
                             </div>
-                            <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase">{editingRule ? 'Modify Reward' : 'New Reward Plan'}</h2>
-                            <p className="text-white/60 font-black text-[10px] uppercase tracking-[0.2em] mt-1">Institutional Performance Matrix</p>
+                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase">{editingRule ? 'Modify Reward' : 'New Reward Plan'}</h2>
+                            <p className="text-white/60 font-black text-[9px] uppercase tracking-[0.2em] mt-1">Institutional Performance Matrix</p>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-8 md:p-10 space-y-8 bg-[#fafafa]">
+                        <form onSubmit={handleSave} className="p-6 md:p-8 space-y-5 bg-[#fafafa]">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Display Designation</label>
                                 <input 
