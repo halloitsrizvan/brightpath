@@ -6,6 +6,7 @@ import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
 import SubjectsGrid from '@/components/public/SubjectsGrid';
 import PublicFAQ from '@/components/public/FAQ';
 import PublicFeatures from '@/components/public/Features';
+import FloatingContact from '@/components/public/FloatingContact';
 import Image from 'next/image';
 import { Star, ArrowRight, Video, Clock, Users, ShieldCheck, BookOpen, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -34,7 +35,15 @@ export default function LandingPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/10 selection:text-primary">
+        <div className="min-h-screen bg-white font-sans selection:bg-primary/10 selection:text-primary relative overflow-hidden">
+            {/* Premium Mesh Gradient Background */}
+            <div className="fixed inset-0 pointer-events-none -z-20 overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#45308D]/10 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[10%] right-[-5%] w-[40%] h-[40%] bg-[#FDC70B]/15 rounded-full blur-[120px]" />
+                <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#45308D]/8 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[-5%] left-[5%] w-[35%] h-[35%] bg-[#FDC70B]/10 rounded-full blur-[100px]" />
+            </div>
+
             {/* SEO Structured Data */}
             <script
                 type="application/ld+json"
@@ -43,8 +52,8 @@ export default function LandingPage() {
                         "@context": "https://schema.org",
                         "@type": "EducationalOrganization",
                         "name": "Brightpath Kerala",
-                        "url": "https://brightpath-kerala.eduvora.com",
-                        "logo": "https://brightpath-kerala.eduvora.com/favicon.ico",
+                        "url": "https://brightpatheduvora.com",
+                        "logo": "https://brightpatheduvora.com/favicon.ico",
                         "description": "High-quality 1:1 personalized online tuition for KG to 12th grade in Kerala.",
                     })
                 }}
@@ -156,6 +165,7 @@ export default function LandingPage() {
             <Testimonials />
             <PublicFAQ />
             <PublicFeatures />
+            <FloatingContact />
             <PublicFooter />
             <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
         </div>

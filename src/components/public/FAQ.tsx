@@ -51,13 +51,14 @@ export default function PublicFAQ() {
                             key={faq.id} 
                             onMouseEnter={() => setOpenId(faq.id)}
                             onMouseLeave={() => setOpenId(null)}
+                            onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
                             className={`rounded-2xl border transition-all duration-300 ${
                                 openId === faq.id 
                                 ? 'bg-white border-primary/20 shadow-xl shadow-gray-200/50' 
                                 : 'bg-white/50 border-gray-100'
                             }`}
                         >
-                            <div className="w-full px-8 py-6 flex items-center justify-between text-left cursor-default">
+                            <div className="w-full px-8 py-6 flex items-center justify-between text-left cursor-pointer md:cursor-default">
                                 <div className="flex items-center gap-4">
                                     <HelpCircle className={`w-5 h-5 transition-colors ${openId === faq.id ? 'text-primary' : 'text-gray-300'}`} />
                                     <span className={`text-sm md:text-base font-black uppercase italic tracking-tight transition-colors ${openId === faq.id ? 'text-gray-900' : 'text-gray-600'}`}>

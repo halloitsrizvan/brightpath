@@ -18,7 +18,7 @@ export default function PublicNavbar() {
 
     const tuitionData = {
         classes: [
-            ...[1, 2, 3, 4, 5].map(i => `Class ${i}`),
+            { name: 'Class 1-5', items: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'] },
             'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'
         ],
         locations: ['Kerala', 'Dubai(UAE)', 'Qatar', 'Chennai', 'Bangalore', 'Coimbatore', 'Hyderabad'],
@@ -101,6 +101,7 @@ export default function PublicNavbar() {
 
                         <button
                             onClick={() => setIsDemoModalOpen(true)}
+                            suppressHydrationWarning
                             className="px-6 py-2.5 bg-primary text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.05] active:scale-95 transition-all ml-4"
                         >
                             Book a Demo
@@ -160,7 +161,7 @@ export default function PublicNavbar() {
     );
 }
 
-function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subItems: string[], icon: any }) {
+function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subItems: (string | { name: string, items: string[] })[], icon: any }) {
     return (
         <div className="relative group/nested px-1">
             <div className="flex items-center justify-between w-full px-4 py-3 hover:bg-primary/5 rounded-xl cursor-pointer group/item transition-colors">
@@ -176,22 +177,49 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
             {/* The Nested Dropdown */}
             <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/nested:opacity-100 group-hover/nested:visible transition-all duration-300 transform translate-x-2 group-hover/nested:translate-x-0 z-[70]">
                 <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[200px] py-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-                    {subItems.map((item) => (
-                        <Link
-                            key={item}
-                            href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.toLowerCase().replace(/ /g, '-')}`}
-                            className="block px-6 py-2.5 text-[10px] font-black text-gray-600 hover:text-primary hover:bg-gray-50 uppercase tracking-[0.1em] transition-colors"
-                        >
-                            {item}
-                        </Link>
-                    ))}
+                    {subItems.map((item, idx) => {
+                        if (typeof item === 'string') {
+                            return (
+                                <Link
+                                    key={item}
+                                    href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.toLowerCase().replace(/ /g, '-')}`}
+                                    className="block px-6 py-2.5 text-[10px] font-black text-gray-600 hover:text-primary hover:bg-gray-50 uppercase tracking-[0.1em] transition-colors"
+                                >
+                                    {item}
+                                </Link>
+                            );
+                        } else {
+                            return (
+                                <div key={idx} className="relative group/level3 px-1">
+                                    <div className="flex items-center justify-between px-5 py-2.5 hover:bg-primary/5 rounded-xl cursor-pointer group/level3item transition-colors">
+                                        <span className="text-[10px] font-black text-gray-600 group-hover/level3item:text-primary uppercase tracking-[0.1em]">{item.name}</span>
+                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/level3item:translate-x-1 transition-transform" />
+                                    </div>
+                                    {/* Level 3 Dropdown */}
+                                    <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/level3:opacity-100 group-hover/level3:visible transition-all duration-300 transform translate-x-2 group-hover/level3:translate-x-0 z-[80]">
+                                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[140px] py-2">
+                                            {item.items.map(sub => (
+                                                <Link
+                                                    key={sub}
+                                                    href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${sub.toLowerCase().replace(/ /g, '-')}`}
+                                                    className="block px-5 py-2 text-[10px] font-black text-gray-600 hover:text-primary hover:bg-gray-50 uppercase tracking-[0.1em] transition-colors"
+                                                >
+                                                    {sub}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+                    })}
                 </div>
             </div>
         </div>
     );
 }
 
-function MobileCollapsible({ name, items }: { name: string, items: string[] }) {
+function MobileCollapsible({ name, items }: { name: string, items: (string | { name: string, items: string[] })[] }) {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="space-y-2">
@@ -201,9 +229,22 @@ function MobileCollapsible({ name, items }: { name: string, items: string[] }) {
             </button>
             {isOpen && (
                 <div className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-primary/10 py-2 animate-fade-in">
-                    {items.map(item => (
-                        <Link key={item} href="#" className="text-xs font-bold text-gray-500 py-1">{item}</Link>
-                    ))}
+                    {items.map((item, idx) => {
+                        if (typeof item === 'string') {
+                            return <Link key={item} href="#" className="text-xs font-bold text-gray-500 py-1">{item}</Link>;
+                        } else {
+                            return (
+                                <div key={idx} className="space-y-2 py-1">
+                                    <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{item.name}</p>
+                                    <div className="grid grid-cols-2 gap-2 pl-4">
+                                        {item.items.map(sub => (
+                                            <Link key={sub} href="#" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{sub}</Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        }
+                    })}
                 </div>
             )}
         </div>
