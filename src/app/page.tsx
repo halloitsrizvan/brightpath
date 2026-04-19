@@ -146,7 +146,7 @@ export default function LandingPage() {
             </section>
 
             <SubjectsGrid />
-            <PublicTutorsGrid limited={true} tutors={tutors} />
+            {/* <PublicTutorsGrid limited={true} tutors={tutors} /> */}
             <Testimonials />
 
             <PublicFooter />

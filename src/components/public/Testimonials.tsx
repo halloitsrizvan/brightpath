@@ -4,24 +4,27 @@ import Image from 'next/image';
 
 const testimonials = [
     {
-        name: "Rahul S.",
-        role: "Grade 10 Student",
-        content: "The 1:1 focus changed how I view Mathematics. My concept clarity is at an all-time high thanks to Brightpath's mentors.",
+        name: "Hashim",
+        role: "Parent",
+        content: "Hi, റെഗുലർ ക്ലാസ്സിൽ ചേർന്നതിന് ശേഷം മോൾക്ക് നല്ല മാറ്റം ഉണ്ട് ട്ടോ . ഇംഗ്ലീഷ് ഒക്കെ വായിക്കാൻ അവൾക്ക് ഇപ്പോൾ ഈസി ആണ്. Brightpath ലെ ടീച്ചേർസ് നല്ല ഫ്രണ്ട്ലി ആയിരുന്നു. ക്ലാസ്സിൽ നല്ല മാറ്റം ഉണ്ടെന്ന് അവളുടെ ക്ലാസ്സ് ടീച്ചർ പറഞ്ഞിരുന്നു. അവൾ ഹാപ്പി ആണ്.താങ്ക്സ് Brightpath ",
         stars: 5,
+        img: "/testimonial1.png",
         id: 1
     },
     {
-        name: "Meera Nair",
+        name: "Adbul Salam",
         role: "Parent",
-        content: "Transparent reporting and flexible timing made it easy to balance school and tuition. The tutors are truly professionals.",
+        content: "ലിബക്ക് brightpath ൽ ജോയിൻ ചെയ്‌തതിന് ശേഷം ഒരുപാട് മാറ്റം കാണുന്നുണ്ട്.... UKG base ഇല്ലാതിരുന്ന അവൾക് ഒരു base കിട്ടിയത് brightpath കാരണം ആണ്, ഇംഗ്ലീഷ് സ്റ്റോറീസ് ഒക്കെ ഇപ്പൊ ശെരിക്കും വായിക്കാൻ കയ്യുന്നുണ്... പിന്നെ എടുത്തു പറയേണ്ട ഒരു കാര്യം എന്തെന്ന് വെച്ചാൽ, ടീച്ചർ വളരെ ഫ്രണ്ട്ലി ആയിരുന്നു. താങ്ക്യൂ brightpath",
         stars: 5,
+        img: "/testimonial2.png",
         id: 2
     },
     {
-        name: "Anjali K.",
-        role: "Grade 12 Student",
-        content: "Intensive NEET preparation with 1:1 doubt clearing. I feel significantly more confident about the competitive exams now.",
+        name: "Shameer",
+        role: "Parent",
+        content: "ഇത് എന്റെ മോൻ്റെ രണ്ടാമത്തെ ഫൌണ്ടേഷൻ കോഴ്സ് ആണ് brightpath ടീമിൻ്റെ കൂടെ, ഇപ്പോ ചെയ്‌തത്‌ മലയാളം ഫൌണ്ടേഷൻ കോഴ്‌സ് ആണ്, എന്ത് പറയണം എന്ന് അറിയില്ല 20 ദിവസം കൊണ്ട് മലയാളം പറയാൻ മാത്രം അറിയുന്ന അവനെ എഴുതാനും, വായിക്കാനും പഠിപ്പിച്ചു. Brightpath നോടും അൻഷിദ മാമിനോടും ഒരു പാട് നന്ദി",
         stars: 5,
+        img: "/testimonial3.png",
         id: 3
     }
 ];
@@ -46,7 +49,7 @@ export default function Testimonials() {
                         <p className="text-gray-600 font-bold italic leading-relaxed mb-8 italic">"{t.content}"</p>
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center overflow-hidden">
-                                <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${t.id + 50}`} alt={t.name} width={48} height={48} unoptimized />
+                                <Image src={t.img} alt={t.name} width={48} height={48} unoptimized />
                             </div>
                             <div>
                                 <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight">{t.name}</h4>

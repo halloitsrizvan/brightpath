@@ -44,7 +44,7 @@ export default function PublicNavbar() {
                 }`}>
                 <div className="container mx-auto px-6 flex justify-between items-center">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <div className={`relative w-10 h-10 rounded-xl p-2 shadow-xl shadow-black/5 group-hover:scale-110 transition-transform flex items-center justify-center ${scrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'}`}>
+                        <div className={`relative w-10 h-10 rounded-xl p-2  transition-transform flex items-center justify-center ${scrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'}`}>
                             <Image src="/logo.png" alt="BrightPath Logo" width={40} height={40} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
