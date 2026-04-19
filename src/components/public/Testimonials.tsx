@@ -31,33 +31,46 @@ const testimonials = [
 
 export default function Testimonials() {
     return (
-        <section className="py-32 bg-gray-50/50">
-            <div className="container mx-auto px-6 text-center mb-20">
-                <p className="text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-4">Voice of Excellence</p>
-                <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter leading-none">Institutional <span className="text-primary">Impact.</span></h2>
-            </div>
-
-            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {testimonials.map((t) => (
-                    <div key={t.id} className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-xl shadow-gray-200/20 relative group hover:-translate-y-2 transition-all">
-                        <Quote className="absolute top-8 right-8 w-12 h-12 text-primary/10 group-hover:text-primary/20 transition-colors" />
-                        <div className="flex gap-1 mb-6">
-                            {[...Array(t.stars)].map((_, i) => (
-                                <Star key={i} className="w-4 h-4 fill-secondary text-secondary" />
-                            ))}
-                        </div>
-                        <p className="text-gray-600 font-bold italic leading-relaxed mb-8 italic">"{t.content}"</p>
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center overflow-hidden">
-                                <Image src={t.img} alt={t.name} width={48} height={48} unoptimized />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-black text-gray-800 uppercase tracking-tight">{t.name}</h4>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.role}</p>
-                            </div>
-                        </div>
+        <section className="py-24 bg-white">
+            <div className="container mx-auto px-6 max-w-7xl">
+                <div className="text-center mb-16">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/10 mb-4">
+                        Success Stories
                     </div>
-                ))}
+                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-none">
+                        Institutional <span className="text-primary border-b-4 border-secondary/30">Impact.</span>
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {testimonials.map((t) => (
+                        <div key={t.id} className="relative p-8 rounded-2xl bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-500 group">
+                            <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/10" />
+                            
+                            <div className="flex gap-0.5 mb-6">
+                                {[...Array(t.stars)].map((_, i) => (
+                                    <Star key={i} className="w-3 h-3 fill-secondary text-secondary" />
+                                ))}
+                            </div>
+
+                            <div className="relative mb-8">
+                                <p className="text-sm font-medium text-gray-600 leading-relaxed italic">
+                                    "{t.content}"
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-6 border-t border-gray-100/50">
+                                <div className="relative w-10 h-10 rounded-full bg-white shadow-md border-2 border-white overflow-hidden shrink-0">
+                                    <Image src={t.img} alt={t.name} fill className="object-cover" unoptimized />
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="text-xs font-black text-gray-900 uppercase tracking-tight truncate">{t.name}</h4>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{t.role}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </section>
     );

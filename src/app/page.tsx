@@ -4,6 +4,8 @@ import PublicFooter from '@/components/public/Footer';
 import Testimonials from '@/components/public/Testimonials';
 import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
 import SubjectsGrid from '@/components/public/SubjectsGrid';
+import PublicFAQ from '@/components/public/FAQ';
+import PublicFeatures from '@/components/public/Features';
 import Image from 'next/image';
 import { Star, ArrowRight, Video, Clock, Users, ShieldCheck, BookOpen, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -125,18 +127,22 @@ export default function LandingPage() {
             <BannerCarousel />
 
             {/* Why Sections */}
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <section className="py-24 bg-white">
+                <div className="container mx-auto px-6 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FeatureCard icon={<Clock className="w-6 h-6" />} title="Flexible Timing" desc="Classes from 5 AM to 11 PM." color="bg-violet-500" />
                         <FeatureCard icon={<Users className="w-6 h-6" />} title="1:1 Mentorship" desc="Personalized focus." color="bg-primary" />
                         <FeatureCard icon={<ShieldCheck className="w-6 h-6" />} title="Trusted Tutors" desc="Verified expertise." color="bg-teal-500" />
                         <FeatureCard icon={<BookOpen className="w-6 h-6" />} title="KG - 12 Coverage" desc="All boards supported." color="bg-secondary" />
                     </div>
-                    <div className="space-y-8">
-                        <p className="text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-2 leading-none">The Academy Edge</p>
-                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-tight">Educational Clarity <br /><span className="text-primary">Redefined.</span></h2>
-                        <p className="text-base text-gray-500 font-bold leading-relaxed italic">At Brightpath Kerala, we build cognitive foundations through personalized methodology.</p>
+                    <div className="space-y-6">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/10 mb-2">
+                            The Academy Edge
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-tight">
+                            Educational Clarity <br /><span className="text-primary border-b-4 border-secondary/30">Redefined.</span>
+                        </h2>
+                        <p className="text-base text-gray-500 font-medium leading-relaxed italic">At Brightpath Kerala, we build cognitive foundations through personalized methodology.</p>
                         <div className="space-y-4 pt-4">
                             <ImpactPoint text="Localized instruction in Malayalam & English" />
                             <ImpactPoint text="Monthly progress analytical reports" />
@@ -148,7 +154,8 @@ export default function LandingPage() {
             <SubjectsGrid />
             {/* <PublicTutorsGrid limited={true} tutors={tutors} /> */}
             <Testimonials />
-
+            <PublicFAQ />
+            <PublicFeatures />
             <PublicFooter />
             <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
         </div>
@@ -219,10 +226,10 @@ function BannerCarousel() {
 
 function FeatureCard({ icon, title, desc, color }: { icon: any, title: string, desc: string, color: string }) {
     return (
-        <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/20 group text-center sm:text-left">
-            <div className={`w-12 h-12 ${color} text-white rounded-xl flex items-center justify-center mb-4 shadow-lg mx-auto sm:mx-0 rotate-3 group-hover:rotate-6 transition-all`}>{icon}</div>
-            <h3 className="text-xl font-black text-gray-800 italic uppercase tracking-tighter leading-none mb-2">{title}</h3>
-            <p className="text-gray-500 font-bold text-xs leading-relaxed">{desc}</p>
+        <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100/50 hover:bg-white hover:shadow-2xl hover:shadow-gray-200/50 hover:-translate-y-1 transition-all duration-500 group">
+            <div className={`w-11 h-11 ${color} text-white rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-gray-200 group-hover:rotate-6 transition-transform`}>{icon}</div>
+            <h3 className="text-lg font-black text-gray-800 italic uppercase tracking-tighter leading-none mb-2">{title}</h3>
+            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest leading-relaxed">{desc}</p>
         </div>
     );
 }
