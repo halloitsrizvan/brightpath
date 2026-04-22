@@ -126,10 +126,10 @@ export default function PublicNavbar() {
                             <div className="p-4 space-y-4">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Online Tuition</p>
                                 <div className="grid grid-cols-1 gap-4 pl-4">
-                                    <MobileCollapsible name="By Classes" items={tuitionData.classes} />
-                                    <MobileCollapsible name="By Location" items={tuitionData.locations} />
-                                    <MobileCollapsible name="By Subject" items={tuitionData.subjects} />
-                                    <MobileCollapsible name="By Board" items={tuitionData.boards} />
+                                    <MobileCollapsible name="By Classes" items={tuitionData.classes} onItemClick={() => setMobileMenuOpen(false)} />
+                                    <MobileCollapsible name="By Location" items={tuitionData.locations} onItemClick={() => setMobileMenuOpen(false)} />
+                                    <MobileCollapsible name="By Subject" items={tuitionData.subjects} onItemClick={() => setMobileMenuOpen(false)} />
+                                    <MobileCollapsible name="By Board" items={tuitionData.boards} onItemClick={() => setMobileMenuOpen(false)} />
                                 </div>
                             </div>
 
@@ -191,10 +191,13 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
                         } else {
                             return (
                                 <div key={idx} className="relative group/level3 px-1">
-                                    <div className="flex items-center justify-between px-5 py-2.5 hover:bg-primary/5 rounded-xl cursor-pointer group/level3item transition-colors">
+                                    <Link 
+                                        href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.name.toLowerCase().replace(/ /g, '-')}`}
+                                        className="flex items-center justify-between px-5 py-2.5 hover:bg-primary/5 rounded-xl cursor-pointer group/level3item transition-colors"
+                                    >
                                         <span className="text-[10px] font-black text-gray-600 group-hover/level3item:text-primary uppercase tracking-[0.1em]">{item.name}</span>
                                         <ChevronRight className="w-3 h-3 text-gray-400 group-hover/level3item:translate-x-1 transition-transform" />
-                                    </div>
+                                    </Link>
                                     {/* Level 3 Dropdown */}
                                     <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/level3:opacity-100 group-hover/level3:visible transition-all duration-300 transform translate-x-2 group-hover/level3:translate-x-0 z-[80]">
                                         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[140px] py-2">
@@ -219,7 +222,7 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
     );
 }
 
-function MobileCollapsible({ name, items }: { name: string, items: (string | { name: string, items: string[] })[] }) {
+function MobileCollapsible({ name, items, onItemClick }: { name: string, items: (string | { name: string, items: string[] })[], onItemClick: () => void }) {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div className="space-y-2">
@@ -230,16 +233,44 @@ function MobileCollapsible({ name, items }: { name: string, items: (string | { n
             {isOpen && (
                 <div className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-primary/10 py-2 animate-fade-in">
                     {items.map((item, idx) => {
+                        const baseUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}`;
                         if (typeof item === 'string') {
-                            return <Link key={item} href="#" className="text-xs font-bold text-gray-500 py-1">{item}</Link>;
+                            const slug = item.toLowerCase().replace(/ /g, '-');
+                            return (
+                                <Link 
+                                    key={item} 
+                                    href={`${baseUrl}/${slug}`} 
+                                    onClick={onItemClick}
+                                    className="text-xs font-bold text-gray-500 py-1"
+                                >
+                                    {item}
+                                </Link>
+                            );
                         } else {
+                            const rangeUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.name.toLowerCase().replace(/ /g, '-')}`;
                             return (
                                 <div key={idx} className="space-y-2 py-1">
-                                    <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest">{item.name}</p>
+                                    <Link 
+                                        href={rangeUrl}
+                                        onClick={onItemClick}
+                                        className="text-[10px] font-black text-primary/60 uppercase tracking-widest hover:text-primary transition-colors block"
+                                    >
+                                        {item.name}
+                                    </Link>
                                     <div className="grid grid-cols-2 gap-2 pl-4">
-                                        {item.items.map(sub => (
-                                            <Link key={sub} href="#" className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{sub}</Link>
-                                        ))}
+                                        {item.items.map(sub => {
+                                            const subSlug = sub.toLowerCase().replace(/ /g, '-');
+                                            return (
+                                                <Link 
+                                                    key={sub} 
+                                                    href={`${baseUrl}/${subSlug}`}
+                                                    onClick={onItemClick}
+                                                    className="text-[10px] font-bold text-gray-400 uppercase tracking-wider"
+                                                >
+                                                    {sub}
+                                                </Link>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
