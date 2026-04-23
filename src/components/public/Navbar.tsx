@@ -28,6 +28,7 @@ export default function PublicNavbar() {
 
     const moreLinks = [
         { name: 'About Us', href: '/about' },
+        { name: 'Become a Tutor', href: '/become-tutor' },
         { name: 'Testimonials', href: '/testimonials' },
         { name: 'Blogs', href: '/blog' },
         { name: 'News & Events', href: '/news' },

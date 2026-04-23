@@ -88,8 +88,8 @@ export default function PublicFooter() {
                                         <Phone className="w-4 h-4 text-primary" />
                                     </div>
                                     <div className="text-xs font-medium text-gray-400 uppercase tracking-widest leading-relaxed">
-                                        +91 9000 000 000<br />
-                                        +91 8000 000 000
+                                        +91 85908 78148<br />
+                                        +91 85908 78148
                                     </div>
                                 </li>
                             </ul>
