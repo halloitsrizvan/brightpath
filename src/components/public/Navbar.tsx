@@ -27,15 +27,9 @@ export default function PublicNavbar() {
     };
 
     const moreLinks = [
-        { name: 'About Us', href: '/about' },
-        { name: 'Become a Tutor', href: '/become-tutor' },
+        { name: 'Our System', href: '/our-system' },
         { name: 'Testimonials', href: '/testimonials' },
         { name: 'Blogs', href: '/blog' },
-        { name: 'News & Events', href: '/news' },
-        { name: 'Countries', href: '/countries' },
-        { name: 'Boards', href: '/boards' },
-        { name: 'Mock Test', href: '/mock-test' },
-        { name: 'Downloads', href: '/downloads' },
         { name: 'Contact', href: '/contact' },
     ];
 
@@ -76,7 +70,7 @@ export default function PublicNavbar() {
                         </div>
 
                         <Link href="/become-tutor" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">Become a Tutor</Link>
-                        <Link href="/careers" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">Careers</Link>
+                        <Link href="/about" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">About Us</Link>
 
                         {/* More Dropdown */}
                         <div className="relative h-full flex items-center group/more">
@@ -135,7 +129,7 @@ export default function PublicNavbar() {
                             </div>
 
                             <Link href="/become-tutor" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">Become a Tutor</Link>
-                            <Link href="/careers" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">Careers</Link>
+                            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">About Us</Link>
 
                             <div className="p-4 space-y-4">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Quick Links</p>

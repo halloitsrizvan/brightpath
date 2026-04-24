@@ -89,7 +89,7 @@ export default function LandingPage() {
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
                             <div className="flex -space-x-3 items-center">
-                                {[1, 2, 3,4  ].map(i => (
+                                {[1, 2, 3, 4].map(i => (
                                     <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative">
                                         <Image
                                             src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i + 10}`}
@@ -199,7 +199,7 @@ function BannerCarousel() {
                                     fill
                                     className="object-cover"
                                 />
-                                
+
                             </div>
                         ))}
                     </div>
