@@ -11,4 +11,4 @@ Disallow: /teacher-dashboard
 Disallow: /student-dashboard
 Disallow: /api/
 
-Sitemap: https://brightpath-kerala.eduvora.com/sitemap.xml
+Sitemap: https://brightpatheduvora.com/sitemap.xml

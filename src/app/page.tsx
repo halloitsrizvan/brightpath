@@ -51,10 +51,18 @@ export default function LandingPage() {
                     __html: JSON.stringify({
                         "@context": "https://schema.org",
                         "@type": "EducationalOrganization",
-                        "name": "Brightpath Kerala",
+                        "name": "BrightPath Eduvora",
                         "url": "https://brightpatheduvora.com",
-                        "logo": "https://brightpatheduvora.com/favicon.ico",
-                        "description": "High-quality 1:1 personalized online tuition for KG to 12th grade in Kerala.",
+                        "logo": "https://brightpatheduvora.com/icon.png",
+                        "description": "High-quality 1:1 personalized online tuition for KG to 12th grade. Learn Right. Grow Bright.",
+                        "address": {
+                            "@type": "PostalAddress",
+                            "addressCountry": "IN"
+                        },
+                        "sameAs": [
+                            "https://www.facebook.com/brightpatheduvora",
+                            "https://www.instagram.com/brightpatheduvora"
+                        ]
                     })
                 }}
             />
@@ -88,7 +96,7 @@ export default function LandingPage() {
                                 Book Free Assessment
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <div className="flex -space-x-3 items-center">
+                            {/* <div className="flex -space-x-3 items-center">
                                 {[1, 2, 3, 4].map(i => (
                                     <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative">
                                         <Image
@@ -102,7 +110,7 @@ export default function LandingPage() {
                                 <div className="pl-6 text-[11px] font-black text-gray-400 uppercase tracking-widest">
                                     <span className="text-gray-900">500+</span> Active Students
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -173,15 +181,15 @@ export default function LandingPage() {
 }
 
 function BannerCarousel() {
-    const images = ['/banner5.png', '/banner6.png', '/banner7.png'];
+    const images = ['/banner5.png'];
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % images.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, []);
+    // useEffect(() => {
+    //     const timer = setInterval(() => {
+    //         setCurrentIndex((prev) => (prev + 1) % images.length);
+    //     }, 5000);
+    //     return () => clearInterval(timer);
+    // }, []);
 
     return (
         <section className="relative w-full overflow-hidden bg-gray-50 py-10">

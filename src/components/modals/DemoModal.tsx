@@ -9,17 +9,51 @@ interface DemoModalProps {
 
 export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        userType: 'student',
+        fullName: '',
+        email: '',
+        country: '',
+        phoneNumber: '',
+        studentClass: ''
+    });
     
     if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would normally send the data to your API
-        setIsSubmitted(true);
-        setTimeout(() => {
-            setIsSubmitted(false);
-            onClose();
-        }, 3000);
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...formData,
+                    leadType: 'demo'
+                })
+            });
+
+            if (response.ok) {
+                setIsSubmitted(true);
+                setTimeout(() => {
+                    setIsSubmitted(false);
+                    onClose();
+                    setFormData({
+                        userType: 'student',
+                        fullName: '',
+                        email: '',
+                        country: '',
+                        phoneNumber: '',
+                        studentClass: ''
+                    });
+                }, 3000);
+            }
+        } catch (error) {
+            console.error("Submission failed", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -61,7 +95,11 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                                 <div className="space-y-1.5 col-span-full">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">I'm a</label>
                                     <div className="relative">
-                                        <select className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer">
+                                        <select 
+                                            value={formData.userType}
+                                            onChange={(e) => setFormData({ ...formData, userType: e.target.value })}
+                                            className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                                        >
                                             <option value="student">Student</option>
                                             <option value="parent">Parent</option>
                                             <option value="teacher">Teacher</option>
@@ -73,42 +111,43 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                                 <div className="h-px bg-gray-100 col-span-full" />
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Student Name</label>
-                                    <input type="text" required placeholder="Enter full name" className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" />
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Full Name</label>
+                                    <input 
+                                        type="text" required placeholder="Enter full name" 
+                                        value={formData.fullName}
+                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                    />
                                 </div>
 
                                 <div className="space-y-1.5">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Email Address</label>
-                                    <input type="email" required placeholder="example@mail.com" className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" />
+                                    <input 
+                                        type="email" required placeholder="example@mail.com" 
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                    />
                                 </div>
 
-                                <div className="space-y-1.5 col-span-full">
+                                <div className="space-y-1.5">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Country</label>
-                                    <input type="text" required placeholder="Select your country" className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" />
-                                </div>
-
-                                <div className="h-px bg-gray-100 col-span-full" />
-
-                                <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Phone Number</label>
-                                    <div className="flex gap-2">
-                                        <div className="h-12 px-3 bg-gray-100 rounded-xl flex items-center text-xs font-black text-gray-600">+91</div>
-                                        <input type="tel" required placeholder="Number" className="flex-1 h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" />
-                                    </div>
+                                    <input 
+                                        type="text" required placeholder="Select your country" 
+                                        value={formData.country}
+                                        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                    />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">WhatsApp Number</label>
-                                    <div className="flex gap-2">
-                                        <div className="h-12 px-3 bg-gray-100 rounded-xl flex items-center text-xs font-black text-gray-600">+91</div>
-                                        <input type="tel" required placeholder="Number" className="flex-1 h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5 col-span-full">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Class</label>
                                     <div className="relative">
-                                        <select className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer">
+                                        <select 
+                                            value={formData.studentClass}
+                                            onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
+                                            className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                                        >
                                             <option value="">Select Class</option>
                                             {[...Array(12)].map((_, i) => (
                                                 <option key={i} value={i + 1}>Class {i + 1}</option>
@@ -117,13 +156,29 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                     </div>
                                 </div>
+
+                                <div className="h-px bg-gray-100 col-span-full" />
+
+                                <div className="space-y-1.5 col-span-full">
+                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Phone Number</label>
+                                    <div className="flex gap-2">
+                                        <div className="h-12 px-3 bg-gray-100 rounded-xl flex items-center text-xs font-black text-gray-600">+91</div>
+                                        <input 
+                                            type="tel" required placeholder="Number" 
+                                            value={formData.phoneNumber}
+                                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                            className="flex-1 h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <button 
                                 type="submit"
-                                className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all mt-2"
+                                disabled={isLoading}
+                                className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all mt-2 disabled:opacity-50"
                             >
-                                Book My Free Demo
+                                {isLoading ? 'Sending Request...' : 'Book My Free Demo'}
                             </button>
                         </form>
                     </div>

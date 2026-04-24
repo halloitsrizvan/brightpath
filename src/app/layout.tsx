@@ -16,27 +16,37 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brightpatheduvora.com'),
   title: {
-    default: "Brightpath Kerala | 1:1 Online Tuition Academy KG-12",
-    template: "%s | Brightpath Kerala"
+    default: "BrightPath Eduvora | 1:1 Online Tuition Academy KG-12",
+    template: "%s | BrightPath Eduvora"
   },
-  description: "Learn Right. Grow Bright. High-quality 1:1 personalized online tuition for KG to 12th grade in Kerala. Flexible schedules, trusted tutors, and expert mentorship.",
-  keywords: ["Online Tuition Kerala", "Brightpath Kerala", "1:1 Mentorship", "KG-12 Tuition", "CBSE Tuition Kerala", "Malayalam Tuition Online"],
-  authors: [{ name: "Brightpath Academy" }],
-  creator: "Brightpath Kerala",
-  publisher: "Brightpath Kerala",
+  description: "Learn Right. Grow Bright. High-quality 1:1 personalized online tuition for KG to 12th grade. Global standards, trusted tutors, and expert mentorship for academic excellence.",
+  keywords: ["Online Tuition", "BrightPath Eduvora", "1:1 Mentorship", "KG-12 Tuition", "CBSE Tuition", "International Online Academy", "Personalized Learning"],
+  authors: [{ name: "BrightPath Academy" }],
+  creator: "BrightPath Eduvora",
+  publisher: "BrightPath Eduvora",
+  alternates: {
+    canonical: 'https://brightpatheduvora.com',
+  },
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "Brightpath Kerala | Online Tuition Academy",
-    description: "Personalized 1:1 mentorship and online coaching for KG-12 students.",
-    url: "https://brightpath-kerala.eduvora.com",
-    siteName: "Brightpath Kerala",
-    locale: "en_IN",
+    title: "BrightPath Eduvora | Online Tuition Academy",
+    description: "Personalized 1:1 mentorship and online coaching for KG-12 students worldwide.",
+    url: "https://brightpatheduvora.com",
+    siteName: "BrightPath Eduvora",
+    locale: "en_US",
     type: "website",
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'BrightPath Eduvora | 1:1 Online Tuition',
+    description: 'Learn Right. Grow Bright. Personalized 1:1 mentorship for KG-12 students.',
+    creator: '@brightpathedu',
   },
   robots: {
     index: true,

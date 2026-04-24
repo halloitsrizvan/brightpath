@@ -35,7 +35,7 @@ export default function PublicNavbar() {
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-xl py-2' : 'bg-transparent py-4'
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-xl py-2' : 'lg:bg-transparent bg-white py-4'
                 }`}>
                 <div className="container mx-auto px-6 flex justify-between items-center">
                     <Link href="/" className="flex items-center gap-2 group">
@@ -113,8 +113,8 @@ export default function PublicNavbar() {
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="lg:hidden fixed inset-0 top-[78px] bg-white z-[60] overflow-y-auto overflow-x-hidden animate-slide-in-right">
-                        <div className="p-6 space-y-2">
+                    <div className="lg:hidden absolute top-full left-0 w-full min-h-[110vh] bg-white z-[100] overflow-y-auto shadow-2xl border-t border-gray-100 pb-40">
+                        <div className="p-6 space-y-2 animate-fade-in relative z-[110]">
                             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">Home</Link>
 
                             {/* Online Tuition Mobile */}

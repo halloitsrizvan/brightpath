@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { RateLimitService } from '@/lib/services/rateLimitService';
 import { contactEnquirySchema } from '@/lib/validations/contact';
+import dbConnect from '@/lib/db/mongodb';
+import Lead from '@/models/Lead';
 
 export async function POST(req: Request) {
     try {
@@ -32,7 +34,17 @@ export async function POST(req: Request) {
             );
         }
 
-        // Potential growth: log successful lead to database here
+        // 3. Lead Capture in Database
+        await dbConnect();
+        await Lead.create({
+            fullName: body.name,
+            phoneNumber: body.contact,
+            email: body.email || 'not-provided@example.com',
+            notes: body.requirements,
+            studentClass: body.module,
+            leadType: 'enquiry',
+            status: 'pending'
+        });
         
         return NextResponse.json({ 
             message: 'Identity Verified. Proceeding to Secure Institutional Dispatch.',

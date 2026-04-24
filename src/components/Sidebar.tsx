@@ -49,7 +49,8 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
                 { name: 'Expenses', href: '/admin-dashboard/expenses', icon: <Receipt className="w-5 h-5" /> },
                 { name: 'Founders', href: '/admin-dashboard/founders', icon: <ShieldCheck className="w-5 h-5" /> },
                 { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
-                { name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
+                {name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
+                { name: 'Leads & Enquiries', href: '/admin-dashboard/leads', icon: <TrendingUp className="w-5 h-5" /> },
                 { name: 'Blog Management', href: '/admin-dashboard/blog', icon: <BookOpen className="w-5 h-5" /> },
                 { name: 'Monthly Report', href: '/admin-dashboard/reports', icon: <BarChart3 className="w-5 h-5" /> },
             ];
