@@ -26,9 +26,6 @@ export const metadata: Metadata = {
   authors: [{ name: "BrightPath Academy" }],
   creator: "BrightPath Eduvora",
   publisher: "BrightPath Eduvora",
-  alternates: {
-    canonical: 'https://brightpatheduvora.com',
-  },
   formatDetection: {
     email: false,
     address: false,

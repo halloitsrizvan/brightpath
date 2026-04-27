@@ -4,6 +4,15 @@ import { Calendar, User, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PublicService } from '@/lib/services/publicService';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Academy Journal | BrightPath Eduvora",
+    description: "Expert academic insights, study guides, and institutional updates from Kerala's premier 1:1 online academy.",
+    alternates: {
+        canonical: '/blog',
+    },
+};
 
 export const revalidate = 3600; // Refresh every hour
 

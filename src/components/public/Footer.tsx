@@ -52,11 +52,11 @@ export default function PublicFooter() {
                         <div>
                             <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8 border-l-2 border-primary pl-4">Academic Programs</h4>
                             <ul className="space-y-4">
-                                <FooterLink href="/tuition/tuition-by-class/class-1-5">Primary (1-5)</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-class/class-6-10">Secondary (6-10)</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-class/class-11-12">Higher Secondary</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-category/subject-specific">Subject Specialists</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-category/competitive-exams">Competitive Exams</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-classes/class-1-5">Primary (1-5)</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-classes/class-6-10">Secondary (6-10)</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-classes/class-11-12">Higher Secondary</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-subject/subject-specific">Subject Specialists</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-subject/competitive-exams">Competitive Exams</FooterLink>
                             </ul>
                         </div>
 
