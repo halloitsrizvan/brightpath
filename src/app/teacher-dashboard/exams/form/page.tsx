@@ -97,16 +97,22 @@ function ExamFormInner() {
                 method: 'POST',
                 body: formDataCloud,
             });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error?.message || 'Upload failed');
+            }
+
             const data = await res.json();
             if (data.secure_url) {
                 setFormData(prev => ({ ...prev, paperImage: data.secure_url }));
                 toast.success('Paper uploaded successfully!');
             } else {
-                throw new Error('Upload failed');
+                throw new Error('Upload failed: No secure URL returned');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Cloudinary Upload Error:', error);
-            toast.error('Failed to upload image to Cloudinary');
+            toast.error(error.message || 'Failed to upload image to Cloudinary');
         } finally {
             setIsUploading(false);
         }

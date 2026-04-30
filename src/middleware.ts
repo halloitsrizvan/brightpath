@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
     // Allows Google Fonts, Cloudinary, and institutional assets
     response.headers.set(
         'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://api.dicebear.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://res.cloudinary.com https://api.dicebear.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.whatsapp.com;"
+        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://api.dicebear.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://res.cloudinary.com https://api.dicebear.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.whatsapp.com https://api.cloudinary.com;"
     );
 
     // 2. Edge-Level Auth Protection
