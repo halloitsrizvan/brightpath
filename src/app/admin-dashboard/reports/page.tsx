@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
+import MonthPicker from '@/components/ui/MonthPicker';
 import { 
     Calendar, 
     TrendingUp, 
@@ -108,16 +109,12 @@ export default function MonthlyReport() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="relative group">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-primary transition-colors" />
-                            <select
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-[#161618] border border-gray-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none cursor-pointer hover:border-gray-700 transition-all min-w-[200px]"
-                            >
-                                {monthsOptions.map(m => <option key={m} value={m}>{m}</option>)}
-                            </select>
-                        </div>
+                        <MonthPicker 
+                            selected={selectedMonth} 
+                            onChange={setSelectedMonth} 
+                            allowAll={false}
+                            variant="dark"
+                        />
                         <button 
                             onClick={() => window.print()}
                             className="p-2.5 bg-[#161618] border border-gray-800 rounded-xl hover:border-gray-700 transition-all text-gray-400 hover:text-white"

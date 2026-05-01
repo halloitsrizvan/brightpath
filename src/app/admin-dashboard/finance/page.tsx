@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
+import MonthPicker from '@/components/ui/MonthPicker';
 import { 
     IndianRupee, 
     Wallet, 
@@ -202,17 +203,11 @@ export default function FinanceHub() {
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                            <div className="relative group w-full md:w-48 flex-shrink-0">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                                <select
-                                    className="w-full pl-11 pr-10 py-3 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer appearance-none shadow-sm"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(e.target.value)}
-                                >
-                                    {monthsOptions.map((m: string) => <option key={m} value={m}>{m}</option>)}
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                            </div>
+                            <MonthPicker 
+                                selected={selectedMonth} 
+                                onChange={setSelectedMonth} 
+                                allLabel="All Records"
+                            />
 
                             <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner w-full md:w-auto">
                                 <button onClick={() => setActiveTab('pending')} className={`flex-1 md:flex-none px-3 md:px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'pending' ? 'bg-white text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>Pending AR</button>

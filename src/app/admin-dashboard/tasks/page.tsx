@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
+import MonthPicker from '@/components/ui/MonthPicker';
 import { Menu, Plus, Trash2, Edit3, Target, DollarSign, Clock, CheckCircle2, Circle, Calendar, Save, Loader2, X, ListTodo, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
@@ -195,16 +196,11 @@ export default function AdminTasks() {
                             <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mt-1">Management Control Panel</p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="relative group">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#45308D]" />
-                                <select 
-                                    className="pl-12 pr-6 py-4 bg-gray-50 border-4 border-transparent rounded-[1.5rem] font-black text-sm focus:border-[#45308D] outline-none transition-all cursor-pointer shadow-inner"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(e.target.value)}
-                                >
-                                    {months.map(m => <option key={m} value={m}>{m}</option>)}
-                                </select>
-                            </div>
+                            <MonthPicker 
+                                selected={selectedMonth} 
+                                onChange={setSelectedMonth} 
+                                allowAll={false}
+                            />
                             <button 
                                 onClick={() => setIsGoalModalOpen(true)}
                                 className="bg-[#45308D] text-white p-4 rounded-[1.5rem] hover:scale-110 transition-all shadow-lg hover:shadow-[#45308D]/20 active:scale-95"

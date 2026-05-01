@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
 import AttendanceModal from '@/features/attendance/components/AttendanceModal';
+import MonthPicker from '@/components/ui/MonthPicker';
 import { Menu, Calendar, Clock, ChevronDown, User, BookOpen, UserCheck, Search, Filter, AlertCircle, Plus, Trash2 } from 'lucide-react';
 
 export default function AdminAttendance() {
@@ -10,12 +11,12 @@ export default function AdminAttendance() {
     const [attendance, setAttendance] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedMonth, setSelectedMonth] = useState('All Time');
+    const [selectedMonth, setSelectedMonth] = useState('All Academic Cycles');
 
     const fetchAttendance = async () => {
         try {
             setLoading(true);
-            const query = selectedMonth === 'All Time' ? '' : `?month=${selectedMonth}`;
+            const query = selectedMonth === 'All Academic Cycles' ? '' : `?month=${selectedMonth}`;
             const { data } = await api.get(`/attendance${query}`);
             setAttendance(data);
         } catch (err) {
@@ -82,19 +83,11 @@ export default function AdminAttendance() {
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                            <div className="relative group w-full md:min-w-[200px]">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                                <select
-                                    className="w-full pl-11 pr-10 py-3.5 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer appearance-none shadow-sm"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(e.target.value)}
-                                >
-                                    <option value="All Time">All Academic Cycles</option>
-                                    <option value="January 2024">January 2024</option>
-                                    <option value="February 2024">February 2024</option>
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                            </div>
+                            <MonthPicker 
+                                selected={selectedMonth} 
+                                onChange={setSelectedMonth} 
+                                allLabel="All Academic Cycles"
+                            />
                             
                             <button 
                                 onClick={() => setIsModalOpen(true)}
