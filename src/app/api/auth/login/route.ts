@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         if (!isMatch) return NextResponse.json({ message: 'Invalid credentials' }, { status: 400 });
 
         const payload = { id: user._id, role: user.role };
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret'); // No expiration
 
         await AuditService.log('USER_LOGIN_SUCCESS', {
             id: user._id,
@@ -73,10 +73,10 @@ export async function POST(req: Request) {
             name: 'token',
             value: token,
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: true, // Always secure in production/HTTPS
+            sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 // 1 day
+            maxAge: 60 * 60 * 24 * 365 * 100 // 100 years (practically forever)
         });
 
         return response;

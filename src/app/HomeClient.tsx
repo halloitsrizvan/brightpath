@@ -16,7 +16,7 @@ export default function HomeClient() {
     const [tutors, setTutors] = useState([]);
     const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
     const [heroIndex, setHeroIndex] = useState(0);
-    const heroImages = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
+    const heroImages = ['/banner1.png', '/banner2.png', '/banner3.png'];
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -97,7 +97,7 @@ export default function HomeClient() {
                     </div>
 
                     <div className="relative animate-in fade-in slide-in-from-right-8 duration-700 text-center flex justify-center">
-                        <div className="relative bg-white rounded-[1rem] overflow-hidden border-4 border-white aspect-[4/5] md:aspect-square flex items-center justify-center max-w-[450px] w-full group">
+                        <div className="relative bg-white rounded-[1rem] overflow-hidden border-4 border-white aspect-square flex items-center justify-center max-w-[450px] w-full group">
                             <div className="absolute inset-0 flex transition-transform duration-1000 ease-in-out" style={{ transform: `translateX(-${heroIndex * 100}%)` }}>
                                 {heroImages.map((src, idx) => (
                                     <div key={idx} className="relative min-w-full h-full">
@@ -159,13 +159,13 @@ export default function HomeClient() {
 }
 
 function BannerCarousel() {
-    const images = ['/banner5.png'];
+    const images = ['/bn2.png', '/bn3.png'];
     const [currentIndex, setCurrentIndex] = useState(0);
 
     return (
-        <section className="relative w-full overflow-hidden bg-gray-50 py-10">
-            <div className="container mx-auto px-6">
-                <div className="relative h-[250px] md:h-[400px] rounded-[1rem] overflow-hidden border-4 border-white group">
+        <section className="relative w-full overflow-hidden">
+            <div className="container mx-auto px-1 md:px-6 lg:px-12 xl:px-38">
+                <div className="relative h-[220px] md:h-[480px] lg:h-[520px] rounded-[1rem] overflow-hidden border-4 border-white group">
                     <div
                         className="flex h-full transition-transform duration-1000 ease-out"
                         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
