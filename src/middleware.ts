@@ -86,6 +86,7 @@ export async function middleware(request: NextRequest) {
         finalResponse.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate');
         finalResponse.headers.set('Pragma', 'no-cache');
         finalResponse.headers.set('Expires', '0');
+        finalResponse.headers.set('Vary', 'Cookie');
     }
 
     return finalResponse;
