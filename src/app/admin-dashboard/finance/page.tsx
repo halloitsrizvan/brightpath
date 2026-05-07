@@ -29,6 +29,7 @@ export default function FinanceHub() {
     const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
     const [selectedMonth, setSelectedMonth] = useState('All Records');
     const [selectedFees, setSelectedFees] = useState<string[]>([]);
+    const [selectedSalaries, setSelectedSalaries] = useState<string[]>([]);
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -112,19 +113,31 @@ export default function FinanceHub() {
         });
     };
 
-    const markSalaryPaid = (salaryId: string, tutorName: string, amount: number) => {
+    const markSalaryPaid = (salaryIds: string | string[], tutorName: string, amount: number) => {
+        const idArray = Array.isArray(salaryIds) ? salaryIds : [salaryIds];
+        const idString = idArray.join(',');
+
         setConfirmModal({
             isOpen: true,
-            title: "Disburse Payroll",
-            message: `Initiate salary disbursement of ₹${amount.toLocaleString()} to ${tutorName}? A payslip will be generated and logged.`,
+            title: idArray.length > 1 ? "Batch Disbursement" : "Disburse Payroll",
+            message: idArray.length > 1 
+                ? `Initiate batch disbursement of ₹${amount.toLocaleString()} to ${tutorName} for ${idArray.length} records? This will generate payslips for all.`
+                : `Initiate salary disbursement of ₹${amount.toLocaleString()} to ${tutorName}? A payslip will be generated and logged.`,
             loading: false,
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
-                    await api.put(`/finance/salary/${salaryId}`, { paidStatus: 'paid' });
-                    toast.success("Salary disbursed");
+                    await Promise.all(idArray.map(id => 
+                        api.put(`/finance/salary/${id}`, { paidStatus: 'paid' })
+                    ));
+                    
+                    toast.success(idArray.length > 1 ? `${idArray.length} records disbursed` : "Salary disbursed");
                     fetchFinance();
-                    window.open(`/api/finance/payslip/${salaryId}`, '_blank');
+                    setSelectedSalaries([]);
+                    
+                    // Open a single consolidated payslip for batch or single
+                    window.open(`/api/finance/payslip/${idString}`, '_blank');
+                    
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 } catch (err) {
                     toast.error("Process failed");
@@ -165,6 +178,20 @@ export default function FinanceHub() {
     }, {});
 
     const months = Object.keys(groupedPendingFees).sort((a, b) => {
+        const m1 = new Date(a).getTime();
+        const n2 = new Date(b).getTime();
+        return n2 - m1;
+    });
+
+    // Grouping Salaries by Month
+    const allSalaries = [...unpaidSalaries, ...paidSalaries];
+    const groupedSalaries = allSalaries.reduce((acc: any, salary: any) => {
+        if (!acc[salary.month]) acc[salary.month] = [];
+        acc[salary.month].push(salary);
+        return acc;
+    }, {});
+
+    const salaryMonths = Object.keys(groupedSalaries).sort((a, b) => {
         const m1 = new Date(a).getTime();
         const n2 = new Date(b).getTime();
         return n2 - m1;
@@ -293,6 +320,41 @@ export default function FinanceHub() {
                                             className="flex-[2] md:flex-none px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 italic"
                                         >
                                             Batch Settle Selected <ArrowUpRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {selectedSalaries.length > 0 && activeTab === 'payroll' && (
+                            <div className="mb-6 animate-in slide-in-from-top-4 duration-300">
+                                <div className="bg-orange-500/5 border-2 border-orange-500/20 p-6 rounded-[1.5rem] md:rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white font-black italic shadow-lg shadow-orange-500/20">
+                                            {selectedSalaries.length}
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase text-orange-600 tracking-widest">Batch Payroll Active</p>
+                                            <h4 className="text-lg font-black text-gray-800 italic">Disbursing ₹{allSalaries.filter((s: any) => selectedSalaries.includes(s._id)).reduce((sum: any, s: any) => sum + (s.totalSalary || 0), 0).toLocaleString()} </h4>  
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 w-full md:w-auto">
+                                        <button 
+                                            onClick={() => setSelectedSalaries([])}
+                                            className="flex-1 md:flex-none px-6 py-3 bg-white text-gray-400 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-gray-50 transition border border-gray-100"
+                                        >
+                                            Clear Selection
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                const selectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
+                                                const tutorName = selectedData[0]?.teacherId?.name || 'Tutor';
+                                                const total = selectedData.reduce((sum: any, s: any) => sum + (s.totalSalary || 0), 0);
+                                                markSalaryPaid(selectedSalaries, tutorName, total);
+                                            }}
+                                            className="flex-[2] md:flex-none px-8 py-3 bg-orange-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl shadow-orange-500/20 hover:scale-105 active:scale-95 transition flex items-center justify-center gap-2 italic"
+                                        >
+                                            Batch Disburse <ArrowUpRight className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>
@@ -454,72 +516,111 @@ export default function FinanceHub() {
                         )}
 
                         {activeTab === 'payroll' && (
-                            <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between">
-                                    <h3 className="text-lg font-black text-gray-800 italic uppercase flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center shadow-lg shadow-orange-200"><IndianRupee className="w-4 h-4" /></div>
-                                        Tutor Payroll Ledger
-                                    </h3>
-                                </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
-                                        <thead>
-                                            <tr className="text-[10px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
-                                                <th className="px-8 py-6">Tutor Profile</th>
-                                                <th className="px-4 py-6">Month</th>
-                                                <th className="px-4 py-6 text-center">Class Hours</th>
-                                                <th className="px-4 py-6 text-center">Net Salary</th>
-                                                <th className="px-8 py-6 text-right">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50">
-                                            {[...unpaidSalaries, ...paidSalaries].length === 0 ? (
-                                                <tr><td colSpan={5} className="py-20 text-center text-gray-300 font-bold italic uppercase tracking-widest text-xs">No payroll records detected.</td></tr>
-                                            ) : [...unpaidSalaries, ...paidSalaries].map((salary: any) => (
-                                                <tr key={salary._id} className="group hover:bg-gray-50/50 transition">
-                                                    <td className="px-8 py-5">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 font-black italic border border-gray-100">{salary.teacherId?.name?.charAt(0)}</div>
-                                                            <div>
-                                                                <p className="text-sm font-black text-gray-800">{salary.teacherId?.name}</p>
-                                                                <p className="text-[10px] font-bold text-gray-400 italic font-mono uppercase tracking-tighter">Rate: ₹{salary.salaryPerHour}/hr</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-5">
-                                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">{salary.month}</span>
-                                                    </td>
-                                                    <td className="px-4 py-5 text-center">
-                                                        <span className="text-xs font-black text-gray-600 tracking-tighter">{salary.totalHours} hrs</span>
-                                                    </td>
-                                                    <td className="px-4 py-5 text-center">
-                                                        <span className="text-sm font-black text-gray-900 italic">₹{(salary.totalSalary || 0).toLocaleString()}</span>
-                                                    </td>
-                                                    <td className="px-8 py-5 text-right flex items-center justify-end gap-3">
-                                                        {salary.paidStatus === 'paid' ? (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => downloadPayslip(salary._id)}
-                                                                    className="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition border border-transparent hover:border-primary/20"
-                                                                >
-                                                                    <Download className="w-5 h-5" />
-                                                                </button>
-                                                                <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 italic">Disbursed</span>
-                                                            </>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary)}
-                                                                className="px-6 py-2.5 bg-[#45308D] hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition shadow-xl shadow-primary/20 italic"
-                                                            >
-                                                                Disburse
-                                                            </button>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                {salaryMonths.length === 0 ? (
+                                    <div className="bg-white rounded-[2.5rem] p-20 text-center border border-dashed border-gray-200">
+                                        <AlertCircle className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+                                        <p className="text-gray-400 font-bold italic uppercase tracking-widest text-[10px]">No payroll records detected.</p>
+                                    </div>
+                                ) : salaryMonths.map(month => (
+                                    <div key={month} className="bg-white rounded-[1.5rem] md:rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition">
+                                        <button
+                                            onClick={() => toggleMonth(`salary_${month}`)}
+                                            className="w-full px-6 md:px-8 py-5 flex items-center justify-between hover:bg-gray-50/50 transition"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <IndianRupee className="w-5 h-5 text-orange-500 hidden sm:block" />
+                                                <h3 className="text-sm md:text-lg font-black text-gray-800 italic uppercase">{month} Payroll</h3>
+                                                <span className="bg-orange-50 text-orange-600 text-[8px] md:text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter">
+                                                    {groupedSalaries[month].length} Tutors
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-4 md:gap-6">
+                                                <p className="text-sm md:text-lg font-black text-orange-600 italic">₹{groupedSalaries[month].reduce((sum: any, s: any) => sum + (s.totalSalary || 0), 0).toLocaleString()}</p>
+                                                {expandedMonths.includes(`salary_${month}`) ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+                                            </div>
+                                        </button>
+
+                                        {expandedMonths.includes(`salary_${month}`) && (
+                                            <div className="px-4 md:px-8 pb-8 pt-2 overflow-x-auto">
+                                                <table className="w-full text-left border-collapse min-w-[700px] md:min-w-0">
+                                                    <thead>
+                                                        <tr className="text-[9px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
+                                                            <th className="pb-3 px-4">Tutor Profile</th>
+                                                            <th className="pb-3 text-center">Class Hours</th>
+                                                            <th className="pb-3 text-center">Net Salary</th>
+                                                            <th className="pb-3 text-right pr-4">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50">
+                                                        {groupedSalaries[month].map((salary: any) => (
+                                                            <tr key={salary._id} className={`${selectedSalaries.includes(salary._id) ? 'bg-orange-50/50' : ''} hover:bg-gray-50/50 transition-colors`}>
+                                                                <td className="py-4 px-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        {salary.paidStatus !== 'paid' && (
+                                                                            <button 
+                                                                                onClick={() => {
+                                                                                    const isSelected = selectedSalaries.includes(salary._id);
+                                                                                    if (!isSelected) {
+                                                                                        const currentlySelectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
+                                                                                        if (currentlySelectedData.length > 0) {
+                                                                                            const firstTeacherId = currentlySelectedData[0].teacherId?._id;
+                                                                                            if (salary.teacherId?._id !== firstTeacherId) {
+                                                                                                toast.error("Please select payrolls for a single tutor at a time.");
+                                                                                                return;
+                                                                                            }
+                                                                                        }
+                                                                                        setSelectedSalaries(prev => [...prev, salary._id]);
+                                                                                    } else {
+                                                                                        setSelectedSalaries(prev => prev.filter(id => id !== salary._id));
+                                                                                    }
+                                                                                }}
+                                                                                className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectedSalaries.includes(salary._id) ? 'bg-orange-500 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-white border-gray-200 hover:border-orange-500/40'}`}
+                                                                            >
+                                                                                {selectedSalaries.includes(salary._id) && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                                            </button>
+                                                                        )}
+                                                                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-[10px] font-black italic">{salary.teacherId?.name?.charAt(0)}</div>
+                                                                        <div>
+                                                                            <p className="text-xs md:text-sm font-black text-gray-800">{salary.teacherId?.name}</p>
+                                                                            <p className="text-[8px] font-bold text-gray-400 italic font-mono uppercase tracking-tighter">Rate: ₹{salary.salaryPerHour}/hr</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="py-4 text-center">
+                                                                    <span className="text-xs md:text-sm font-black text-gray-600 tracking-tighter italic">{salary.totalHours} hrs</span>
+                                                                </td>
+                                                                <td className="py-4 text-center">
+                                                                    <span className="text-xs md:text-sm font-black text-gray-900 italic tracking-tight">₹{(salary.totalSalary || 0).toLocaleString()}</span>
+                                                                </td>
+                                                                <td className="py-4 text-right pr-4">
+                                                                    {salary.paidStatus === 'paid' ? (
+                                                                        <div className="flex items-center justify-end gap-3">
+                                                                            <button
+                                                                                onClick={() => downloadPayslip(salary._id)}
+                                                                                className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition border border-transparent hover:border-primary/20"
+                                                                            >
+                                                                                <Download className="w-4 h-4" />
+                                                                            </button>
+                                                                            <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 italic">Disbursed</span>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary)}
+                                                                            className="px-4 md:px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 italic"
+                                                                        >
+                                                                            Disburse
+                                                                        </button>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </div>
