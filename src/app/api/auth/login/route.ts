@@ -73,10 +73,10 @@ export async function POST(req: Request) {
             name: 'token',
             value: token,
             httpOnly: true,
-            secure: true, // Always secure in production/HTTPS
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 365 * 100 // 100 years (practically forever)
+            maxAge: 60 * 60 * 24 * 365 * 100 // 100 years
         });
 
         return response;

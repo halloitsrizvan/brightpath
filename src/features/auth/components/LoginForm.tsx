@@ -22,12 +22,17 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
         try {
             const { data } = await api.post('/auth/login', { email, password, role });
 
-            Cookies.set('token', data.token);
-            Cookies.set('user', JSON.stringify(data.user));
+            // Set user info for UI (token is handled by server-side httpOnly cookie)
+            Cookies.set('user', JSON.stringify(data.user), { 
+                expires: 365 * 100, 
+                secure: window.location.protocol === 'https:',
+                sameSite: 'lax'
+            });
 
-            if (data.user.role === 'admin') router.push('/admin-dashboard');
-            else if (data.user.role === 'teacher') router.push('/teacher-dashboard');
-            else router.push('/student-dashboard');
+            // Using window.location.href for more reliable redirects on mobile/Safari
+            if (data.user.role === 'admin') window.location.href = '/admin-dashboard';
+            else if (data.user.role === 'teacher') window.location.href = '/teacher-dashboard';
+            else window.location.href = '/student-dashboard';
         } catch (err: any) {
             setError(err.response?.data?.message || 'Authentication credentials rejected.');
         } finally {
