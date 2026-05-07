@@ -17,6 +17,9 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://brightpatheduvora.com'),
+  alternates: {
+    canonical: 'https://brightpatheduvora.com',
+  },
   title: {
     default: "BrightPath Eduvora | 1:1 Online Tuition Academy KG-12",
     template: "%s | BrightPath Eduvora"
@@ -57,13 +60,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: [
-      { url: '/icon.png?v=2', type: 'image/png' },
-      { url: '/favicon.ico?v=2', type: 'image/x-icon' }
-    ],
-    apple: [
-      { url: '/icon.png?v=2', type: 'image/png' }
-    ]
+    icon: '/favicon.ico',
+    apple: '/icon.png',
   }
 };
 

@@ -64,7 +64,7 @@ export default function PublicFooter() {
                             <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8 border-l-2 border-primary pl-4">Academy</h4>
                             <ul className="space-y-4">
                                 <FooterLink href="/about">Our Philosophy</FooterLink>
-                                <FooterLink href="/teachers">Expert Mentors</FooterLink>
+                                <FooterLink href="/tutors">Expert Mentors</FooterLink>
                                 <FooterLink href="/testimonials">Success Stories</FooterLink>
                                 <FooterLink href="/blog">Academy Blog</FooterLink>
                                 <FooterLink href="/contact">Support Center</FooterLink>

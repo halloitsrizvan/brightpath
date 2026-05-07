@@ -18,6 +18,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/terms',
         '/subjects',
         '/services',
+        '/careers',
+        '/boards',
+        '/downloads',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified: new Date().toISOString(),
