@@ -5,7 +5,11 @@ const TaskSchema = new mongoose.Schema({
     description: { type: String },
     completed: { type: Boolean, default: false },
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
-    dueDate: { type: Date }
+    dueDate: { type: Date },
+    allocatedAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' }
 }, { timestamps: true });
 
-export default mongoose.models.Task || mongoose.model('Task', TaskSchema);
+// Handle model compilation error in Next.js HMR
+const Task = mongoose.models.Task || mongoose.model('Task', TaskSchema);
+
+export default Task;

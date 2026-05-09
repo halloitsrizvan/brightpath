@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
 import MonthPicker from '@/components/ui/MonthPicker';
-import { Menu, Plus, Trash2, Edit3, Target, DollarSign, Clock, CheckCircle2, Circle, Calendar, Save, Loader2, X, ListTodo, TrendingUp, AlertCircle } from 'lucide-react';
+import { Menu, Plus, Trash2, Edit3, Target, DollarSign, Clock, CheckCircle2, Circle, Calendar, Save, Loader2, X, ListTodo, TrendingUp, AlertCircle, ChevronDown } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 interface Task {
@@ -13,6 +13,10 @@ interface Task {
     completed: boolean;
     priority: 'low' | 'medium' | 'high';
     dueDate?: string;
+    allocatedAdmin?: {
+        _id: string;
+        name: string;
+    };
 }
 
 interface MonthlyGoal {
@@ -24,15 +28,16 @@ interface MonthlyGoal {
 export default function AdminTasks() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [admins, setAdmins] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isGoalLoading, setIsGoalLoading] = useState(true);
-    
+
     // Monthly Goal State
     const currentMonthStr = `${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date())} ${new Date().getFullYear()}`;
     const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
     const [goalData, setGoalData] = useState<any>(null);
     const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
-    
+
     // To-Do State
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -41,7 +46,8 @@ export default function AdminTasks() {
         title: '',
         description: '',
         priority: 'medium' as 'low' | 'medium' | 'high',
-        dueDate: ''
+        dueDate: '',
+        allocatedAdmin: ''
     });
 
     const [goalFormData, setGoalFormData] = useState({
@@ -51,6 +57,7 @@ export default function AdminTasks() {
 
     useEffect(() => {
         fetchTasks();
+        fetchAdmins();
     }, []);
 
     useEffect(() => {
@@ -66,6 +73,15 @@ export default function AdminTasks() {
             toast.error('Failed to load tasks');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchAdmins = async () => {
+        try {
+            const res = await api.get('/admin/founders');
+            setAdmins(res.data);
+        } catch (error) {
+            console.error('Failed to load admins', error);
         }
     };
 
@@ -196,12 +212,12 @@ export default function AdminTasks() {
                             <p className="text-gray-500 font-bold uppercase tracking-widest text-xs mt-1">Management Control Panel</p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <MonthPicker 
-                                selected={selectedMonth} 
-                                onChange={setSelectedMonth} 
+                            <MonthPicker
+                                selected={selectedMonth}
+                                onChange={setSelectedMonth}
                                 allowAll={false}
                             />
-                            <button 
+                            <button
                                 onClick={() => setIsGoalModalOpen(true)}
                                 className="bg-[#45308D] text-white p-4 rounded-[1.5rem] hover:scale-110 transition-all shadow-lg hover:shadow-[#45308D]/20 active:scale-95"
                             >
@@ -227,7 +243,7 @@ export default function AdminTasks() {
                                         <h3 className="text-2xl font-black text-gray-800">Monthly Yield</h3>
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-end">
                                         <div>
@@ -241,7 +257,7 @@ export default function AdminTasks() {
                                     </div>
 
                                     <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden border-4 border-gray-50 shadow-inner">
-                                        <div 
+                                        <div
                                             className="h-full bg-gradient-to-r from-[#FDC70B] to-[#ffda57] transition-all duration-1000 ease-out relative"
                                             style={{ width: `${Math.min(revenueProgress, 100)}%` }}
                                         >
@@ -268,7 +284,7 @@ export default function AdminTasks() {
                                         <h3 className="text-2xl font-black text-white">Academic Hours</h3>
                                     </div>
                                 </div>
-                                
+
                                 <div className="space-y-6">
                                     <div className="flex justify-between items-end text-white">
                                         <div>
@@ -282,7 +298,7 @@ export default function AdminTasks() {
                                     </div>
 
                                     <div className="h-6 w-full bg-white/10 rounded-full overflow-hidden border-4 border-white/10 shadow-inner">
-                                        <div 
+                                        <div
                                             className="h-full bg-white transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(255,255,255,0.4)]"
                                             style={{ width: `${Math.min(hoursProgress, 100)}%` }}
                                         ></div>
@@ -305,10 +321,10 @@ export default function AdminTasks() {
                                     <p className="text-gray-400 font-bold text-xs uppercase tracking-widest">{tasks.filter(t => !t.completed).length} Pending Missions</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => {
                                     setEditingTask(null);
-                                    setTaskFormData({ title: '', description: '', priority: 'medium', dueDate: '' });
+                                    setTaskFormData({ title: '', description: '', priority: 'medium', dueDate: '', allocatedAdmin: '' });
                                     setIsTaskModalOpen(true);
                                 }}
                                 className="bg-[#45308D] text-white px-8 py-4 rounded-[1.5rem] font-black flex items-center gap-3 hover:scale-105 transition-all shadow-lg active:scale-95"
@@ -328,30 +344,30 @@ export default function AdminTasks() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                                     {tasks.map(task => (
-                                        <div 
-                                            key={task._id} 
-                                            className={`group p-8 rounded-[2.5rem] border-2 transition-all duration-300 relative ${
-                                                task.completed 
-                                                ? 'bg-gray-50 border-transparent opacity-60 grayscale' 
-                                                : 'bg-white border-gray-100 hover:border-[#45308D] hover:shadow-2xl hover:-translate-y-2'
-                                            }`}
+                                        <div
+                                            key={task._id}
+                                            className={`group p-8 rounded-[2.5rem] border-2 transition-all duration-300 relative ${task.completed
+                                                    ? 'bg-gray-50 border-transparent opacity-60 grayscale'
+                                                    : 'bg-white border-gray-100 hover:border-[#45308D] hover:shadow-2xl hover:-translate-y-2'
+                                                }`}
                                         >
                                             <div className="flex justify-between items-start mb-6">
-                                                <button 
+                                                <button
                                                     onClick={() => toggleTask(task)}
                                                     className={`transition-all active:scale-90 ${task.completed ? 'text-green-500' : 'text-gray-300 hover:text-[#45308D]'}`}
                                                 >
                                                     {task.completed ? <CheckCircle2 className="w-8 h-8" /> : <Circle className="w-8 h-8" />}
                                                 </button>
                                                 <div className="flex gap-2">
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setEditingTask(task);
                                                             setTaskFormData({
                                                                 title: task.title,
                                                                 description: task.description || '',
                                                                 priority: task.priority,
-                                                                dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : ''
+                                                                dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+                                                                allocatedAdmin: task.allocatedAdmin?._id || ''
                                                             });
                                                             setIsTaskModalOpen(true);
                                                         }}
@@ -359,7 +375,7 @@ export default function AdminTasks() {
                                                     >
                                                         <Edit3 className="w-5 h-5" />
                                                     </button>
-                                                    <button 
+                                                    <button
                                                         onClick={() => deleteTask(task._id)}
                                                         className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                                                     >
@@ -369,14 +385,22 @@ export default function AdminTasks() {
                                             </div>
 
                                             <h4 className={`text-xl font-black mb-3 leading-tight ${task.completed ? 'line-through' : 'text-gray-800'}`}>{task.title}</h4>
-                                            <p className="text-gray-400 font-bold text-sm mb-6 line-clamp-2 leading-relaxed">{task.description}</p>
+                                            <p className="text-gray-400 font-bold text-sm mb-4 line-clamp-2 leading-relaxed">{task.description}</p>
                                             
+                                            {task.allocatedAdmin && (
+                                                <div className="flex items-center gap-2 mb-6 p-3 bg-gray-50 rounded-xl border border-gray-100 w-fit">
+                                                    <div className="w-6 h-6 rounded-full bg-[#45308D] text-white flex items-center justify-center text-[10px] font-black uppercase">
+                                                        {task.allocatedAdmin.name.charAt(0)}
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{task.allocatedAdmin.name}</span>
+                                                </div>
+                                            )}
+
                                             <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-auto">
-                                                <span className={`text-[10px] font-black uppercase px-4 py-2 rounded-full border-2 ${
-                                                    task.priority === 'high' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                    task.priority === 'medium' ? 'bg-yellow-50 text-yellow-600 border-yellow-100' :
-                                                    'bg-blue-50 text-blue-600 border-blue-100'
-                                                }`}>
+                                                <span className={`text-[10px] font-black uppercase px-4 py-2 rounded-full border-2 ${task.priority === 'high' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                        task.priority === 'medium' ? 'bg-yellow-50 text-yellow-600 border-yellow-100' :
+                                                            'bg-blue-50 text-blue-600 border-blue-100'
+                                                    }`}>
                                                     {task.priority} Priority
                                                 </span>
                                                 {task.dueDate && (
@@ -394,54 +418,66 @@ export default function AdminTasks() {
 
             {/* Monthly Goals Update Modal */}
             {isGoalModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[#45308D]/60 backdrop-blur-md" onClick={() => setIsGoalModalOpen(false)}></div>
-                    <div className="bg-white rounded-[4rem] w-full max-w-xl overflow-hidden relative z-10 shadow-2xl border-4 border-white animate-in zoom-in duration-300">
-                        <div className="bg-[#45308D] p-12 text-white text-center relative">
-                            <button onClick={() => setIsGoalModalOpen(false)} className="absolute top-8 right-8 text-white/40 hover:text-white transition-all">
-                                <X className="w-8 h-8" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-[#45308D]/20 backdrop-blur-md" onClick={() => setIsGoalModalOpen(false)}></div>
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
+                        <div className="bg-[#45308D] p-6 md:p-8 text-white relative">
+                            <button onClick={() => setIsGoalModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
-                            <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-                                <Target className="w-10 h-10" />
+                            <div className="w-12 h-12 bg-white/10 rounded-[1.2rem] flex items-center justify-center border border-white/20 mb-4">
+                                <Target className="w-6 h-6" />
                             </div>
-                            <h2 className="text-4xl font-black italic tracking-tighter mb-2">Adjust Benchmarks</h2>
-                            <p className="text-white/60 font-bold uppercase tracking-widest text-xs">Calibrating {selectedMonth}</p>
+                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase mb-1">Adjust Benchmarks</h2>
+                            <p className="text-white/60 font-black text-[9px] uppercase tracking-[0.2em]">Institutional Targets Sync</p>
                         </div>
-                        <form onSubmit={handleGoalSave} className="p-12 space-y-8">
-                            <div className="space-y-4">
-                                <label className="block text-sm font-black text-gray-700 uppercase tracking-widest ml-2">Revenue Target (INR)</label>
-                                <div className="relative group">
-                                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-300 group-focus-within:text-[#45308D] transition-all" />
+
+                        <form onSubmit={handleGoalSave} className="p-6 md:p-8 space-y-5 bg-[#fafafa]">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Revenue Target (INR)</label>
+                                <div className="relative">
+                                    <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input 
                                         type="number" 
                                         required
-                                        className="w-full bg-gray-50 border-4 border-transparent rounded-[2rem] p-6 pl-16 font-black text-2xl focus:border-[#45308D] focus:bg-white outline-none transition-all shadow-inner"
+                                        className="w-full bg-white border-2 border-gray-100 py-4 pl-12 pr-6 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all shadow-sm"
                                         value={goalFormData.targetRevenue}
                                         onChange={(e) => setGoalFormData({...goalFormData, targetRevenue: Number(e.target.value)})}
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-4">
-                                <label className="block text-sm font-black text-gray-700 uppercase tracking-widest ml-2">Hours Benchmark (Hrs)</label>
-                                <div className="relative group">
-                                    <Clock className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-300 group-focus-within:text-[#45308D] transition-all" />
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Hours Benchmark (Hrs)</label>
+                                <div className="relative">
+                                    <Clock className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input 
                                         type="number" 
                                         required
-                                        className="w-full bg-gray-50 border-4 border-transparent rounded-[2rem] p-6 pl-16 font-black text-2xl focus:border-[#45308D] focus:bg-white outline-none transition-all shadow-inner"
+                                        className="w-full bg-white border-2 border-gray-100 py-4 pl-12 pr-6 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all shadow-sm"
                                         value={goalFormData.targetHours}
                                         onChange={(e) => setGoalFormData({...goalFormData, targetHours: Number(e.target.value)})}
                                     />
                                 </div>
                             </div>
-                            <button 
-                                type="submit" 
-                                disabled={isSaving}
-                                className="w-full bg-[#45308D] text-white py-6 rounded-[2rem] font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
-                            >
-                                {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
-                                Locked Targets
-                            </button>
+
+                            <div className="flex gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsGoalModalOpen(false)}
+                                    className="flex-1 py-4 bg-white border border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all font-sans"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={isSaving}
+                                    className="flex-[2] py-4 bg-[#45308D] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#45308D]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 italic disabled:opacity-50"
+                                >
+                                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                    Commit Targets
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -449,74 +485,101 @@ export default function AdminTasks() {
 
             {/* Task Creation Modal */}
             {isTaskModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-[#45308D]/60 backdrop-blur-md" onClick={() => setIsTaskModalOpen(false)}></div>
-                    <div className="bg-white rounded-[4rem] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl border-4 border-white animate-in zoom-in duration-300">
-                        <div className="bg-[#45308D] p-10 text-white relative">
-                            <button onClick={() => setIsTaskModalOpen(false)} className="absolute top-8 right-8 text-white/40 hover:text-white transition-all">
-                                <X className="w-8 h-8" />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-[#45308D]/20 backdrop-blur-md" onClick={() => setIsTaskModalOpen(false)}></div>
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-md overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border-4 border-white">
+                        <div className="bg-[#45308D] p-6 md:p-8 text-white relative">
+                            <button onClick={() => setIsTaskModalOpen(false)} className="absolute top-6 right-6 text-white/40 hover:text-white border border-white/20 p-2 rounded-xl transition-colors">
+                                <X className="w-5 h-5" />
                             </button>
-                            <h2 className="text-4xl font-black italic tracking-tighter mb-1">{editingTask ? 'Modify Mission' : 'New Strategic Entry'}</h2>
-                            <p className="text-white/60 font-bold uppercase tracking-widest text-[10px]">Administrative Intelligence</p>
+                            <div className="w-12 h-12 bg-white/10 rounded-[1.2rem] flex items-center justify-center border border-white/20 mb-4">
+                                <ListTodo className="w-6 h-6" />
+                            </div>
+                            <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase mb-1">{editingTask ? 'Modify Mission' : 'Add Task Node'}</h2>
+                            <p className="text-white/60 font-black text-[9px] uppercase tracking-[0.2em]">Administrative Intelligence Sync</p>
                         </div>
-                        <form onSubmit={handleTaskSave} className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                            <div className="space-y-4">
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Objective Title</label>
+
+                        <form onSubmit={handleTaskSave} className="p-6 md:p-8 space-y-5 bg-[#fafafa]">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Objective Title</label>
                                 <input 
-                                    className="w-full bg-gray-50 border-4 border-transparent rounded-[1.5rem] p-5 font-black text-lg focus:border-[#45308D] outline-none transition-all"
+                                    className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all shadow-sm"
                                     value={taskFormData.title}
-                                    placeholder="Enter mission title..."
+                                    placeholder="What needs to be done?"
                                     onChange={(e) => setTaskFormData({...taskFormData, title: e.target.value})}
                                     required
                                 />
                             </div>
-                            <div className="space-y-4">
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Operational Context</label>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Allocated Admin (Founder)</label>
+                                <div className="relative">
+                                    <select 
+                                        className="w-full bg-white border-2 border-gray-100 py-4 pl-6 pr-10 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all appearance-none shadow-sm"
+                                        value={taskFormData.allocatedAdmin}
+                                        onChange={(e) => setTaskFormData({...taskFormData, allocatedAdmin: e.target.value})}
+                                    >
+                                        <option value="">Unassigned</option>
+                                        {admins.map(admin => (
+                                            <option key={admin._id} value={admin._id}>{admin.name} ({admin.email})</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Operational Context</label>
                                 <textarea 
-                                    className="w-full bg-gray-50 border-4 border-transparent rounded-[1.5rem] p-5 font-bold text-gray-600 focus:border-[#45308D] outline-none transition-all min-h-[120px]"
+                                    className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all min-h-[100px] resize-none shadow-sm"
+                                    placeholder="Add any necessary details..."
                                     value={taskFormData.description}
-                                    placeholder="Brief background or requirements..."
                                     onChange={(e) => setTaskFormData({...taskFormData, description: e.target.value})}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Priority Level</label>
-                                    <select 
-                                        className="w-full bg-gray-50 border-4 border-transparent rounded-[1.5rem] p-5 font-black focus:border-[#45308D] outline-none transition-all"
-                                        value={taskFormData.priority}
-                                        onChange={(e) => setTaskFormData({...taskFormData, priority: e.target.value as any})}
-                                    >
-                                        <option value="low">Low Priority</option>
-                                        <option value="medium">Medium Priority</option>
-                                        <option value="high">High Priority</option>
-                                    </select>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Priority</label>
+                                    <div className="relative">
+                                        <select 
+                                            className="w-full bg-white border-2 border-gray-100 py-4 pl-6 pr-10 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all appearance-none shadow-sm"
+                                            value={taskFormData.priority}
+                                            onChange={(e) => setTaskFormData({...taskFormData, priority: e.target.value as any})}
+                                        >
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 pointer-events-none" />
+                                    </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-2">Deadline Date</label>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Deadline</label>
                                     <input 
                                         type="date"
-                                        className="w-full bg-gray-50 border-4 border-transparent rounded-[1.5rem] p-5 font-black focus:border-[#45308D] outline-none transition-all"
+                                        className="w-full bg-white border-2 border-gray-100 py-4 px-6 rounded-2xl font-bold text-sm text-black outline-none focus:border-[#45308D] transition-all shadow-sm"
                                         value={taskFormData.dueDate}
                                         onChange={(e) => setTaskFormData({...taskFormData, dueDate: e.target.value})}
                                     />
                                 </div>
                             </div>
+
                             <div className="flex gap-4 pt-4">
-                                <button 
-                                    type="submit" 
-                                    disabled={isSaving}
-                                    className="flex-1 bg-[#45308D] text-white py-5 rounded-[1.5rem] font-black shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-2"
-                                >
-                                    {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-                                    {editingTask ? 'Apply Changes' : 'Initialize Mission'}
-                                </button>
                                 <button 
                                     type="button"
                                     onClick={() => setIsTaskModalOpen(false)}
-                                    className="px-8 bg-gray-100 text-gray-500 rounded-[1.5rem] font-black hover:bg-gray-200 transition-all font-mono italic"
+                                    className="flex-1 py-4 bg-white border border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all font-sans"
                                 >
-                                    Exit
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={isSaving}
+                                    className="flex-[2] py-4 bg-[#45308D] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-[#45308D]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 italic disabled:opacity-50"
+                                >
+                                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : editingTask ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                    {editingTask ? 'Commit Change' : 'Initialize Mission'}
                                 </button>
                             </div>
                         </form>

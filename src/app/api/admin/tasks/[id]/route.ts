@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAuth } from '@/lib/api/auth';
 import Task from '@/models/Task';
+import Admin from '@/models/Admin';
 import dbConnect from '@/lib/db/mongodb';
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +10,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         await checkAuth(req, ['admin']);
         const { id } = await params;
         const body = await req.json();
-        const updatedTask = await Task.findByIdAndUpdate(id, body, { new: true });
+        const updatedTask = await Task.findByIdAndUpdate(id, body, { new: true }).populate('allocatedAdmin', 'name');
         return NextResponse.json(updatedTask);
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });
