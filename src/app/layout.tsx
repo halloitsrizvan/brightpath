@@ -16,9 +16,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://brightpatheduvora.com'),
+  metadataBase: new URL('https://www.brightpatheduvora.com'),
   alternates: {
-    canonical: 'https://brightpatheduvora.com',
+    canonical: 'https://www.brightpatheduvora.com',
   },
   title: {
     default: "BrightPath Eduvora | 1:1 Online Tuition Academy KG-12",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "BrightPath Eduvora | Online Tuition Academy",
     description: "Personalized 1:1 mentorship and online coaching for KG-12 students worldwide.",
-    url: "https://brightpatheduvora.com",
+    url: "https://www.brightpatheduvora.com",
     siteName: "BrightPath Eduvora",
     locale: "en_US",
     type: "website",
@@ -59,10 +59,7 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/icon.png',
-  }
+  // Next.js will automatically use favicon.ico and icon.png from the app directory
 };
 
 export const viewport: Viewport = {

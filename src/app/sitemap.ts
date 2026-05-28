@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://brightpatheduvora.com';
+    const baseUrl = 'https://www.brightpatheduvora.com';
     
     // Only include public-facing institutional pages
     const routes = [
