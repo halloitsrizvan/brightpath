@@ -31,6 +31,32 @@ export default function MonthlyReport() {
     const [selectedMonth, setSelectedMonth] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeSection, setActiveSection] = useState<'financials' | 'attendance' | 'exams'>('financials');
+    const [exporting, setExporting] = useState(false);
+
+    const handleExport = async () => {
+        if (!selectedMonth) return;
+        try {
+            setExporting(true);
+            const response = await api.get(`/reports/monthly/export?month=${selectedMonth}`, {
+                responseType: 'blob'
+            });
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Executive_Summary_${selectedMonth.replace(/\s+/g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success("Executive Summary exported successfully!");
+        } catch (err: any) {
+            console.error(err);
+            toast.error("Failed to export Executive Summary");
+        } finally {
+            setExporting(false);
+        }
+    };
 
     const monthsOptions = useMemo(() => {
         const arr = [];
@@ -429,9 +455,22 @@ export default function MonthlyReport() {
                                     <div className="relative z-10">
                                         <h3 className="text-lg font-bold mb-2">Ready to Audit?</h3>
                                         <p className="text-sm text-gray-300 mb-6">Generate a detailed PDF dossier for this month's operations including all logs and receipts.</p>
-                                        <button className="w-full py-3 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                            <Download className="w-4 h-4" />
-                                            Export Executive Summary
+                                        <button 
+                                            onClick={handleExport}
+                                            disabled={exporting}
+                                            className="w-full py-3 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {exporting ? (
+                                                <>
+                                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                    Exporting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Download className="w-4 h-4" />
+                                                    Export Executive Summary
+                                                </>
+                                            )}
                                         </button>
                                     </div>
                                     <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
