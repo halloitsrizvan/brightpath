@@ -4,6 +4,20 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
 export async function middleware(request: NextRequest) {
+    const host = request.headers.get('host') || '';
+    const proto = request.headers.get('x-forwarded-proto') || '';
+
+    // Enforce HTTPS and WWW redirect for production domains
+    const isProdDomain = host.includes('brightpatheduvora.com');
+    if (isProdDomain && (host === 'brightpatheduvora.com' || proto === 'http')) {
+        const targetHost = host === 'brightpatheduvora.com' ? 'www.brightpatheduvora.com' : host;
+        const targetUrl = new URL(
+            request.nextUrl.pathname + request.nextUrl.search,
+            `https://${targetHost}`
+        );
+        return NextResponse.redirect(targetUrl, 301);
+    }
+
     const { pathname } = request.nextUrl;
 
     // 2. Edge-Level Auth Protection

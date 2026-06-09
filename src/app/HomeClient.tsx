@@ -49,8 +49,8 @@ export default function HomeClient() {
                         "@context": "https://schema.org",
                         "@type": "EducationalOrganization",
                         "name": "BrightPath Eduvora",
-                        "url": "https://brightpatheduvora.com",
-                        "logo": "https://brightpatheduvora.com/icon.png",
+                        "url": "https://www.brightpatheduvora.com",
+                        "logo": "https://www.brightpatheduvora.com/icon.png",
                         "description": "High-quality 1:1 personalized online tuition for KG to 12th grade. Learn Right. Grow Bright.",
                         "address": {
                             "@type": "PostalAddress",

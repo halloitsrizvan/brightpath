@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
             title,
             description,
-            url: `https://brightpatheduvora.com/tuition/${category}/${slug}`,
+            url: `https://www.brightpatheduvora.com/tuition/${category}/${slug}`,
         }
     };
 }
