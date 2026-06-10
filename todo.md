@@ -25,10 +25,10 @@ Exam Month - exam date -->
 <!-- founders salary + debt from profit / return debt -form --> almost (debt form left)
 <!-- profit = revenue - (salary paid +expenses) -->
 
-std-panel  
+<!-- std-panel  
 pending bill amount 
 automated reminder for pending bills
-Academic Performance : improvment comparison (need inprovment,...)
+Academic Performance : improvment comparison (need inprovment,...) -->
 
 
 
