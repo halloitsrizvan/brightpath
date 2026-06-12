@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { Layout, CheckCircle, GraduationCap, ArrowRight } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Academic Boards",
+    description: "Personalized 1:1 tuition for CBSE, ICSE, ISC, IGCSE, and Kerala State Board curriculums. Tailored preparation for every syllabus.",
+    alternates: {
+        canonical: '/boards',
+    },
+};
 
 export default function BoardsPage() {
     const boards = [

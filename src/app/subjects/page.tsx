@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import SubjectsGrid from '@/components/public/SubjectsGrid';
 import { BookOpen, GraduationCap, Globe, Zap } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Subjects We Teach",
+    description: "Specialized 1:1 tutoring across Mathematics, Physics, Chemistry, Biology, English, Malayalam, and more for KG-12 students.",
+    alternates: {
+        canonical: '/subjects',
+    },
+};
 
 export default function SubjectsPage() {
     return (

@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import ServicesSection from '@/components/public/ServicesSection';
 import { ShieldCheck, Video, Clock, TrendingUp } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Our Services",
+    description: "Premium 1:1 online tuition, entrance exam prep (JEE/NEET), language foundation courses, and personalized academic counseling.",
+    alternates: {
+        canonical: '/services',
+    },
+};
 
 export default function ServicesPage() {
     return (

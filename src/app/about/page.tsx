@@ -1,9 +1,17 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { Target, Zap, ShieldCheck, Users, BookOpen, Heart, Eye, Award } from 'lucide-react';
 import Image from 'next/image';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "About Us",
+    description: "Kerala's premier 1:1 online tuition academy. Learn about our vision, mission, core values, and dedicated academic mentorship ecosystem.",
+    alternates: {
+        canonical: '/about',
+    },
+};
 
 export default function AboutPage() {
     return (

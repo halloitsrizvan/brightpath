@@ -1,9 +1,17 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { Users, BookOpen, Clock, Heart, CheckCircle2, ChevronRight, MessageCircle, Star, Target } from 'lucide-react';
 import Image from 'next/image';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Become a Tutor",
+    description: "Join Kerala's fastest-growing 1:1 online mentorship network. Flexible hours, competitive pay, and global teaching opportunities from home.",
+    alternates: {
+        canonical: '/become-tutor',
+    },
+};
 
 export default function BecomeTutor() {
     console.log("BecomeTutor Page Loaded");

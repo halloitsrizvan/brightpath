@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { Briefcase, Users, Zap, ArrowRight } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Careers",
+    description: "Explore career opportunities at BrightPath. Join our talent pool of passionate educators and academic consultants in Kerala.",
+    alternates: {
+        canonical: '/careers',
+    },
+};
 
 export default function CareersPage() {
     return (

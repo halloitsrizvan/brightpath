@@ -17,9 +17,6 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.brightpatheduvora.com'),
-  alternates: {
-    canonical: 'https://www.brightpatheduvora.com',
-  },
   title: {
     default: "BrightPath Eduvora | 1:1 Online Tuition Academy KG-12",
     template: "%s | BrightPath Eduvora"

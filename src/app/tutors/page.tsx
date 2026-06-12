@@ -3,6 +3,15 @@ import PublicFooter from '@/components/public/Footer';
 import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
 import { Star, ShieldCheck, GraduationCap } from 'lucide-react';
 import { PublicService } from '@/lib/services/publicService';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Expert Tutors",
+    description: "Meet our strictly audited roster of professional 1:1 tutors, including postgraduate and PhD subject-matter experts in Kerala.",
+    alternates: {
+        canonical: '/tutors',
+    },
+};
 
 export const revalidate = 3600; // Revalidate every hour
 

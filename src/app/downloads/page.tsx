@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { Download, FileText, Lock, ArrowRight } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Academic Downloads",
+    description: "Access BrightPath study materials, brochures, and curriculum guidelines. Secure repository for registered students and tutors.",
+    alternates: {
+        canonical: '/downloads',
+    },
+};
 
 export default function DownloadsPage() {
     return (

@@ -1,4 +1,3 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
@@ -15,6 +14,15 @@ import {
     Monitor,
     ChevronRight
 } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Our System",
+    description: "Explore the Brightpath digital ecosystem. Real-time progress tracking, task management, and structured 1:1 online classrooms.",
+    alternates: {
+        canonical: '/our-system',
+    },
+};
 
 export default function OurSystemPage() {
     return (

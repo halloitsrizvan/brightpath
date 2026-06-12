@@ -1,4 +1,3 @@
-'use client';
 import Link from 'next/link';
 import { 
     ArrowLeft, 
@@ -10,6 +9,15 @@ import {
     Microscope, 
     PenTool
 } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Curriculum",
+    description: "Precision-engineered academic syllabus structures for KG to 12th grade across CBSE, ICSE, and Kerala State boards.",
+    alternates: {
+        canonical: '/curriculum',
+    },
+};
 
 export default function CurriculumPage() {
     return (

@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { FileWarning, ScrollText, Scale, Handshake, ChevronRight } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Terms of Service",
+    description: "Read the terms of service for the BrightPath Eduvora website, online tuition platform, and mentorship ecosystem.",
+    alternates: {
+        canonical: '/terms',
+    },
+};
 
 export default function TermsOfService() {
     return (

@@ -1,8 +1,16 @@
-'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
 import { ShieldCheck, Lock, Eye, FileText, ChevronRight } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: "Privacy Policy",
+    description: "Read the privacy policy of BrightPath Eduvora. Learn how we handle and protect student, parent, and tutor data.",
+    alternates: {
+        canonical: '/privacy',
+    },
+};
 
 export default function PrivacyPolicy() {
     return (
