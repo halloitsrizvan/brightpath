@@ -172,10 +172,16 @@ export default function AdminAttendance() {
                                                         </p>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-5 font-black text-xs md:text-sm text-gray-800">
+                                                {/* <td className="px-4 py-5 font-black text-xs md:text-sm text-gray-800">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-6 h-6 rounded-lg bg-primary/5 flex items-center justify-center text-[9px] text-primary group-hover:bg-primary group-hover:text-white transition-colors">{record.studentId?.fullName?.charAt(0)}</div>
                                                         <span className="truncate max-w-[120px]">{record.studentId?.fullName || '-'}</span>
+                                                    </div>
+                                                </td> */}
+                                                <td className="px-4 py-5 text-gray-500 text-[11px] font-bold hidden md:table-cell">
+                                                     <div className="flex items-center gap-2">
+                                                        <UserCheck className="w-4 h-4 text-gray-300" />
+                                                        {record.studentId?.fullName || '-'}
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-5 text-gray-500 text-[11px] font-bold hidden md:table-cell">
