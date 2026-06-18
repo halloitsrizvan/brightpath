@@ -100,15 +100,29 @@ export async function syncFinancialsForMonth(month: string) {
         const data = studentCalcs[sId];
         if (data.totalBill <= 0) continue;
 
-        const existingFee = await Fee.findOne({ studentId: sId, month });
-        if (existingFee && existingFee.paymentStatus === 'paid') {
-            continue; // CRITICAL: Protect paid records from updates
-        }
+        const existingFees = await Fee.find({ studentId: sId, month });
+        const paidAmount = existingFees
+            .filter((f: any) => f.paymentStatus === 'paid')
+            .reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+        const unpaidFee = existingFees.find((f: any) => f.paymentStatus !== 'paid');
 
-        await Fee.findOneAndUpdate(
-            { studentId: sId, month },
-            { amount: Math.round(data.totalBill) },
-            { upsert: true, new: true }
-        );
+        const remainingBill = Math.round(data.totalBill) - paidAmount;
+
+        if (remainingBill > 0) {
+            if (unpaidFee) {
+                await Fee.findByIdAndUpdate(unpaidFee._id, { amount: remainingBill });
+            } else {
+                await Fee.create({
+                    studentId: sId,
+                    month,
+                    amount: remainingBill,
+                    paymentStatus: 'unpaid'
+                });
+            }
+        } else {
+            if (unpaidFee) {
+                await Fee.findByIdAndDelete(unpaidFee._id);
+            }
+        }
     }
 }

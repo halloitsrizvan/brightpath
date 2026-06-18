@@ -61,10 +61,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 if (mIndex !== -1) {
                     const startDate = new Date(parseInt(year), mIndex, 1);
                     const endDate = new Date(parseInt(year), mIndex + 1, 0, 23, 59, 59);
+                    const queryEndDate = fee.paymentDate ? new Date(fee.paymentDate) : endDate;
 
                     const monthClasses = await Attendance.find({
                         studentId: student._id,
-                        date: { $gte: startDate, $lte: endDate },
+                        date: { $gte: startDate, $lte: queryEndDate },
                         status: 'Present'
                     }).populate({
                         path: 'subjectId',
@@ -137,7 +138,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         let rightY = height - 180;
         page.drawText(safeStr(`Invoice No: BP-MULTI-${ids[0].slice(-4).toUpperCase()}`), { x: 400, y: rightY, size: 10, font });
         rightY -= 15;
-        page.drawText(safeStr(`Date: ${new Date().toLocaleDateString()}`), { x: 400, y: rightY, size: 10, font });
+        const paymentDateObj = fees[0]?.paymentDate ? new Date(fees[0].paymentDate) : new Date();
+        const formattedPaymentDate = paymentDateObj.toLocaleDateString();
+        page.drawText(safeStr(`Date: ${formattedPaymentDate}`), { x: 400, y: rightY, size: 10, font });
         rightY -= 15;
         const monthsStr = billingMonths.join(', ');
         const displayMonths = monthsStr.length > 25 ? `${billingMonths.length} Months Statement` : monthsStr;

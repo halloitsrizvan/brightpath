@@ -16,6 +16,19 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const month = searchParams.get('month');
 
+        // Auto-sync the target month or the current month to ensure absolute real-time accuracy
+        const currentMonthName = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(new Date());
+        const currentYear = new Date().getFullYear();
+        const currentMonthStr = `${currentMonthName} ${currentYear}`;
+        const syncMonth = month || currentMonthStr;
+
+        try {
+            const { syncFinancialsForMonth } = await import('@/lib/finance-sync');
+            await syncFinancialsForMonth(syncMonth);
+        } catch (syncErr) {
+            console.error("On-the-fly financial sync failed:", syncErr);
+        }
+
         // Fetch student bills
         const feeQuery = month ? { month } : {};
         const allFees = await Fee.find(feeQuery).populate('studentId', 'fullName email class residentialLocation');
