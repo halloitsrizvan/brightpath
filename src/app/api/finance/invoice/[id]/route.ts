@@ -61,7 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 if (mIndex !== -1) {
                     const startDate = new Date(parseInt(year), mIndex, 1);
                     const endDate = new Date(parseInt(year), mIndex + 1, 0, 23, 59, 59);
-                    const queryEndDate = fee.paymentDate ? new Date(fee.paymentDate) : endDate;
+                    const queryEndDate = fee.paymentDate && new Date(fee.paymentDate) < endDate ? new Date(fee.paymentDate) : endDate;
 
                     const monthClasses = await Attendance.find({
                         studentId: student._id,
@@ -70,6 +70,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     }).populate({
                         path: 'subjectId',
                         model: 'Subject'
+                    }).populate({
+                        path: 'teacherId',
+                        model: 'Teacher'
                     });
                     allActivityRecords = [...allActivityRecords, ...monthClasses];
                 }
@@ -155,8 +158,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         page.drawRectangle({ x: 50, y: y - 5, width: 500, height: 25, color: primaryColor });
         page.drawText('DATE', { x: 60, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
         page.drawText('SUBJECT', { x: 150, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
-        page.drawText('HOURS', { x: 400, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
-        page.drawText('STATUS', { x: 500, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
+        page.drawText('TEACHER', { x: 300, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
+        page.drawText('HOURS', { x: 450, y: y + 5, size: 9, font: boldFont, color: rgb(1, 1, 1) });
         y -= 30;
 
         allActivityRecords.forEach((cls, index) => {
@@ -164,8 +167,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             if (index % 2 === 0) page.drawRectangle({ x: 50, y: y - 5, width: 500, height: 20, color: lightGray });
             page.drawText(safeStr(new Date(cls.date).toLocaleDateString()), { x: 60, y: y, size: 9, font, color: rgb(0.3, 0.3, 0.3) });
             page.drawText(safeStr((cls.subjectId as any)?.subjectName || 'Module'), { x: 150, y: y, size: 9, font });
-            page.drawText(safeStr(`${((cls.durationMinutes || 0) / 60).toFixed(2)} hrs`), { x: 400, y: y, size: 9, font });
-            page.drawText('Attended', { x: 500, y: y, size: 9, font });
+            page.drawText(safeStr((cls.teacherId as any)?.name || 'N/A'), { x: 300, y: y, size: 9, font });
+            page.drawText(safeStr(`${((cls.durationMinutes || 0) / 60).toFixed(2)} hrs`), { x: 450, y: y, size: 9, font });
             y -= 20;
         });
 
