@@ -27,7 +27,14 @@ export default function FinanceHub() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'pending' | 'paid' | 'payroll'>('pending');
     const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
-    const [selectedMonth, setSelectedMonth] = useState('All Records');
+    const getCurrentMonthString = () => {
+        const date = new Date();
+        const m = new Intl.DateTimeFormat('en-US', { month: 'long' }).format(date);
+        const y = date.getFullYear();
+        return `${m} ${y}`;
+    };
+
+    const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthString);
     const [selectedFees, setSelectedFees] = useState<string[]>([]);
     const [selectedSalaries, setSelectedSalaries] = useState<string[]>([]);
 
