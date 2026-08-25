@@ -246,45 +246,45 @@ export default function FinanceHub() {
 
                     {/* Economic Summary Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-12 px-2">
-                        <div className="bg-primary p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+                        <div className="bg-primary p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
                             <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Operational Expenses</p>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 leading-none">₹{(summary.totalExpenses || 0).toLocaleString()}</h3>
-                             <div className="hidden md:flex items-center gap-2 text-[10px] font-bold text-white/80">
-                                <AlertCircle className="w-4 h-4" />
-                                <span>Regular monthly overheads</span>
+                             <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
+                                <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+                                <span className="truncate">Regular monthly overheads</span>
                             </div>
                         </div>
 
-                        <div className="bg-white p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30">
+                        <div className="bg-white p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30">
                             <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Total Received Amount</p>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-teal-600 mb-4 leading-none">₹{(summary.totalReceived || 0).toLocaleString()}</h3>
-                            <div className="hidden md:flex items-center gap-4">
+                            <div className="flex items-center gap-2 md:gap-4">
                                 <div className="w-12 h-1 bg-teal-50 rounded-full flex-1 overflow-hidden">
                                     <div className="bg-teal-500 h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalReceived / ((summary.totalReceivable || 0) + (summary.totalReceived || 1))) * 100)}%` }}></div>
                                 </div>
-                                <span className="text-[9px] font-black text-teal-600 uppercase">₹{(summary.totalReceivable || 0).toLocaleString()}</span>
+                                <span className="text-[8px] md:text-[9px] font-black text-teal-600 uppercase whitespace-nowrap">₹{(summary.totalReceivable || 0).toLocaleString()}</span>
                             </div>
                         </div>
 
-                        <div className="bg-[#F8F9FA] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-primary border border-gray-100 shadow-xl shadow-gray-200/20 relative overflow-hidden group">
+                        <div className="bg-[#F8F9FA] p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-primary border border-gray-100 shadow-xl shadow-gray-200/20 relative overflow-hidden group">
                             <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Salary Paid</p>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 text-gray-800 leading-none">₹{(summary.totalDisbursed || 0).toLocaleString()}</h3>
-                            <div className="hidden md:flex items-center gap-4">
+                            <div className="flex items-center gap-2 md:gap-4">
                                 <div className="w-12 h-1 bg-primary/10 rounded-full flex-1 overflow-hidden">
                                     <div className="bg-primary h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalDisbursed / ((summary.totalPayable || 0) + (summary.totalDisbursed || 1))) * 100)}%` }}></div>
                                 </div>
-                                <span className="text-[9px] font-black text-primary uppercase">₹{(summary.totalPayable || 0).toLocaleString()}</span>
+                                <span className="text-[8px] md:text-[9px] font-black text-primary uppercase whitespace-nowrap">₹{(summary.totalPayable || 0).toLocaleString()}</span>
                             </div>
                         </div>
 
-                        <div className={`p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl relative overflow-hidden group ${summary.profit >= 0 ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-rose-600 text-white shadow-rose-200'}`}>
+                        <div className={`p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl relative overflow-hidden group ${summary.profit >= 0 ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-rose-600 text-white shadow-rose-200'}`}>
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
                             <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Realized Profit</p>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 leading-none">₹{(summary.profit || 0).toLocaleString()}</h3>
-                             <div className="hidden md:flex items-center gap-2 text-[10px] font-bold text-white/80">
-                                <TrendingUp className="w-4 h-4" />
-                                <span>Margin: {((summary.profit / (summary.totalReceived || 1)) * 100).toFixed(1)}%</span>
+                             <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
+                                <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
+                                <span className="truncate">Margin: {((summary.profit / (summary.totalReceived || 1)) * 100).toFixed(1)}%</span>
                             </div>
                         </div>
                     </div>
