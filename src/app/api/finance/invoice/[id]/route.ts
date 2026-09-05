@@ -41,11 +41,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const student = fees[0].studentId;
         if (!student) return NextResponse.json({ message: "Student relationship could not be populated" }, { status: 500 });
         
+        const { searchParams } = new URL(req.url);
+        const cutoffDateParam = searchParams.get('cutoffDate');
+        const cutoffDayParam = searchParams.get('cutoffDay');
+
         // Use set to avoid duplicate classes if months overlap (though they shouldn't)
         let allActivityRecords: any[] = [];
         let totalAmount = 0;
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const billingMonths: string[] = [];
+        let overallCutoffDate: Date | null = null;
 
         for (const fee of fees) {
             totalAmount += (fee.amount || 0);
@@ -61,7 +66,34 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 if (mIndex !== -1) {
                     const startDate = new Date(parseInt(year), mIndex, 1);
                     const endDate = new Date(parseInt(year), mIndex + 1, 0, 23, 59, 59);
-                    const queryEndDate = fee.paymentDate && new Date(fee.paymentDate) < endDate ? new Date(fee.paymentDate) : endDate;
+
+                    // Determine query end date based on cutoff parameters, saved fee.billingCutoffDate, or paymentDate
+                    let targetEndDate = endDate;
+                    if (cutoffDateParam) {
+                        const parsed = new Date(cutoffDateParam);
+                        if (!isNaN(parsed.getTime())) {
+                            targetEndDate = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59);
+                        }
+                    } else if (cutoffDayParam) {
+                        const day = parseInt(cutoffDayParam, 10);
+                        if (!isNaN(day) && day >= 1 && day <= 31) {
+                            const lastDayOfMonth = new Date(parseInt(year), mIndex + 1, 0).getDate();
+                            const validDay = Math.min(day, lastDayOfMonth);
+                            targetEndDate = new Date(parseInt(year), mIndex, validDay, 23, 59, 59);
+                        }
+                    } else if (fee.billingCutoffDate) {
+                        const feeCutoff = new Date(fee.billingCutoffDate);
+                        if (!isNaN(feeCutoff.getTime())) {
+                            targetEndDate = new Date(feeCutoff.getFullYear(), feeCutoff.getMonth(), feeCutoff.getDate(), 23, 59, 59);
+                        }
+                    } else if (fee.paymentDate && new Date(fee.paymentDate) < endDate) {
+                        targetEndDate = new Date(fee.paymentDate);
+                    }
+
+                    const queryEndDate = targetEndDate < endDate ? targetEndDate : endDate;
+                    if (queryEndDate < endDate && !overallCutoffDate) {
+                        overallCutoffDate = queryEndDate;
+                    }
 
                     const monthClasses = await Attendance.find({
                         studentId: student._id,
@@ -149,10 +181,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const displayMonths = monthsStr.length > 25 ? `${billingMonths.length} Months Statement` : monthsStr;
         page.drawText(safeStr(`Months: ${displayMonths}`), { x: 400, y: rightY, size: 10, font });
         rightY -= 15;
+        if (overallCutoffDate) {
+            page.drawText(safeStr(`Cutoff: ${overallCutoffDate.toLocaleDateString()}`), { x: 400, y: rightY, size: 9, font: boldFont, color: primaryColor });
+            rightY -= 15;
+        }
         page.drawText('Status: PAID', { x: 400, y: rightY, size: 11, font: boldFont, color: rgb(0.1, 0.5, 0.1) });
 
         y -= 40;
-        page.drawText('LEARNING ACTIVITY LEDGER', { x: 50, y, size: 11, font: boldFont, color: primaryColor });
+        const ledgerTitle = overallCutoffDate
+            ? `LEARNING ACTIVITY LEDGER (UP TO ${overallCutoffDate.toLocaleDateString().toUpperCase()})`
+            : 'LEARNING ACTIVITY LEDGER';
+        page.drawText(ledgerTitle, { x: 50, y, size: 11, font: boldFont, color: primaryColor });
         y -= 25;
 
         page.drawRectangle({ x: 50, y: y - 5, width: 500, height: 25, color: primaryColor });

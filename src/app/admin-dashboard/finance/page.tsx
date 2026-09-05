@@ -38,19 +38,59 @@ export default function FinanceHub() {
     const [selectedFees, setSelectedFees] = useState<string[]>([]);
     const [selectedSalaries, setSelectedSalaries] = useState<string[]>([]);
 
+    const getTodayDateString = () => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+
+    const [billingCutoffDate, setBillingCutoffDate] = useState<string>(getTodayDateString());
+    const [settlementAmount, setSettlementAmount] = useState<number>(0);
+    const [isCalculatingAmount, setIsCalculatingAmount] = useState<boolean>(false);
+    const [calculationNote, setCalculationNote] = useState<string>('');
+    const [activeFeeIds, setActiveFeeIds] = useState<string[]>([]);
+
+    const calculateCutoffAmount = async (ids: string[], cutoff: string) => {
+        if (!ids || ids.length === 0 || !cutoff) return;
+        try {
+            setIsCalculatingAmount(true);
+            const { data } = await api.post('/finance/calculate-cutoff', {
+                feeIds: ids,
+                cutoffDate: cutoff
+            });
+            if (data && typeof data.amount === 'number') {
+                setSettlementAmount(data.amount);
+                if (data.isAttendanceBased) {
+                    setCalculationNote(`${data.classesCount} class(es) (${data.hours} hrs) logged up to ${new Date(cutoff).toLocaleDateString()}`);
+                } else {
+                    const day = new Date(cutoff).getDate();
+                    setCalculationNote(`Prorated up to day ${day} of billing cycle`);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to calculate cutoff amount:", err);
+        } finally {
+            setIsCalculatingAmount(false);
+        }
+    };
+
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
         message: string;
-        onConfirm: () => void;
+        onConfirm: (cutoffDate?: string) => void;
         loading: boolean;
+        isFee?: boolean;
     }>({
         isOpen: false,
         title: '',
         message: '',
         onConfirm: () => { },
-        loading: false
+        loading: false,
+        isFee: false
     });
 
     const monthsOptions = useMemo(() => {
@@ -93,24 +133,55 @@ export default function FinanceHub() {
     const markFeePaid = (feeIds: string | string[], studentName: string, amount: number) => {
         const idArray = Array.isArray(feeIds) ? feeIds : [feeIds];
         const idString = idArray.join(',');
+        const todayStr = getTodayDateString();
+        setBillingCutoffDate(todayStr);
+        setActiveFeeIds(idArray);
+        setSettlementAmount(amount);
+        setCalculationNote('Calculating activity up to cutoff...');
+
+        // Calculate dynamic amount based on today's cutoff
+        calculateCutoffAmount(idArray, todayStr);
         
         setConfirmModal({
             isOpen: true,
             title: idArray.length > 1 ? "Batch Settle" : "Confirm Receipt",
-            message: `Are you sure you want to mark ₹${amount.toLocaleString()} as received from ${studentName}? ${idArray.length > 1 ? 'This will settle ' + idArray.length + ' months and generate a single PDF.' : 'This will generate a formal PDF invoice.'}`,
+            message: `Settling receivable for ${studentName}. The invoice will reflect learning activity logged up to the selected cutoff date.`,
             loading: false,
-            onConfirm: async () => {
+            isFee: true,
+            onConfirm: async (selectedCutoff?: string) => {
+                const cutoff = selectedCutoff || todayStr;
+                let cutoffDateObj: Date | null = null;
+                if (cutoff) {
+                    const parsed = new Date(cutoff);
+                    if (isNaN(parsed.getTime())) {
+                        toast.error("Invalid billing cutoff date selected");
+                        return;
+                    }
+                    const day = parsed.getDate();
+                    if (day < 1 || day > 31) {
+                        toast.error("Billing cutoff day must be between 1 and 31");
+                        return;
+                    }
+                    cutoffDateObj = new Date(`${cutoff}T23:59:59.999Z`);
+                }
+
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
-                    // Settle all IDs
+                    // Settle all IDs with cutoff date and dynamic amount
                     await Promise.all(idArray.map(id => 
-                        api.put(`/finance/fees/${id}`, { paymentStatus: 'paid', paymentDate: new Date() })
+                        api.put(`/finance/fees/${id}`, { 
+                            paymentStatus: 'paid', 
+                            paymentDate: new Date(),
+                            billingCutoffDate: cutoffDateObj || new Date(),
+                            amount: settlementAmount > 0 ? settlementAmount : amount
+                        })
                     ));
                     
                     toast.success(idArray.length > 1 ? `${idArray.length} months settled` : "Payment Received Successfully");
                     fetchFinance();
                     setSelectedFees([]);
-                    window.open(`/api/finance/invoice/${idString}`, '_blank');
+                    const queryCutoff = cutoff ? `?cutoffDate=${cutoff}` : '';
+                    window.open(`/api/finance/invoice/${idString}${queryCutoff}`, '_blank');
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 } catch (err) {
                     toast.error("Process failed");
@@ -123,6 +194,9 @@ export default function FinanceHub() {
     const markSalaryPaid = (salaryIds: string | string[], tutorName: string, amount: number) => {
         const idArray = Array.isArray(salaryIds) ? salaryIds : [salaryIds];
         const idString = idArray.join(',');
+        setActiveFeeIds([]);
+        setSettlementAmount(amount);
+        setCalculationNote('');
 
         setConfirmModal({
             isOpen: true,
@@ -131,6 +205,7 @@ export default function FinanceHub() {
                 ? `Initiate batch disbursement of ₹${amount.toLocaleString()} to ${tutorName} for ${idArray.length} records? This will generate payslips for all.`
                 : `Initiate salary disbursement of ₹${amount.toLocaleString()} to ${tutorName}? A payslip will be generated and logged.`,
             loading: false,
+            isFee: false,
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
@@ -656,7 +731,12 @@ export default function FinanceHub() {
                                             ) : paidFees.map((fee: any) => (
                                                 <tr key={fee._id} className="group hover:bg-gray-50/50 transition">
                                                     <td className="px-8 py-5">
-                                                        <p className="text-xs font-bold text-gray-500 italic">{fee.paymentDate ? new Date(fee.paymentDate).toLocaleDateString() : 'N/A'}</p>
+                                                        <p className="text-xs font-bold text-gray-800 italic">{fee.paymentDate ? new Date(fee.paymentDate).toLocaleDateString() : 'N/A'}</p>
+                                                        {fee.billingCutoffDate && (
+                                                            <p className="text-[10px] font-semibold text-primary mt-0.5 italic">
+                                                                Cutoff: {new Date(fee.billingCutoffDate).toLocaleDateString()}
+                                                            </p>
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-5">
                                                         <p className="text-sm font-black text-gray-800">{fee.studentId?.fullName}</p>
@@ -696,6 +776,7 @@ export default function FinanceHub() {
                                                 </div>
                                                 <p className="text-[10px] font-bold text-gray-400 italic mt-0.5">
                                                     Paid: {fee.paymentDate ? new Date(fee.paymentDate).toLocaleDateString() : 'N/A'}
+                                                    {fee.billingCutoffDate && ` • Cutoff: ${new Date(fee.billingCutoffDate).toLocaleDateString()}`}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
@@ -922,16 +1003,74 @@ export default function FinanceHub() {
             {confirmModal.isOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-primary/20 backdrop-blur-md" onClick={() => !confirmModal.loading && setConfirmModal(prev => ({...prev, isOpen: false}))}></div>
-                    <div className="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-4 border-white">
-                        <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-8 animate-bounce">
-                            <Wallet className="w-10 h-10" />
+                    <div className="bg-white rounded-[2.5rem] p-8 md:p-10 max-w-md w-full shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-4 border-white max-h-[90vh] overflow-y-auto">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6 animate-bounce">
+                            <Wallet className="w-8 h-8 md:w-10 md:h-10" />
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900 italic uppercase tracking-tighter mb-4 leading-none">
+                        <h3 className="text-xl md:text-2xl font-black text-gray-900 italic uppercase tracking-tighter mb-3 leading-none">
                             {confirmModal.title}
                         </h3>
-                        <p className="text-gray-400 font-bold text-sm leading-relaxed mb-10">
+                        <p className="text-gray-400 font-bold text-xs md:text-sm leading-relaxed mb-6">
                             {confirmModal.message}
                         </p>
+
+                        {/* Highlighted Dynamic Amount Card */}
+                        <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-teal-500/10 border-2 border-primary/20 shadow-sm">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary">
+                                        {confirmModal.isFee ? 'Calculated Settlement Amount' : 'Disbursement Amount'}
+                                    </p>
+                                    <div className="flex items-baseline gap-2 mt-1">
+                                        <span className="text-3xl font-black text-gray-900 italic tracking-tight">
+                                            ₹{settlementAmount.toLocaleString()}
+                                        </span>
+                                        {isCalculatingAmount && (
+                                            <span className="text-[9px] font-black text-primary animate-pulse uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full">
+                                                Recalculating...
+                                            </span>
+                                        )}
+                                    </div>
+                                    {calculationNote && (
+                                        <p className="text-[10px] font-bold text-gray-500 mt-1.5 italic">
+                                            {calculationNote}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/25 font-black text-xl italic flex-shrink-0">
+                                    <IndianRupee className="w-6 h-6" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {confirmModal.isFee && (
+                            <div className="mb-6 p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/70">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-indigo-900/70">
+                                        Bill Activity Until (Cutoff Date)
+                                    </label>
+                                    <span className="text-[8px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                                        Configurable
+                                    </span>
+                                </div>
+                                <input 
+                                    type="date"
+                                    value={billingCutoffDate}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setBillingCutoffDate(val);
+                                        if (val && activeFeeIds.length > 0) {
+                                            calculateCutoffAmount(activeFeeIds, val);
+                                        }
+                                    }}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-sm transition"
+                                />
+                                <p className="text-[9px] text-indigo-950/50 font-medium mt-2.5 italic leading-tight">
+                                    Learning activity (hours & classes) and total bill amount update dynamically up to this cutoff date.
+                                </p>
+                            </div>
+                        )}
+
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
@@ -941,11 +1080,11 @@ export default function FinanceHub() {
                                 Cancel
                             </button>
                             <button
-                                onClick={confirmModal.onConfirm}
-                                disabled={confirmModal.loading}
+                                onClick={() => confirmModal.onConfirm(billingCutoffDate)}
+                                disabled={confirmModal.loading || isCalculatingAmount}
                                 className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition disabled:opacity-50 italic"
                             >
-                                {confirmModal.loading ? 'Processing...' : 'Confirm Settlement'}
+                                {confirmModal.loading ? 'Processing...' : `Confirm Settlement (₹${settlementAmount.toLocaleString()})`}
                             </button>
                         </div>
                     </div>

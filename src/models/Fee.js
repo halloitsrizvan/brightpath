@@ -6,7 +6,8 @@ const FeeSchema = new mongoose.Schema({
     month: { type: String, required: true },
     amount: { type: Number, required: true },
     paymentStatus: { type: String, enum: ['paid', 'unpaid', 'pending'], default: 'unpaid' },
-    paymentDate: { type: Date }
+    paymentDate: { type: Date },
+    billingCutoffDate: { type: Date }
 }, { timestamps: true });
 
 export default mongoose.models.Fee || mongoose.model('Fee', FeeSchema);
