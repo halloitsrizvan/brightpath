@@ -9,6 +9,7 @@ const ExamSchema = new mongoose.Schema({
     marks: { type: Number, required: true },
     maxMarks: { type: Number, required: true },
     paperImage: { type: String },
+    paperImages: [{ type: String }],
     progressNote: { type: String },
     examMonth: { type: String },
     examDate: { type: Date, required: true, default: Date.now }

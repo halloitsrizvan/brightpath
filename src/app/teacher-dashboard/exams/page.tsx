@@ -24,6 +24,7 @@ interface Exam {
     examDate: string;
     progressNote?: string;
     paperImage?: string;
+    paperImages?: string[];
     createdAt: string;
 }
 
@@ -71,23 +72,56 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                         </div>
                     </div>
 
-                    {(exam.paperImage) && (
-                        <div>
-                            <p className="text-sm font-bold text-gray-700 mb-3 ml-1">Answer Paper Image</p>
-                            <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
-                                <img
-                                    src={exam.paperImage}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    alt="Answer Paper"
-                                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
-                                <a href={exam.paperImage} target="_blank" rel="noreferrer" className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-xs font-bold text-[#45308D] shadow-lg hover:bg-white transition-all transform hover:scale-105">
-                                    Open Full Image
-                                </a>
+                    {(exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : [])).length > 0 && (() => {
+                        const images = exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : []);
+                        return (
+                            <div>
+                                <div className="flex items-center justify-between mb-3 ml-1">
+                                    <p className="text-sm font-bold text-gray-700">
+                                        Answer Paper Images {images.length > 1 && `(${images.length} Pages)`}
+                                    </p>
+                                </div>
+                                {images.length > 1 ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {images.map((img: string, idx: number) => (
+                                            <div key={idx} className="rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm bg-gray-900 aspect-[3/4] relative group">
+                                                <img
+                                                    src={img}
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-90"
+                                                    alt={`Page ${idx + 1}`}
+                                                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
+                                                />
+                                                <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
+                                                    Page {idx + 1}
+                                                </div>
+                                                <a
+                                                    href={img}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="absolute bottom-2 right-2 bg-white/95 px-3 py-1 rounded-xl text-[10px] font-bold text-[#45308D] shadow hover:bg-white transition"
+                                                >
+                                                    Open
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
+                                        <img
+                                            src={images[0]}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            alt="Answer Paper"
+                                            onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
+                                        <a href={images[0]} target="_blank" rel="noreferrer" className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-xs font-bold text-[#45308D] shadow-lg hover:bg-white transition-all transform hover:scale-105">
+                                            Open Full Image
+                                        </a>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     <div>
                         <p className="text-sm font-bold text-gray-700 mb-3 ml-1">Teacher Notes</p>

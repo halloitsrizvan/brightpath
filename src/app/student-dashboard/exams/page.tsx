@@ -115,16 +115,42 @@ export default function StudentExams() {
 
                                         {/* Links/Actions */}
                                         <div className="flex flex-col gap-4">
-                                            {exam.paperImage && (
-                                                <a
-                                                    href={exam.paperImage}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-full flex items-center justify-center gap-3 py-4 bg-secondary text-primary rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20"
-                                                >
-                                                    <Download className="w-4 h-4" /> Download Certificate Paper
-                                                </a>
-                                            )}
+                                            {(() => {
+                                                const images = exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : []);
+                                                if (images.length === 0) return null;
+                                                if (images.length === 1) {
+                                                    return (
+                                                        <a
+                                                            href={images[0]}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="w-full flex items-center justify-center gap-3 py-4 bg-secondary text-primary rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-secondary/90 transition-all shadow-lg shadow-secondary/20"
+                                                        >
+                                                            <Download className="w-4 h-4" /> Download Certificate Paper
+                                                        </a>
+                                                    );
+                                                }
+                                                return (
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                            Answer Paper Pages ({images.length})
+                                                        </p>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            {images.map((imgUrl: string, idx: number) => (
+                                                                <a
+                                                                    key={idx}
+                                                                    href={imgUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="flex items-center justify-center gap-2 py-3 bg-secondary/30 hover:bg-secondary text-primary rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm"
+                                                                >
+                                                                    <Download className="w-3.5 h-3.5" /> Page {idx + 1}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
 
                                             {exam.progressNote && (
                                                 <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">

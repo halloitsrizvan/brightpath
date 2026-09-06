@@ -11,10 +11,16 @@ export async function POST(req: NextRequest) {
 
         const teacherId = user.role === 'teacher' ? user.id : body.teacherId || user.id;
 
+        const paperImages = Array.isArray(body.paperImages) && body.paperImages.length > 0
+            ? body.paperImages
+            : (body.paperImageUrl || body.paperImage ? [body.paperImageUrl || body.paperImage] : []);
+        const paperImage = paperImages[0] || body.paperImageUrl || body.paperImage || 'https://via.placeholder.com/150';
+
         const newExam = new Exam({
             ...body,
             teacherId,
-            paperImage: body.paperImageUrl || 'https://via.placeholder.com/150'
+            paperImages,
+            paperImage
         });
 
         await newExam.save();

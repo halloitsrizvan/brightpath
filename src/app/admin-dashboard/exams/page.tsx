@@ -22,6 +22,7 @@ interface Exam {
     examDate?: string;
     progressNote?: string;
     paperImage?: string;
+    paperImages?: string[];
     createdAt: string;
 }
 
@@ -74,23 +75,54 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
                         <p className="text-xs font-black text-primary italic uppercase">{exam.teacherId?.name || 'Administrator'}</p>
                     </div>
 
-                    {exam.paperImage && (
-                        <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Evidence Capture</p>
-                            <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
-                                <img
-                                    src={exam.paperImage}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                    alt="Answer Paper"
-                                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
-                                />
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
-                                <a href={exam.paperImage} target="_blank" rel="noreferrer" className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-6 py-2 rounded-full text-[10px] font-black text-primary shadow-lg hover:bg-white transition-all transform hover:scale-105 uppercase tracking-widest italic">
-                                    Enlarge Source
-                                </a>
+                    {(exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : [])).length > 0 && (() => {
+                        const images = exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : []);
+                        return (
+                            <div>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Evidence Capture {images.length > 1 && `(${images.length} Pages)`}
+                                </p>
+                                {images.length > 1 ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {images.map((img: string, idx: number) => (
+                                            <div key={idx} className="rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm bg-gray-900 aspect-[3/4] relative group">
+                                                <img
+                                                    src={img}
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-90"
+                                                    alt={`Page ${idx + 1}`}
+                                                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
+                                                />
+                                                <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
+                                                    Page {idx + 1}
+                                                </div>
+                                                <a
+                                                    href={img}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="absolute bottom-2 right-2 bg-white/95 px-3 py-1 rounded-xl text-[10px] font-bold text-primary shadow hover:bg-white transition"
+                                                >
+                                                    Open
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
+                                        <img
+                                            src={images[0]}
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                            alt="Answer Paper"
+                                            onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
+                                        <a href={images[0]} target="_blank" rel="noreferrer" className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-6 py-2 rounded-full text-[10px] font-black text-primary shadow-lg hover:bg-white transition-all transform hover:scale-105 uppercase tracking-widest italic">
+                                            Enlarge Source
+                                        </a>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     <div>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Analytical Insights</p>

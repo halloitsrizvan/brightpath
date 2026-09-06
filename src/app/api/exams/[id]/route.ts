@@ -27,6 +27,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         // Remove _id from body to prevent MongoDB update error
         if (body._id) delete body._id;
 
+        if (Array.isArray(body.paperImages)) {
+            body.paperImage = body.paperImages[0] || '';
+        }
+
         const updated = await Exam.findByIdAndUpdate(id, body, { new: true });
         if (!updated) return NextResponse.json({ message: 'Exam not found' }, { status: 404 });
 
