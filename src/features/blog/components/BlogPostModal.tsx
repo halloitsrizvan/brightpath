@@ -109,7 +109,7 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2 font-black"><Layout className="w-3 h-3 text-primary" /> Category</label>
-                                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-black" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
                                         <option value="Academic">Academic</option>
                                         <option value="Technology">Technology</option>
                                         <option value="Pedagogy">Pedagogy</option>
@@ -118,7 +118,7 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2 font-black"><Send className="w-3 h-3 text-primary" /> Status</label>
-                                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
+                                    <select className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-black" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })}>
                                         <option value="published">Published (Live)</option>
                                         <option value="draft">Internal Draft</option>
                                     </select>
@@ -127,7 +127,7 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
 
                             <div className="space-y-2">
                                 <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2 font-black"><FileText className="w-3 h-3 text-primary" /> Academic Excerpt (SEO Summary)</label>
-                                <textarea className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic min-h-[80px]" value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} required placeholder="Brief summary for the public grid..."></textarea>
+                                <textarea className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-black placeholder:text-gray-400 min-h-[80px]" value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} required placeholder="Brief summary for the public grid..."></textarea>
                             </div>
 
                             <div className="space-y-2">
@@ -138,7 +138,7 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
                                         value={formData.content} 
                                         onChange={(content) => setFormData({ ...formData, content })}
                                         modules={quillModules}
-                                        className="h-[400px] mb-12"
+                                        className="h-[400px] mb-12 text-black [&_.ql-editor]:text-black [&_.ql-editor.ql-blank::before]:text-gray-400"
                                     />
                                 </div>
                             </div>
@@ -160,7 +160,7 @@ export default function BlogPostModal({ isOpen, onClose, onSuccess, editData }: 
                                 <FormInput label="SEO Meta Title" icon={<Search className="w-4 h-4" />} placeholder="Keep it under 60 characters" value={formData.metaTitle} onChange={(val) => setFormData({ ...formData, metaTitle: val })} />
                                 <div className="space-y-2">
                                     <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2 font-black"><Search className="w-3 h-3 text-primary" /> SEO Meta Description</label>
-                                    <textarea className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic min-h-[100px]" value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Optimal length is around 155 characters..."></textarea>
+                                    <textarea className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-black placeholder:text-gray-400 min-h-[100px]" value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Optimal length is around 155 characters..."></textarea>
                                 </div>
                             </div>
                         </div>
@@ -185,7 +185,7 @@ function FormInput({ label, icon, placeholder, value, onChange }: { label: strin
             <input
                 type="text"
                 required
-                className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic"
+                className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all outline-none font-bold text-sm italic text-black placeholder:text-gray-400"
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
