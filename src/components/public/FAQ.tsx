@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ScrollReveal from './ScrollReveal';
 
@@ -32,7 +32,41 @@ const faqData = [
 ];
 
 export default function PublicFAQ() {
-    const [openId, setOpenId] = useState<number | null>(1);
+    const [openId, setOpenId] = useState<number | null>(null);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const handleMouseEnter = (id: number) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setOpenId(id);
+    };
+
+    const handleMouseLeave = () => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        timeoutRef.current = setTimeout(() => {
+            setOpenId(null);
+        }, 150);
+    };
+
+    const handleClick = (id: number) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+        setOpenId((prev) => (prev === id ? null : id));
+    };
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     return (
         <section className="py-20 bg-surface">
@@ -47,41 +81,47 @@ export default function PublicFAQ() {
                 </ScrollReveal>
 
                 <div className="space-y-3">
-                    {faqData.map((faq, i) => (
-                        <ScrollReveal key={faq.id} delay={i * 0.06}>
-                            <div 
-                                className={`rounded-xl border transition-all duration-200 cursor-pointer ${
-                                    openId === faq.id 
-                                    ? 'bg-white border-primary/15 shadow-md shadow-gray-100/60' 
-                                    : 'bg-white/60 border-gray-100 hover:bg-white'
-                                }`}
-                                onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
-                            >
-                                <div className="w-full px-6 py-5 flex items-center justify-between text-left">
-                                    <span className={`text-sm md:text-[15px] font-semibold transition-colors ${
-                                        openId === faq.id ? 'text-gray-900' : 'text-gray-700'
+                    {faqData.map((faq, i) => {
+                        const isOpen = openId === faq.id;
+                        return (
+                            <ScrollReveal key={faq.id} delay={i * 0.06}>
+                                <div 
+                                    className={`rounded-xl border transition-all duration-300 cursor-pointer ${
+                                        isOpen 
+                                        ? 'bg-white border-primary/20 shadow-md shadow-primary/5 ring-1 ring-primary/10' 
+                                        : 'bg-white/70 border-gray-100 hover:bg-white hover:border-gray-200'
+                                    }`}
+                                    onMouseEnter={() => handleMouseEnter(faq.id)}
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={() => handleClick(faq.id)}
+                                >
+                                    <div className="w-full px-6 py-5 flex items-center justify-between text-left">
+                                        <span className={`text-sm md:text-[15px] font-semibold transition-colors duration-200 ${
+                                            isOpen ? 'text-primary font-bold' : 'text-gray-800'
+                                        }`}>
+                                            {faq.question}
+                                        </span>
+                                        <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-transform duration-300 ${
+                                            isOpen ? 'rotate-180 text-primary' : 'text-gray-400'
+                                        }`} />
+                                    </div>
+                                    
+                                    <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                                        isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                                     }`}>
-                                        {faq.question}
-                                    </span>
-                                    <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-transform duration-200 ${
-                                        openId === faq.id ? 'rotate-180 text-primary' : 'text-gray-400'
-                                    }`} />
-                                </div>
-                                
-                                <div className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                                    openId === faq.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                                }`}>
-                                    <div className="px-6 pb-5">
-                                        <p className="text-sm text-gray-500 leading-relaxed">
-                                            {faq.answer}
-                                        </p>
+                                        <div className="px-6 pb-5">
+                                            <p className="text-sm text-gray-500 leading-relaxed">
+                                                {faq.answer}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </ScrollReveal>
-                    ))}
+                            </ScrollReveal>
+                        );
+                    })}
                 </div>
             </div>
         </section>
     );
 }
+

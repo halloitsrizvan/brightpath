@@ -13,8 +13,8 @@ import {
     PhoneCall, Mic, MicOff, Camera, Globe2, Atom,
     Compass, Calculator, FlaskConical, Microscope, Languages
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import DemoModal from '@/components/modals/DemoModal';
 
 export default function HomeClient() {
@@ -244,28 +244,36 @@ export default function HomeClient() {
                 </div>
             </section>
 
-            {/* FULL-WIDTH STATS BANNER - Exact Match to UI Image */}
+            {/* FULL-WIDTH STATS BANNER - Animated Numbers */}
             <section className="bg-primary text-white py-8 border-y border-primary/20">
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
 
                         <div className="md:border-r border-white/15 pr-4">
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">870</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
+                                <AnimatedCounter end={870} duration={2} />
+                            </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Expert Tutors</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">20,000+</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
+                                <AnimatedCounter end={20000} suffix="+" duration={2.2} />
+                            </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Hours Tutored</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">298</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
+                                <AnimatedCounter end={298} duration={2} />
+                            </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Subjects & Courses</p>
                         </div>
 
                         <div>
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">72,920</p>
+                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
+                                <AnimatedCounter end={72920} duration={2.4} />
+                            </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Active Students</p>
                         </div>
 
@@ -687,5 +695,43 @@ function BannerCarousel() {
                 </div>
             </div>
         </section>
+    );
+}
+
+function AnimatedCounter({ end, duration = 2, suffix = '', prefix = '' }: { end: number, duration?: number, suffix?: string, prefix?: string }) {
+    const [count, setCount] = useState(0);
+    const ref = useRef<HTMLSpanElement>(null);
+    const inView = useInView(ref, { once: true, margin: '-20px' });
+
+    useEffect(() => {
+        if (!inView) return;
+
+        let startTime: number | null = null;
+        let animationFrame: number;
+
+        const animate = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / (duration * 1000), 1);
+            
+            // Ease-out exponential deceleration for smooth counting
+            const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+            setCount(Math.floor(easeOut * end));
+
+            if (progress < 1) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                setCount(end);
+            }
+        };
+
+        animationFrame = requestAnimationFrame(animate);
+
+        return () => cancelAnimationFrame(animationFrame);
+    }, [inView, end, duration]);
+
+    return (
+        <span ref={ref} className="tabular-nums">
+            {prefix}{count.toLocaleString()}{suffix}
+        </span>
     );
 }
