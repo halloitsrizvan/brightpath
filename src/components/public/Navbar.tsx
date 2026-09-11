@@ -2,7 +2,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, ChevronRight, GraduationCap, MapPin, BookOpen, Layout } from 'lucide-react';
+import { 
+    Menu, X, ChevronDown, ChevronRight, GraduationCap, MapPin, 
+    BookOpen, Layout, Home, Users, ArrowRight, UserCheck, 
+    Layers, Star, FileText, Phone, MessageCircle 
+} from 'lucide-react';
 import DemoModal from '../modals/DemoModal';
 
 interface PublicNavbarProps {
@@ -20,6 +24,18 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Prevent body scroll when mobile drawer is open
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [mobileMenuOpen]);
 
     const tuitionData = {
         classes: [
@@ -187,45 +203,157 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                     </div>
                 )}
 
-                {/* Mobile Menu */}
-                {mobileMenuOpen && (
-                    <div className="lg:hidden absolute top-full left-0 w-full min-h-[110vh] bg-white z-[100] overflow-y-auto shadow-lg border-t border-gray-100 pb-40">
-                        <div className="p-6 space-y-1">
-                            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">Home</Link>
-
-                            {/* Online Tuition Mobile */}
-                            <div className="py-3 px-3">
-                                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Online Tuition</p>
-                                <div className="space-y-3 pl-3">
-                                    <MobileCollapsible name="By Classes" items={tuitionData.classes} onItemClick={() => setMobileMenuOpen(false)} />
-                                    <MobileCollapsible name="By Location" items={tuitionData.locations} onItemClick={() => setMobileMenuOpen(false)} />
-                                    <MobileCollapsible name="By Subject" items={tuitionData.subjects} onItemClick={() => setMobileMenuOpen(false)} />
-                                    <MobileCollapsible name="By Board" items={tuitionData.boards} onItemClick={() => setMobileMenuOpen(false)} />
-                                </div>
-                            </div>
-
-                            <Link href="/become-tutor" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">Become a Tutor</Link>
-                            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">About</Link>
-
-                            <div className="py-3 px-3">
-                                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Quick Links</p>
-                                <div className="grid grid-cols-2 gap-1">
-                                    {moreLinks.map(link => (
-                                        <Link key={link.name} href={link.href} onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 text-sm font-medium text-gray-500 hover:text-primary rounded-lg">{link.name}</Link>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={() => { setIsDemoModalOpen(true); setMobileMenuOpen(false); }}
-                                className="w-full mt-4 py-4 bg-primary text-white font-semibold text-center rounded-xl shadow-md shadow-primary/15"
-                            >
-                                Book a Free Demo
-                            </button>
-                        </div>
-                    </div>
-                )}
             </nav>
+
+            {/* Mobile Drawer Backdrop */}
+            <div 
+                className={`fixed inset-0 bg-gray-950/40 backdrop-blur-xs z-[100] lg:hidden transition-opacity duration-300 ${
+                    mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={() => setMobileMenuOpen(false)}
+            />
+
+            {/* Mobile Drawer Panel (Slides in from the right) */}
+            <div 
+                className={`fixed top-0 right-0 bottom-0 w-[84%] max-w-[340px] bg-white z-[101] lg:hidden shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${
+                    mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}
+            >
+                {/* Drawer Header */}
+                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+                    <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                        <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-white">
+                            <Image src="/logo.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold tracking-tight text-gray-900 font-display">BrightPath</span>
+                            <span className="text-[9px] font-semibold tracking-widest text-primary uppercase">Eduvora</span>
+                        </div>
+                    </Link>
+                    <button 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors cursor-pointer"
+                        aria-label="Close menu"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Drawer Scrollable Content */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {/* Primary Action Button */}
+                    <button
+                        onClick={() => { setIsDemoModalOpen(true); setMobileMenuOpen(false); }}
+                        className="w-full py-3 px-4 bg-[#FDC70B] hover:bg-[#eab308] text-gray-950 font-bold text-sm rounded-xl shadow-sm flex items-center justify-center gap-2 active:scale-98 transition-all cursor-pointer"
+                    >
+                        <span>Book a Free Demo</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+
+                    {/* Navigation Items */}
+                    <div className="space-y-1">
+                        <Link 
+                            href="/" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <Home className="w-4 h-4 text-gray-400" />
+                            <span>Home</span>
+                        </Link>
+
+                        {/* Online Tuition Mobile Dropdown */}
+                        <MobileTuitionDrawer 
+                            tuitionData={tuitionData} 
+                            onItemClick={() => setMobileMenuOpen(false)} 
+                        />
+
+                        <Link 
+                            href="/become-tutor" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <UserCheck className="w-4 h-4 text-gray-400" />
+                            <span>Become a Tutor</span>
+                        </Link>
+
+                        <Link 
+                            href="/about" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <Users className="w-4 h-4 text-gray-400" />
+                            <span>About Us</span>
+                        </Link>
+
+                        <Link 
+                            href="/our-system" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <Layers className="w-4 h-4 text-gray-400" />
+                            <span>Our System</span>
+                        </Link>
+
+                        <Link 
+                            href="/testimonials" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <Star className="w-4 h-4 text-gray-400" />
+                            <span>Testimonials</span>
+                        </Link>
+
+                        <Link 
+                            href="/blog" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <FileText className="w-4 h-4 text-gray-400" />
+                            <span>Blog</span>
+                        </Link>
+
+                        <Link 
+                            href="/contact" 
+                            onClick={() => setMobileMenuOpen(false)} 
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-gray-800 hover:bg-gray-50 hover:text-primary transition-colors"
+                        >
+                            <Phone className="w-4 h-4 text-gray-400" />
+                            <span>Contact Us</span>
+                        </Link>
+                    </div>
+
+                    {/* Quick Support / Contact Box */}
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-2">
+                        <p className="text-xs font-bold text-gray-700">Need Immediate Help?</p>
+                        <a 
+                            href="https://wa.me/919072618007?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20BrightPath%20tuition"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
+                        >
+                            <MessageCircle className="w-3.5 h-3.5" />
+                            <span>WhatsApp Support</span>
+                        </a>
+                        <a 
+                            href="tel:+919072618007"
+                            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-100 transition-colors"
+                        >
+                            <Phone className="w-3.5 h-3.5 text-primary" />
+                            <span>+91 90726 18007</span>
+                        </a>
+                    </div>
+                </div>
+
+                {/* Drawer Footer with Portal Logins */}
+                <div className="p-3 border-t border-gray-100 bg-gray-50/70 flex items-center justify-between text-xs font-semibold text-gray-600 shrink-0">
+                    <Link href="/student" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1 px-2">
+                        Student Login &rarr;
+                    </Link>
+                    <Link href="/teacher" onClick={() => setMobileMenuOpen(false)} className="hover:text-primary py-1 px-2">
+                        Teacher Login &rarr;
+                    </Link>
+                </div>
+            </div>
 
             <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
         </>
@@ -293,60 +421,124 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
     );
 }
 
-function MobileCollapsible({ name, items, onItemClick }: { name: string, items: (string | { name: string, items: string[] })[], onItemClick: () => void }) {
-    const [isOpen, setIsOpen] = useState(false);
+function MobileTuitionDrawer({ tuitionData, onItemClick }: { tuitionData: any, onItemClick: () => void }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [activeSubTab, setActiveSubTab] = useState<'classes' | 'subjects' | 'boards' | 'locations'>('classes');
+
     return (
-        <div className="space-y-1">
-            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full text-sm font-medium text-gray-600 py-1">
-                {name}
-                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <div className="rounded-lg overflow-hidden border border-gray-100/80 bg-gray-50/50">
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-semibold text-gray-800 hover:text-primary transition-colors cursor-pointer"
+            >
+                <div className="flex items-center gap-3">
+                    <GraduationCap className="w-4 h-4 text-primary" />
+                    <span>Online Tuition</span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-primary' : ''}`} />
             </button>
-            {isOpen && (
-                <div className="space-y-1 pl-3 border-l-2 border-primary/10 py-1">
-                    {items.map((item, idx) => {
-                        const baseUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}`;
-                        if (typeof item === 'string') {
-                            const slug = item.toLowerCase().replace(/ /g, '-');
-                            return (
-                                <Link 
-                                    key={item} 
-                                    href={`${baseUrl}/${slug}`} 
+
+            {isExpanded && (
+                <div className="p-3 pt-1 border-t border-gray-100 bg-white space-y-3">
+                    {/* Category Tabs: Classes, Subjects, Boards, Locations */}
+                    <div className="grid grid-cols-4 gap-1 p-1 bg-gray-100 rounded-lg">
+                        <button
+                            onClick={() => setActiveSubTab('classes')}
+                            className={`py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                activeSubTab === 'classes' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                            }`}
+                        >
+                            Classes
+                        </button>
+                        <button
+                            onClick={() => setActiveSubTab('subjects')}
+                            className={`py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                activeSubTab === 'subjects' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                            }`}
+                        >
+                            Subjects
+                        </button>
+                        <button
+                            onClick={() => setActiveSubTab('boards')}
+                            className={`py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                activeSubTab === 'boards' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                            }`}
+                        >
+                            Boards
+                        </button>
+                        <button
+                            onClick={() => setActiveSubTab('locations')}
+                            className={`py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                                activeSubTab === 'locations' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-900'
+                            }`}
+                        >
+                            Locations
+                        </button>
+                    </div>
+
+                    {/* Classes Grid */}
+                    {activeSubTab === 'classes' && (
+                        <div className="grid grid-cols-3 gap-1.5 pt-1">
+                            {['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'].map((cls) => (
+                                <Link
+                                    key={cls}
+                                    href={`/tuition/tuition-by-classes/${cls.toLowerCase().replace(/ /g, '-')}`}
                                     onClick={onItemClick}
-                                    className="block text-sm font-medium text-gray-500 py-1.5 hover:text-primary"
+                                    className="py-1.5 px-2 text-center text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary rounded-md border border-gray-100 transition-colors truncate"
                                 >
-                                    {item}
+                                    {cls}
                                 </Link>
-                            );
-                        } else {
-                            const rangeUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.name.toLowerCase().replace(/ /g, '-')}`;
-                            return (
-                                <div key={idx} className="space-y-1 py-1">
-                                    <Link 
-                                        href={rangeUrl}
-                                        onClick={onItemClick}
-                                        className="text-xs font-semibold text-primary/60 uppercase tracking-wider hover:text-primary transition-colors block"
-                                    >
-                                        {item.name}
-                                    </Link>
-                                    <div className="grid grid-cols-2 gap-1 pl-3">
-                                        {item.items.map(sub => {
-                                            const subSlug = sub.toLowerCase().replace(/ /g, '-');
-                                            return (
-                                                <Link 
-                                                    key={sub} 
-                                                    href={`${baseUrl}/${subSlug}`}
-                                                    onClick={onItemClick}
-                                                    className="text-sm text-gray-400 font-medium hover:text-primary py-1"
-                                                >
-                                                    {sub}
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        }
-                    })}
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Subjects Grid */}
+                    {activeSubTab === 'subjects' && (
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {tuitionData.subjects.map((sub: string) => (
+                                <Link
+                                    key={sub}
+                                    href={`/tuition/tuition-by-subject/${sub.toLowerCase().replace(/ /g, '-')}`}
+                                    onClick={onItemClick}
+                                    className="py-1.5 px-2 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary rounded-md border border-gray-100 transition-colors truncate"
+                                >
+                                    {sub}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Boards Grid */}
+                    {activeSubTab === 'boards' && (
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {tuitionData.boards.map((board: string) => (
+                                <Link
+                                    key={board}
+                                    href={`/tuition/tuition-by-board/${board.toLowerCase().replace(/ /g, '-')}`}
+                                    onClick={onItemClick}
+                                    className="py-2 px-2 text-center text-xs font-bold text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary rounded-md border border-gray-100 transition-colors"
+                                >
+                                    {board}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Locations Grid */}
+                    {activeSubTab === 'locations' && (
+                        <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {tuitionData.locations.map((loc: string) => (
+                                <Link
+                                    key={loc}
+                                    href={`/tuition/tuition-by-location/${loc.toLowerCase().replace(/ /g, '-')}`}
+                                    onClick={onItemClick}
+                                    className="py-1.5 px-2 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-primary/10 hover:text-primary rounded-md border border-gray-100 transition-colors truncate"
+                                >
+                                    {loc}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
