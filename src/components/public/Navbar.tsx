@@ -5,7 +5,12 @@ import Image from 'next/image';
 import { Menu, X, ChevronDown, ChevronRight, GraduationCap, MapPin, BookOpen, Layout } from 'lucide-react';
 import DemoModal from '../modals/DemoModal';
 
-export default function PublicNavbar() {
+interface PublicNavbarProps {
+    showMarquee?: boolean;
+    onApplyNow?: () => void;
+}
+
+export default function PublicNavbar({ showMarquee = false, onApplyNow }: PublicNavbarProps) {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -37,12 +42,12 @@ export default function PublicNavbar() {
         <>
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
                 scrolled 
-                    ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100/80 py-2' 
-                    : 'lg:bg-transparent bg-white py-4'
+                    ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100/80' 
+                    : showMarquee ? 'bg-white border-b border-gray-100' : 'lg:bg-transparent bg-white'
             }`}>
-                <div className="container mx-auto px-6 flex justify-between items-center">
+                <div className={`container mx-auto px-6 flex justify-between items-center transition-all duration-200 ${scrolled ? 'py-2.5' : 'py-3.5'}`}>
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className={`relative w-9 h-9 rounded-lg overflow-hidden transition-transform ${scrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'}`}>
+                        <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-white">
                             <Image src="/logo.png" alt="BrightPath Logo" width={36} height={36} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
@@ -113,6 +118,74 @@ export default function PublicNavbar() {
                         {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                     </button>
                 </div>
+
+                {/* Alert Marquee Bar on the bottom of header */}
+                {showMarquee && (
+                    <div className="w-full bg-[#FDC70B] text-gray-950 border-t border-amber-300/80 shadow-xs py-1.5 md:py-2 overflow-hidden select-none">
+                        <div className="container mx-auto px-4 md:px-6 flex items-center">
+                            <div className="shrink-0 z-10 pr-3 md:pr-4 flex items-center gap-2">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                                </span>
+                                <button
+                                    onClick={onApplyNow || (() => setIsDemoModalOpen(true))}
+                                    className="text-[10px] md:text-xs font-black uppercase tracking-wider text-gray-950 bg-white/95 hover:bg-white hover:shadow-xs px-2.5 py-0.5 md:py-1 rounded-full border border-amber-400/80 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                    <span>Apply Now</span>
+                                    <ChevronRight className="w-3 h-3 text-gray-700" />
+                                </button>
+                            </div>
+                            <div className="overflow-hidden relative flex-1">
+                                <div
+                                    className="animate-marquee flex items-center gap-8 text-xs md:text-[13px] font-bold text-gray-900 cursor-pointer"
+                                    onClick={onApplyNow || (() => setIsDemoModalOpen(true))}
+                                >
+                                    <span className="flex items-center gap-1.5">
+                                        <span>✨ Admissions Open for Academic Year 2026-27!</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>🎯 Personalized 1:1 Online Tuition KG to 12th Grade (CBSE, ICSE, State & IGCSE)</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>🌟 Book Your Free 1-on-1 Trial Class Today</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>⚡ Up to 20% Early Bird Scholarship</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>⏰ Flexible Timings (5:00 AM – 11:00 PM)</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>💬 Direct WhatsApp Mentorship Support</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    {/* Duplicate block for smooth continuous loop */}
+                                    <span className="flex items-center gap-1.5">
+                                        <span>✨ Admissions Open for Academic Year 2026-27!</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>🎯 Personalized 1:1 Online Tuition KG to 12th Grade</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>🌟 Book Your Free 1-on-1 Trial Class Today</span>
+                                    </span>
+                                    <span className="text-amber-800/40">•</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <span>⚡ Up to 20% Early Bird Scholarship</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
