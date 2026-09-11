@@ -1,73 +1,85 @@
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
+import FloatingContact from '@/components/public/FloatingContact';
 import PublicTutorsGrid from '@/features/teachers/components/PublicTutorsGrid';
-import { Star, ShieldCheck, GraduationCap } from 'lucide-react';
+import { ShieldCheck, Star, GraduationCap } from 'lucide-react';
 import { PublicService } from '@/lib/services/publicService';
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
     title: "Expert Tutors",
-    description: "Meet our strictly audited roster of professional 1:1 tutors, including postgraduate and PhD subject-matter experts in Kerala.",
+    description: "Meet our verified team of professional 1:1 tutors, including postgraduate and PhD subject-matter experts across Kerala.",
     alternates: {
         canonical: '/tutors',
     },
 };
 
-export const revalidate = 3600; // Revalidate every hour
+export const revalidate = 3600;
 
 export default async function TutorsPage() {
     const rawTutors = await PublicService.getEliteTutors();
-    // Convert Mongo objects for Next.js Serializability
     const tutors = JSON.parse(JSON.stringify(rawTutors));
 
     return (
         <div className="min-h-screen bg-white">
             <PublicNavbar />
             
-            <header className="pt-40 pb-20 bg-[#45308D] text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-48 -mt-48" />
-                <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
-                    <p className="text-secondary font-black text-[10px] uppercase tracking-[0.4em] mb-4">The Faculty Hub</p>
-                    <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter leading-none mb-8">
-                        Our Expert <br /><span className="text-secondary text-primary-glow">Mentors.</span>
+            <header className="pt-32 pb-16 bg-primary text-white">
+                <div className="container mx-auto px-6 max-w-3xl text-center">
+                    <p className="text-xs font-semibold text-secondary uppercase tracking-wider mb-4">Our Team</p>
+                    <h1 className="text-4xl md:text-6xl font-extrabold font-display leading-tight mb-6">
+                        Meet Our <span className="text-secondary">Tutors</span>
                     </h1>
-                    <p className="text-xl text-white/60 font-bold italic max-w-2xl mx-auto leading-relaxed">
-                        A strictly audited roster of professional educators dedicated to your child's 1:1 academic trajectory.
+                    <p className="text-lg text-white/60 leading-relaxed max-w-xl mx-auto">
+                        Every tutor is carefully selected and verified to ensure the best learning experience for your child.
                     </p>
                 </div>
             </header>
 
-            <section className="py-20 bg-gray-50/50 border-b border-gray-100">
-                <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                    {/* ... (Keep features grid same) */}
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm"><ShieldCheck /></div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Strict Verification</h4>
-                        <p className="text-gray-500 font-bold text-sm italic italic">100% background verified faculty</p>
+            {/* Standards Bar */}
+            <section className="py-12 bg-surface border-b border-gray-100">
+                <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center"><ShieldCheck className="w-5 h-5" /></div>
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-900">Background Verified</h4>
+                            <p className="text-xs text-gray-400">100% verified faculty</p>
+                        </div>
                     </div>
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 bg-secondary/10 text-[#fdc70b] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm"><Star /></div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#fdc70b]">Expertise Led</h4>
-                        <p className="text-gray-500 font-bold text-sm italic italic">Subject-matter specialization only</p>
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center"><Star className="w-5 h-5" /></div>
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-900">Subject Experts</h4>
+                            <p className="text-xs text-gray-400">Deep subject specialization</p>
+                        </div>
                     </div>
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 bg-indigo-500/10 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm"><GraduationCap /></div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Advanced Credentials</h4>
-                        <p className="text-gray-500 font-bold text-sm italic italic">Post-graduate & PhD profile focus</p>
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center"><GraduationCap className="w-5 h-5" /></div>
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-900">Advanced Degrees</h4>
+                            <p className="text-xs text-gray-400">Post-graduate & PhD holders</p>
+                        </div>
                     </div>
                 </div>
             </section>
 
             <PublicTutorsGrid tutors={tutors} />
 
-            <section className="py-32 bg-gray-900 text-white relative overflow-hidden">
-                <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
-                    <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter leading-none mb-10">Join Our <span className="text-primary italic">Faculty Network?</span></h2>
-                    <p className="text-white/40 font-bold mb-12 max-w-xl mx-auto italic">We are always looking for passionate 1:1 mentors to join Kerala's most trusted recruitment portal.</p>
-                    <button className="px-10 py-5 bg-white text-primary font-black text-xs uppercase tracking-widest rounded-2xl shadow-2xl hover:scale-[1.05] transition-all">Submit Portfolio</button>
+            {/* Join CTA */}
+            <section className="py-20 bg-[#1a1a2e] text-white text-center">
+                <div className="container mx-auto px-6 max-w-2xl">
+                    <h2 className="text-3xl md:text-4xl font-extrabold font-display leading-tight mb-4">
+                        Want to teach with us?
+                    </h2>
+                    <p className="text-gray-400 mb-8 max-w-lg mx-auto">We&apos;re always looking for passionate educators to join Kerala&apos;s most trusted online tuition platform.</p>
+                    <Link href="/become-tutor" className="inline-block px-8 py-4 bg-white text-primary font-semibold text-sm rounded-xl shadow-lg hover:bg-gray-50 active:scale-[0.98] transition-all">
+                        Apply as a Tutor
+                    </Link>
                 </div>
             </section>
 
+            <FloatingContact />
             <PublicFooter />
         </div>
     );

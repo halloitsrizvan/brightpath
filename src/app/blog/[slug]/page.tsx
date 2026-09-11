@@ -1,5 +1,6 @@
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
+import FloatingContact from '@/components/public/FloatingContact';
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -11,10 +12,10 @@ export const revalidate = 3600;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
     const post = await PublicService.getBlogPostBySlug(slug);
-    if (!post) return { title: 'Not Found | Brightpath' };
+    if (!post) return { title: 'Not Found | BrightPath' };
 
     return {
-        title: post.metaTitle || `${post.title} | Brightpath Kerala`,
+        title: post.metaTitle || `${post.title} | BrightPath`,
         description: post.metaDescription || post.excerpt,
         alternates: {
             canonical: `/blog/${slug}`,
@@ -40,47 +41,49 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="min-h-screen bg-white">
             <PublicNavbar />
 
-            <article className="pt-40 pb-32">
-                <header className="container mx-auto px-6 max-w-4xl mb-16">
-                    <Link href="/blog" className="inline-flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest mb-10 hover:gap-4 transition-all">
-                        <ArrowLeft className="w-4 h-4" /> Return to Journal
+            <article className="pt-32 pb-20">
+                <header className="container mx-auto px-6 max-w-3xl mb-10">
+                    <Link href="/blog" className="inline-flex items-center gap-2 text-sm text-primary font-medium mb-8 hover:gap-3 transition-all">
+                        <ArrowLeft className="w-4 h-4" /> Back to Blog
                     </Link>
                     
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="px-4 py-1.5 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-primary/10 flex items-center gap-2">
+                    <div className="flex items-center gap-3 mb-4">
+                        <span className="px-3 py-1 bg-primary/5 text-primary text-xs font-medium rounded-full border border-primary/10 flex items-center gap-1.5">
                            <Tag className="w-3 h-3" /> {post.category || 'Academic'}
                         </span>
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                           <Calendar className="w-4 h-4 text-primary" /> {new Date(post.publishedAt).toLocaleDateString()}
+                        <span className="text-xs text-gray-400 flex items-center gap-1.5">
+                           <Calendar className="w-3 h-3" /> {new Date(post.publishedAt).toLocaleDateString()}
                         </span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-black text-gray-900 italic uppercase tracking-tighter leading-none mb-8">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight mb-6">
                         {post.title}
                     </h1>
 
-                    <div className="flex items-center gap-4 py-6 border-y border-gray-100">
-                        <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-black italic">
+                    <div className="flex items-center gap-3 py-4 border-y border-gray-100">
+                        <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold">
                             {post.author[0]}
                         </div>
                         <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Written By</p>
-                            <p className="text-sm font-black text-gray-800 uppercase tracking-tight">{post.author}</p>
+                            <p className="text-xs text-gray-400">Written by</p>
+                            <p className="text-sm font-semibold text-gray-900">{post.author}</p>
                         </div>
                     </div>
                 </header>
 
-                <div className="container mx-auto px-6 max-w-4xl">
+                <div className="container mx-auto px-6 max-w-3xl">
                     <div 
-                        className="prose prose-xl prose-primary max-w-none 
-                        prose-headings:font-black prose-headings:italic prose-headings:uppercase prose-headings:tracking-tighter
-                        prose-p:text-gray-600 prose-p:font-bold prose-p:italic prose-p:leading-relaxed
-                        prose-img:rounded-[3rem] prose-img:shadow-2xl"
+                        className="prose prose-gray max-w-none 
+                        prose-headings:font-bold prose-headings:font-display
+                        prose-p:text-gray-600 prose-p:leading-relaxed
+                        prose-img:rounded-xl prose-img:shadow-lg
+                        prose-a:text-primary"
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                 </div>
             </article>
 
+            <FloatingContact />
             <PublicFooter />
         </div>
     );

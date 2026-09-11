@@ -1,19 +1,12 @@
-import Link from 'next/link';
-import { 
-    ArrowLeft, 
-    BookOpen, 
-    CheckCircle2, 
-    GraduationCap, 
-    Atom, 
-    Calculator, 
-    Microscope, 
-    PenTool
-} from 'lucide-react';
+import PublicNavbar from '@/components/public/Navbar';
+import PublicFooter from '@/components/public/Footer';
+import FloatingContact from '@/components/public/FloatingContact';
+import { BookOpen, CheckCircle2, PenTool, Atom, Calculator } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: "Curriculum",
-    description: "Precision-engineered academic syllabus structures for KG to 12th grade across CBSE, ICSE, and Kerala State boards.",
+    description: "Structured academic programs for KG to 12th grade across CBSE, ICSE, and Kerala State boards. Personalized learning paths for every level.",
     alternates: {
         canonical: '/curriculum',
     },
@@ -21,39 +14,26 @@ export const metadata: Metadata = {
 
 export default function CurriculumPage() {
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/10 selection:text-primary">
-            {/* Simple Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 py-4">
-                <div className="container mx-auto px-6 flex justify-between items-center">
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <ArrowLeft className="w-5 h-5 text-primary group-hover:-translate-x-1 transition-transform" />
-                        <div className="flex flex-col">
-                            <span className="text-sm font-black tracking-tighter text-gray-900 leading-none">BRIGHTPATH</span>
-                            <span className="text-[8px] font-bold text-primary tracking-[0.3em] leading-none mt-1 uppercase">Back to Home</span>
-                        </div>
-                    </Link>
-                </div>
-            </nav>
+        <div className="min-h-screen bg-white">
+            <PublicNavbar />
 
-            {/* Hero Section */}
-            <header className="pt-32 pb-20 bg-[#45308D] text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-48 -mt-48" />
-                <div className="container mx-auto px-6 max-w-4xl text-center">
-                    <p className="text-secondary font-black text-[10px] uppercase tracking-[0.4em] mb-4">Academic Architecture</p>
-                    <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter leading-none mb-8">
-                        The Curriculum <br /><span className="text-secondary">Spectrum.</span>
+            <header className="pt-32 pb-16 bg-primary text-white">
+                <div className="container mx-auto px-6 max-w-3xl text-center">
+                    <p className="text-xs font-semibold text-secondary uppercase tracking-wider mb-4">Curriculum</p>
+                    <h1 className="text-4xl md:text-6xl font-extrabold font-display leading-tight mb-6">
+                        What We <span className="text-secondary">Teach</span>
                     </h1>
-                    <p className="text-xl text-white/60 font-bold italic leading-relaxed">
-                        Precision-engineered learning tracks for Kerala State, CBSE, and ICSE boards, covering foundational years through entrance specialization.
+                    <p className="text-lg text-white/60 leading-relaxed max-w-xl mx-auto">
+                        Structured learning tracks for Kerala State, CBSE, and ICSE boards — from foundational years through entrance preparation.
                     </p>
                 </div>
             </header>
 
-            {/* Board Selection / Tabs Placeholder */}
-            <section className="py-20 bg-gray-50/50">
-                <div className="container mx-auto px-6 flex flex-wrap justify-center gap-4">
-                    {['Kerala State Board', 'CBSE Portfolio', 'ICSE Certification'].map(board => (
-                        <div key={board} className="px-8 py-4 bg-white rounded-2xl border border-gray-100 shadow-sm font-black text-[10px] uppercase tracking-widest text-primary hover:scale-[1.05] transition-all cursor-pointer">
+            {/* Board Selection */}
+            <section className="py-10 bg-surface border-b border-gray-100">
+                <div className="container mx-auto px-6 flex flex-wrap justify-center gap-3">
+                    {['Kerala State Board', 'CBSE', 'ICSE'].map(board => (
+                        <div key={board} className="px-5 py-2.5 bg-white rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:border-primary/30 hover:text-primary transition-all cursor-pointer">
                             {board}
                         </div>
                     ))}
@@ -61,69 +41,58 @@ export default function CurriculumPage() {
             </section>
 
             {/* Level Breakdown */}
-            <section className="py-32">
-                <div className="container mx-auto px-6 space-y-32">
+            <section className="py-20">
+                <div className="container mx-auto px-6 max-w-5xl space-y-16">
                     <LevelSection 
-                        badge="KG - 5" 
-                        title="Foundational Nucleus" 
-                        desc="Where curiosity meets guidance. We focus on phonetics, basic logic, and creative expression through 1:1 interaction."
-                        items={['Creative Storytelling', 'Mathematical Logic Base', 'Language Fluency', 'EVS Exploration']}
-                        icon={<PenTool className="w-8 h-8" />}
+                        badge="KG – Class 5" 
+                        title="Foundation Years" 
+                        desc="Building curiosity and strong basics. We focus on phonetics, basic logic, and creative expression through 1:1 interaction."
+                        items={['Creative Storytelling', 'Math Foundations', 'Language Fluency', 'Environmental Science']}
+                        icon={<PenTool className="w-5 h-5" />}
                     />
                     <LevelSection 
-                        badge="6 - 10" 
-                        title="Core Analytical Hub" 
-                        desc="Strategic mentorship for competitive state and national curriculums. Deep-diving into STEM and Humanities."
-                        items={['Advanced Mathematics', 'Physical Sciences', 'Biological Inquiries', 'Social Dynamics']}
-                        icon={<Atom className="w-8 h-8" />}
-                        reversed
+                        badge="Class 6 – 10" 
+                        title="Core Academic Years" 
+                        desc="Deepening understanding across STEM and Humanities. Strategic mentorship aligned with board requirements."
+                        items={['Advanced Mathematics', 'Physical Sciences', 'Life Sciences', 'Social Studies']}
+                        icon={<Atom className="w-5 h-5" />}
                     />
                     <LevelSection 
-                        badge="11 - 12" 
-                        title="Higher Specialization" 
-                        desc="Intensive training for entrance corridors including NEET and JEE, alongside board exam excellence."
-                        items={['Physics Analytics', 'Chemical Synthesis', 'Advanced Calculus', 'Economic Frameworks']}
-                        icon={<Calculator className="w-8 h-8" />}
+                        badge="Class 11 – 12" 
+                        title="Higher Secondary" 
+                        desc="Intensive preparation for board exams and entrance tests including NEET and JEE."
+                        items={['Physics', 'Chemistry', 'Advanced Mathematics', 'Biology / Economics']}
+                        icon={<Calculator className="w-5 h-5" />}
                     />
                 </div>
             </section>
 
-            {/* Simple Footer */}
-            <footer className="py-16 border-t border-gray-100 text-center">
-                <p className="text-gray-400 font-black text-[10px] uppercase tracking-[0.3em]">© 2026 BRIGHTPATH KERALA | ACADEMIC SPECTRUM</p>
-            </footer>
+            <FloatingContact />
+            <PublicFooter />
         </div>
     );
 }
 
-function LevelSection({ badge, title, desc, items, icon, reversed = false }: { badge: string, title: string, desc: string, items: string[], icon: any, reversed?: boolean }) {
+function LevelSection({ badge, title, desc, items, icon }: { badge: string, title: string, desc: string, items: string[], icon: React.ReactNode }) {
     return (
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-20 items-center ${reversed ? 'lg:flex-row-reverse' : ''}`}>
-            <div className={`space-y-8 ${reversed ? 'lg:order-2' : ''}`}>
-                <div className="w-16 h-16 rounded-[2rem] bg-primary text-white flex items-center justify-center shadow-xl shadow-gray-200">
+        <div className="p-8 rounded-2xl bg-surface border border-gray-100/80">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                     {icon}
                 </div>
                 <div>
-                   <span className="text-primary font-black text-[10px] uppercase tracking-[0.3em] mb-2 block leading-none">{badge} Excellence</span>
-                   <h2 className="text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-none">{title}</h2>
-                </div>
-                <p className="text-gray-500 font-bold leading-relaxed italic text-lg">{desc}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {items.map(item => (
-                        <div key={item} className="flex items-center gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                            <CheckCircle2 className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-black text-gray-800 uppercase tracking-widest">{item}</span>
-                        </div>
-                    ))}
+                    <p className="text-xs font-semibold text-primary">{badge}</p>
+                    <h2 className="text-xl font-bold text-gray-900 font-display">{title}</h2>
                 </div>
             </div>
-            <div className={`aspect-[4/3] bg-gray-100 rounded-[4rem] relative overflow-hidden flex items-center justify-center group ${reversed ? 'lg:order-1' : ''}`}>
-                <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
-                <BookOpen className="w-32 h-32 text-gray-200 group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute bottom-10 left-10 p-6 bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl border border-white/50">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pedagogical Mode</p>
-                    <p className="text-sm font-black text-gray-800 uppercase italic tracking-tighter leading-none">1:1 Focused Mentorship</p>
-                </div>
+            <p className="text-gray-500 leading-relaxed mb-5">{desc}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {items.map(item => (
+                    <div key={item} className="flex items-center gap-2 bg-white p-3 rounded-lg border border-gray-100/80">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-sm font-medium text-gray-700">{item}</span>
+                    </div>
+                ))}
             </div>
         </div>
     );

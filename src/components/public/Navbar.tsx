@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, ChevronRight, GraduationCap, MapPin, BookOpen, Layout, MoreHorizontal } from 'lucide-react';
+import { Menu, X, ChevronDown, ChevronRight, GraduationCap, MapPin, BookOpen, Layout } from 'lucide-react';
 import DemoModal from '../modals/DemoModal';
 
 export default function PublicNavbar() {
@@ -29,38 +29,41 @@ export default function PublicNavbar() {
     const moreLinks = [
         { name: 'Our System', href: '/our-system' },
         { name: 'Testimonials', href: '/testimonials' },
-        { name: 'Blogs', href: '/blog' },
+        { name: 'Blog', href: '/blog' },
         { name: 'Contact', href: '/contact' },
     ];
 
     return (
         <>
-            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/95 backdrop-blur-xl shadow-xl py-2' : 'lg:bg-transparent bg-white py-4'
-                }`}>
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                scrolled 
+                    ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100/80 py-2' 
+                    : 'lg:bg-transparent bg-white py-4'
+            }`}>
                 <div className="container mx-auto px-6 flex justify-between items-center">
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className={`relative w-10 h-10 rounded-xl p-2  transition-transform flex items-center justify-center ${scrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'}`}>
-                            <Image src="/logo.png" alt="BrightPath Logo" width={40} height={40} className="w-full h-full object-contain" />
+                    <Link href="/" className="flex items-center gap-2.5 group">
+                        <div className={`relative w-9 h-9 rounded-lg overflow-hidden transition-transform ${scrolled ? 'bg-white' : 'bg-white/90 backdrop-blur-sm'}`}>
+                            <Image src="/logo.png" alt="BrightPath Logo" width={36} height={36} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
-                            <span className={`text-lg font-black tracking-tighter leading-none italic ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>BRIGHTPATH</span>
-                            <span className={`text-[9px] font-black tracking-[0.3em] leading-none mt-1 ${scrolled ? 'text-primary' : 'text-primary'}`}>EDUVORA</span>
+                            <span className={`text-base font-bold tracking-tight leading-none font-display ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>BrightPath</span>
+                            <span className={`text-[9px] font-semibold tracking-[0.2em] leading-none mt-0.5 uppercase ${scrolled ? 'text-primary' : 'text-primary'}`}>Eduvora</span>
                         </div>
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden lg:flex gap-6 items-center h-[40px]">
-                        <Link href="/" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">Home</Link>
+                    <div className="hidden lg:flex gap-7 items-center h-[40px]">
+                        <Link href="/" className="text-[13px] font-medium text-gray-600 hover:text-primary transition-colors">Home</Link>
 
                         {/* Online Tuition Dropdown */}
                         <div className="relative h-full flex items-center group/main">
-                            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest cursor-pointer text-gray-600 group-hover/main:text-primary transition-colors">
+                            <div className="flex items-center gap-1 text-[13px] font-medium cursor-pointer text-gray-600 group-hover/main:text-primary transition-colors">
                                 Online Tuition
-                                <ChevronDown className="w-3 h-3 group-hover/main:rotate-180 transition-transform duration-300" />
+                                <ChevronDown className="w-3.5 h-3.5 group-hover/main:rotate-180 transition-transform duration-300" />
                             </div>
 
-                            <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover/main:opacity-100 group-hover/main:visible transition-all duration-300 transform translate-y-2 group-hover/main:translate-y-0 z-[60]">
-                                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[260px] py-3 overflow-visible">
+                            <div className="absolute top-full left-0 pt-3 opacity-0 invisible group-hover/main:opacity-100 group-hover/main:visible transition-all duration-200 transform translate-y-1 group-hover/main:translate-y-0 z-[60]">
+                                <div className="bg-white rounded-xl shadow-lg shadow-gray-200/50 border border-gray-100 min-w-[240px] py-2 overflow-visible">
                                     <DesktopNestedItem name="Tuition By Classes" subItems={tuitionData.classes} icon={GraduationCap} />
                                     <DesktopNestedItem name="Tuition By Location" subItems={tuitionData.locations} icon={MapPin} />
                                     <DesktopNestedItem name="Tuition By Subject" subItems={tuitionData.subjects} icon={BookOpen} />
@@ -69,23 +72,23 @@ export default function PublicNavbar() {
                             </div>
                         </div>
 
-                        <Link href="/become-tutor" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">Become a Tutor</Link>
-                        <Link href="/about" className="text-[10px] font-bold text-gray-600 hover:text-primary transition-colors uppercase tracking-widest">About Us</Link>
+                        <Link href="/become-tutor" className="text-[13px] font-medium text-gray-600 hover:text-primary transition-colors">Become a Tutor</Link>
+                        <Link href="/about" className="text-[13px] font-medium text-gray-600 hover:text-primary transition-colors">About</Link>
 
                         {/* More Dropdown */}
                         <div className="relative h-full flex items-center group/more">
-                            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest cursor-pointer text-gray-600 group-hover/more:text-primary transition-colors">
+                            <div className="flex items-center gap-1 text-[13px] font-medium cursor-pointer text-gray-600 group-hover/more:text-primary transition-colors">
                                 More
-                                <ChevronDown className="w-3 h-3 group-hover/more:rotate-180 transition-transform duration-300" />
+                                <ChevronDown className="w-3.5 h-3.5 group-hover/more:rotate-180 transition-transform duration-300" />
                             </div>
 
-                            <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-300 transform translate-y-2 group-hover/more:translate-y-0 z-[60]">
-                                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[200px] py-3">
+                            <div className="absolute top-full right-0 pt-3 opacity-0 invisible group-hover/more:opacity-100 group-hover/more:visible transition-all duration-200 transform translate-y-1 group-hover/more:translate-y-0 z-[60]">
+                                <div className="bg-white rounded-xl shadow-lg shadow-gray-200/50 border border-gray-100 min-w-[180px] py-2">
                                     {moreLinks.map(link => (
                                         <Link
                                             key={link.name}
                                             href={link.href}
-                                            className="block px-6 py-2.5 text-[10px] font-bold text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors uppercase tracking-wider"
+                                            className="block px-4 py-2.5 text-[13px] font-medium text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"
                                         >
                                             {link.name}
                                         </Link>
@@ -97,7 +100,7 @@ export default function PublicNavbar() {
                         <button
                             onClick={() => setIsDemoModalOpen(true)}
                             suppressHydrationWarning
-                            className="px-6 py-2.5 bg-primary text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-xl shadow-primary/20 hover:scale-[1.05] active:scale-95 transition-all ml-4"
+                            className="px-5 py-2.5 bg-primary text-white font-semibold text-[13px] rounded-lg shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25 hover:bg-primary/90 active:scale-[0.98] transition-all ml-3"
                         >
                             Book a Demo
                         </button>
@@ -105,22 +108,22 @@ export default function PublicNavbar() {
 
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className={`lg:hidden p-2 rounded-xl transition-colors ${scrolled ? 'text-primary hover:bg-primary/5' : 'text-primary hover:bg-white/10'}`}
+                        className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                        {mobileMenuOpen ? <X /> : <Menu />}
+                        {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                     </button>
                 </div>
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="lg:hidden absolute top-full left-0 w-full min-h-[110vh] bg-white z-[100] overflow-y-auto shadow-2xl border-t border-gray-100 pb-40">
-                        <div className="p-6 space-y-2 animate-fade-in relative z-[110]">
-                            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">Home</Link>
+                    <div className="lg:hidden absolute top-full left-0 w-full min-h-[110vh] bg-white z-[100] overflow-y-auto shadow-lg border-t border-gray-100 pb-40">
+                        <div className="p-6 space-y-1">
+                            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">Home</Link>
 
                             {/* Online Tuition Mobile */}
-                            <div className="p-4 space-y-4">
-                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Online Tuition</p>
-                                <div className="grid grid-cols-1 gap-4 pl-4">
+                            <div className="py-3 px-3">
+                                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Online Tuition</p>
+                                <div className="space-y-3 pl-3">
                                     <MobileCollapsible name="By Classes" items={tuitionData.classes} onItemClick={() => setMobileMenuOpen(false)} />
                                     <MobileCollapsible name="By Location" items={tuitionData.locations} onItemClick={() => setMobileMenuOpen(false)} />
                                     <MobileCollapsible name="By Subject" items={tuitionData.subjects} onItemClick={() => setMobileMenuOpen(false)} />
@@ -128,23 +131,23 @@ export default function PublicNavbar() {
                                 </div>
                             </div>
 
-                            <Link href="/become-tutor" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">Become a Tutor</Link>
-                            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block p-4 text-sm font-black text-gray-800 uppercase tracking-widest border-b border-gray-50">About Us</Link>
+                            <Link href="/become-tutor" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">Become a Tutor</Link>
+                            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-3 px-3 text-sm font-semibold text-gray-800 rounded-lg hover:bg-gray-50">About</Link>
 
-                            <div className="p-4 space-y-4">
-                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Quick Links</p>
-                                <div className="grid grid-cols-2 gap-2">
+                            <div className="py-3 px-3">
+                                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Quick Links</p>
+                                <div className="grid grid-cols-2 gap-1">
                                     {moreLinks.map(link => (
-                                        <Link key={link.name} href={link.href} onClick={() => setMobileMenuOpen(false)} className="p-2 text-xs font-bold text-gray-600 uppercase tracking-wider">{link.name}</Link>
+                                        <Link key={link.name} href={link.href} onClick={() => setMobileMenuOpen(false)} className="py-2 px-2 text-sm font-medium text-gray-500 hover:text-primary rounded-lg">{link.name}</Link>
                                     ))}
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => { setIsDemoModalOpen(true); setMobileMenuOpen(false); }}
-                                className="w-full mt-6 py-5 bg-primary text-white font-black uppercase tracking-[0.2em] text-center rounded-2xl shadow-xl shadow-primary/20"
+                                className="w-full mt-4 py-4 bg-primary text-white font-semibold text-center rounded-xl shadow-md shadow-primary/15"
                             >
-                                Book a Demo
+                                Book a Free Demo
                             </button>
                         </div>
                     </div>
@@ -159,26 +162,26 @@ export default function PublicNavbar() {
 function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subItems: (string | { name: string, items: string[] })[], icon: any }) {
     return (
         <div className="relative group/nested px-1">
-            <div className="flex items-center justify-between w-full px-4 py-3 hover:bg-primary/5 rounded-xl cursor-pointer group/item transition-colors">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors">
-                        <Icon className="w-4 h-4" />
+            <div className="flex items-center justify-between w-full px-3 py-2.5 hover:bg-gray-50 rounded-lg cursor-pointer group/item transition-colors">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-md bg-primary/5 flex items-center justify-center text-primary group-hover/item:bg-primary group-hover/item:text-white transition-colors">
+                        <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-[11px] font-bold text-gray-700 group-hover/item:text-primary uppercase tracking-wider">{name}</span>
+                    <span className="text-[13px] font-medium text-gray-700 group-hover/item:text-primary">{name}</span>
                 </div>
-                <ChevronRight className="w-3 h-3 text-gray-400 group-hover/item:translate-x-1 transition-transform" />
+                <ChevronRight className="w-3.5 h-3.5 text-gray-400 group-hover/item:translate-x-0.5 transition-transform" />
             </div>
 
             {/* The Nested Dropdown */}
-            <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/nested:opacity-100 group-hover/nested:visible transition-all duration-300 transform translate-x-2 group-hover/nested:translate-x-0 z-[70]">
-                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[200px] py-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+            <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/nested:opacity-100 group-hover/nested:visible transition-all duration-200 transform translate-x-1 group-hover/nested:translate-x-0 z-[70]">
+                <div className="bg-white rounded-xl shadow-lg shadow-gray-200/50 border border-gray-100 min-w-[180px] py-2 max-h-[400px] overflow-y-auto custom-scrollbar">
                     {subItems.map((item, idx) => {
                         if (typeof item === 'string') {
                             return (
                                 <Link
                                     key={item}
                                     href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.toLowerCase().replace(/ /g, '-')}`}
-                                    className="block px-6 py-2.5 text-[10px] font-black text-gray-600 hover:text-primary hover:bg-gray-50 uppercase tracking-[0.1em] transition-colors"
+                                    className="block px-4 py-2 text-[13px] font-medium text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors"
                                 >
                                     {item}
                                 </Link>
@@ -188,19 +191,19 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
                                 <div key={idx} className="relative group/level3 px-1">
                                     <Link 
                                         href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.name.toLowerCase().replace(/ /g, '-')}`}
-                                        className="flex items-center justify-between px-5 py-2.5 hover:bg-primary/5 rounded-xl cursor-pointer group/level3item transition-colors"
+                                        className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-lg cursor-pointer group/level3item transition-colors"
                                     >
-                                        <span className="text-[10px] font-black text-gray-600 group-hover/level3item:text-primary uppercase tracking-[0.1em]">{item.name}</span>
-                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/level3item:translate-x-1 transition-transform" />
+                                        <span className="text-[13px] font-medium text-gray-600 group-hover/level3item:text-primary">{item.name}</span>
+                                        <ChevronRight className="w-3 h-3 text-gray-400 group-hover/level3item:translate-x-0.5 transition-transform" />
                                     </Link>
                                     {/* Level 3 Dropdown */}
-                                    <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/level3:opacity-100 group-hover/level3:visible transition-all duration-300 transform translate-x-2 group-hover/level3:translate-x-0 z-[80]">
-                                        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 min-w-[140px] py-2">
+                                    <div className="absolute top-0 left-full pl-1 opacity-0 invisible group-hover/level3:opacity-100 group-hover/level3:visible transition-all duration-200 transform translate-x-1 group-hover/level3:translate-x-0 z-[80]">
+                                        <div className="bg-white rounded-xl shadow-lg shadow-gray-200/50 border border-gray-100 min-w-[130px] py-2">
                                             {item.items.map(sub => (
                                                 <Link
                                                     key={sub}
                                                     href={`/tuition/${name.toLowerCase().replace(/ /g, '-')}/${sub.toLowerCase().replace(/ /g, '-')}`}
-                                                    className="block px-5 py-2 text-[10px] font-black text-gray-600 hover:text-primary hover:bg-gray-50 uppercase tracking-[0.1em] transition-colors"
+                                                    className="block px-4 py-2 text-[13px] font-medium text-gray-600 hover:text-primary hover:bg-gray-50 transition-colors"
                                                 >
                                                     {sub}
                                                 </Link>
@@ -220,13 +223,13 @@ function DesktopNestedItem({ name, subItems, icon: Icon }: { name: string, subIt
 function MobileCollapsible({ name, items, onItemClick }: { name: string, items: (string | { name: string, items: string[] })[], onItemClick: () => void }) {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <div className="space-y-2">
-            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full text-xs font-bold text-gray-700 uppercase tracking-wider">
+        <div className="space-y-1">
+            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full text-sm font-medium text-gray-600 py-1">
                 {name}
                 <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             {isOpen && (
-                <div className="grid grid-cols-1 gap-2 pl-4 border-l-2 border-primary/10 py-2 animate-fade-in">
+                <div className="space-y-1 pl-3 border-l-2 border-primary/10 py-1">
                     {items.map((item, idx) => {
                         const baseUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}`;
                         if (typeof item === 'string') {
@@ -236,7 +239,7 @@ function MobileCollapsible({ name, items, onItemClick }: { name: string, items: 
                                     key={item} 
                                     href={`${baseUrl}/${slug}`} 
                                     onClick={onItemClick}
-                                    className="text-xs font-bold text-gray-500 py-1"
+                                    className="block text-sm font-medium text-gray-500 py-1.5 hover:text-primary"
                                 >
                                     {item}
                                 </Link>
@@ -244,15 +247,15 @@ function MobileCollapsible({ name, items, onItemClick }: { name: string, items: 
                         } else {
                             const rangeUrl = `/tuition/${name.toLowerCase().replace(/ /g, '-')}/${item.name.toLowerCase().replace(/ /g, '-')}`;
                             return (
-                                <div key={idx} className="space-y-2 py-1">
+                                <div key={idx} className="space-y-1 py-1">
                                     <Link 
                                         href={rangeUrl}
                                         onClick={onItemClick}
-                                        className="text-[10px] font-black text-primary/60 uppercase tracking-widest hover:text-primary transition-colors block"
+                                        className="text-xs font-semibold text-primary/60 uppercase tracking-wider hover:text-primary transition-colors block"
                                     >
                                         {item.name}
                                     </Link>
-                                    <div className="grid grid-cols-2 gap-2 pl-4">
+                                    <div className="grid grid-cols-2 gap-1 pl-3">
                                         {item.items.map(sub => {
                                             const subSlug = sub.toLowerCase().replace(/ /g, '-');
                                             return (
@@ -260,7 +263,7 @@ function MobileCollapsible({ name, items, onItemClick }: { name: string, items: 
                                                     key={sub} 
                                                     href={`${baseUrl}/${subSlug}`}
                                                     onClick={onItemClick}
-                                                    className="text-[10px] font-bold text-gray-400 uppercase tracking-wider"
+                                                    className="text-sm text-gray-400 font-medium hover:text-primary py-1"
                                                 >
                                                     {sub}
                                                 </Link>

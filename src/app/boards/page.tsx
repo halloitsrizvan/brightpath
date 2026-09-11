@@ -1,7 +1,7 @@
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
-import { Layout, CheckCircle, GraduationCap, ArrowRight } from 'lucide-react';
+import { GraduationCap, CheckCircle2 } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -14,44 +14,40 @@ export const metadata: Metadata = {
 
 export default function BoardsPage() {
     const boards = [
-        { name: 'CBSE', desc: 'Comprehensive coverage of NCERT curriculum with focus on conceptual clarity and competitive exam foundation.' },
-        { name: 'ICSE/ISC', desc: 'Detailed pedagogical approach focusing on language proficiency and analytical skills.' },
-        { name: 'Kerala State', desc: 'Specialized support for SCERT syllabus, ensuring students excel in board examinations with local expertise.' },
+        { name: 'CBSE', desc: 'Comprehensive NCERT curriculum coverage with focus on conceptual clarity and competitive exam foundation.' },
+        { name: 'ICSE / ISC', desc: 'Detailed approach focusing on language proficiency, analytical skills, and practical understanding.' },
+        { name: 'Kerala State', desc: 'Specialized support for SCERT syllabus, helping students excel in board exams with local expertise.' },
         { name: 'IGCSE', desc: 'International standards of learning with focus on global perspective and practical application.' }
     ];
 
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/10">
+        <div className="min-h-screen bg-white">
             <PublicNavbar />
 
-            <header className="relative pt-48 pb-40 flex items-center justify-center overflow-hidden bg-gray-900">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5" />
-                <div className="container mx-auto px-6 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] border border-white/10 mb-8 backdrop-blur-sm">
-                        Curriculum Expertise
-                    </div>
-                    <h1 className="text-5xl md:text-8xl font-black text-white italic uppercase tracking-tighter leading-tight mb-8">
-                        Academic <br />
-                        <span className="text-primary italic">Boards.</span>
+            <header className="pt-32 pb-16 bg-[#1a1a2e] text-white">
+                <div className="container mx-auto px-6 max-w-3xl text-center">
+                    <p className="text-xs font-semibold text-primary/80 uppercase tracking-wider mb-4">Boards We Cover</p>
+                    <h1 className="text-4xl md:text-6xl font-extrabold font-display leading-tight mb-6">
+                        Academic <span className="text-primary">Boards</span>
                     </h1>
-                    <p className="max-w-2xl mx-auto text-xl text-gray-400 font-bold italic leading-relaxed">
-                        We specialize in all major national and international academic boards, providing tailored mentorship for every syllabus.
+                    <p className="text-lg text-gray-400 leading-relaxed max-w-xl mx-auto">
+                        Specialized mentorship for every major national and international board curriculum.
                     </p>
                 </div>
             </header>
 
-            <section className="py-32 bg-white">
-                <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <section className="py-20 bg-white">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {boards.map((board) => (
-                            <div key={board.name} className="group p-12 bg-gray-50 rounded-[3rem] border border-gray-100 hover:bg-white hover:shadow-2xl transition-all duration-500">
-                                <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8 group-hover:bg-primary group-hover:text-white transition-all">
-                                    <GraduationCap className="w-8 h-8" />
+                            <div key={board.name} className="p-7 rounded-2xl bg-surface border border-gray-100/80 hover:bg-white hover:shadow-lg hover:shadow-gray-100/60 transition-all duration-300 group">
+                                <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                                    <GraduationCap className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-3xl font-black text-gray-900 uppercase italic tracking-tighter mb-4">{board.name}</h3>
-                                <p className="text-lg text-gray-500 font-bold italic leading-relaxed mb-8">{board.desc}</p>
-                                <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest">
-                                    <CheckCircle className="w-4 h-4" /> Specialized Mentors Available
+                                <h3 className="text-xl font-bold text-gray-900 font-display mb-2">{board.name}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed mb-4">{board.desc}</p>
+                                <div className="flex items-center gap-2 text-xs text-primary font-medium">
+                                    <CheckCircle2 className="w-3.5 h-3.5" /> Specialized tutors available
                                 </div>
                             </div>
                         ))}

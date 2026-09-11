@@ -58,14 +58,12 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
                 onClick={onClose}
             />
             
-            {/* Modal Content */}
-            <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-2xl overflow-hidden animate-zoom-in">
+            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
                 <button 
                     onClick={onClose}
                     className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors z-10"
@@ -75,99 +73,97 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
 
                 {isSubmitted ? (
                     <div className="p-10 text-center flex flex-col items-center gap-4">
-                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center animate-bounce">
-                            <CheckCircle2 className="w-8 h-8" />
+                        <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
+                            <CheckCircle2 className="w-7 h-7" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-gray-900 uppercase italic tracking-tighter mb-2">Success!</h2>
-                            <p className="text-gray-500 font-bold text-sm">Your demo request has been received. Our team will contact you shortly.</p>
+                            <h2 className="text-xl font-bold text-gray-900 font-display mb-1">Request Received!</h2>
+                            <p className="text-gray-500 text-sm">Our team will contact you shortly to schedule your demo.</p>
                         </div>
                     </div>
                 ) : (
                     <div className="p-6 md:p-8">
                         <div className="mb-6">
-                            <h2 className="text-2xl font-black text-gray-900 uppercase italic tracking-tighter leading-none mb-1">Book a <span className="text-primary">Free Demo</span></h2>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Experience the future of personalized learning</p>
+                            <h2 className="text-2xl font-bold text-gray-900 font-display leading-tight mb-1">
+                                Book a <span className="text-primary">Free Demo</span>
+                            </h2>
+                            <p className="text-sm text-gray-500">Experience personalized learning firsthand</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1.5 col-span-full">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">I'm a</label>
+                                    <label className="text-xs font-medium text-gray-500">I&apos;m a</label>
                                     <div className="relative">
                                         <select 
                                             value={formData.userType}
                                             onChange={(e) => setFormData({ ...formData, userType: e.target.value })}
-                                            className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                                            className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all appearance-none cursor-pointer"
                                         >
                                             <option value="student">Student</option>
                                             <option value="parent">Parent</option>
                                             <option value="teacher">Teacher</option>
                                         </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                     </div>
                                 </div>
 
-                                <div className="h-px bg-gray-100 col-span-full" />
-
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Full Name</label>
+                                    <label className="text-xs font-medium text-gray-500">Full Name</label>
                                     <input 
                                         type="text" required placeholder="Enter full name" 
                                         value={formData.fullName}
                                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                        className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all" 
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Email Address</label>
+                                    <label className="text-xs font-medium text-gray-500">Email Address</label>
                                     <input 
                                         type="email" required placeholder="example@mail.com" 
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                        className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all" 
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Country</label>
+                                    <label className="text-xs font-medium text-gray-500">Country</label>
                                     <input 
-                                        type="text" required placeholder="Select your country" 
+                                        type="text" required placeholder="Your country" 
                                         value={formData.country}
                                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                        className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                        className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all" 
                                     />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Class</label>
+                                    <label className="text-xs font-medium text-gray-500">Class</label>
                                     <div className="relative">
                                         <select 
                                             value={formData.studentClass}
                                             onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
-                                            className="w-full h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                                            className="w-full h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all appearance-none cursor-pointer"
                                         >
                                             <option value="">Select Class</option>
                                             {[...Array(12)].map((_, i) => (
                                                 <option key={i} value={i + 1}>Class {i + 1}</option>
                                             ))}
                                         </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                                     </div>
                                 </div>
 
-                                <div className="h-px bg-gray-100 col-span-full" />
-
                                 <div className="space-y-1.5 col-span-full">
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Phone Number</label>
+                                    <label className="text-xs font-medium text-gray-500">Phone Number</label>
                                     <div className="flex gap-2">
-                                        <div className="h-12 px-3 bg-gray-100 rounded-xl flex items-center text-xs font-black text-gray-600">+91</div>
+                                        <div className="h-11 px-3 bg-gray-100 border border-gray-200 rounded-lg flex items-center text-sm font-medium text-gray-600">+91</div>
                                         <input 
-                                            type="tel" required placeholder="Number" 
+                                            type="tel" required placeholder="Phone number" 
                                             value={formData.phoneNumber}
                                             onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                            className="flex-1 h-12 px-5 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-xl outline-none text-xs font-bold text-gray-900 transition-all" 
+                                            className="flex-1 h-11 px-4 bg-gray-50 border border-gray-200 focus:border-primary/40 focus:bg-white rounded-lg outline-none text-sm text-gray-900 transition-all" 
                                         />
                                     </div>
                                 </div>
@@ -176,9 +172,9 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                             <button 
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.01] active:scale-95 transition-all mt-2 disabled:opacity-50"
+                                className="w-full py-3.5 bg-primary text-white font-semibold text-sm rounded-lg shadow-md shadow-primary/15 hover:bg-primary/90 active:scale-[0.99] transition-all mt-2 disabled:opacity-50"
                             >
-                                {isLoading ? 'Sending Request...' : 'Book My Free Demo'}
+                                {isLoading ? 'Sending...' : 'Book My Free Demo'}
                             </button>
                         </form>
                     </div>

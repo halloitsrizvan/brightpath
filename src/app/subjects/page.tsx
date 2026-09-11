@@ -1,8 +1,10 @@
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
+import FloatingContact from '@/components/public/FloatingContact';
 import SubjectsGrid from '@/components/public/SubjectsGrid';
 import { BookOpen, GraduationCap, Globe, Zap } from 'lucide-react';
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
     title: "Subjects We Teach",
@@ -17,50 +19,54 @@ export default function SubjectsPage() {
         <div className="min-h-screen bg-white">
             <PublicNavbar />
             
-            <header className="pt-40 pb-32 bg-primary/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/5 -skew-x-12 translate-x-1/4 -z-10" />
-                <div className="container mx-auto px-6 max-w-4xl">
-                    <p className="text-primary font-black text-[10px] uppercase tracking-[0.4em] mb-4">Academic Depth</p>
-                    <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter leading-none mb-8">
-                        The Curriculum <br /><span className="text-primary">Spectrum.</span>
+            <header className="pt-32 pb-16 bg-surface">
+                <div className="container mx-auto px-6 max-w-3xl text-center">
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Subjects</p>
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 font-display leading-tight mb-4">
+                        Subjects We Teach
                     </h1>
-                    <p className="text-xl text-gray-500 font-bold italic leading-relaxed max-w-2xl">
-                        Comprehensive subject coverage ranging from foundational literacy in Grade 1 to advanced board specializations in Grade 12.
+                    <p className="text-lg text-gray-500 leading-relaxed">
+                        Comprehensive subject coverage from Grade 1 foundations to Grade 12 board specializations.
                     </p>
                 </div>
             </header>
 
-            <section className="py-20 bg-white">
-                <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Feature Chips */}
+            <section className="py-10 bg-white border-b border-gray-100">
+                <div className="container mx-auto px-6 flex flex-wrap justify-center gap-3 max-w-4xl">
                     <FeatureChip icon={<BookOpen className="w-4 h-4" />} text="Kerala State Syllabus" />
-                    <FeatureChip icon={<GraduationCap className="w-4 h-4" />} text="CBSE / ICSE Mastery" />
-                    <FeatureChip icon={<Globe className="w-4 h-4" />} text="English & Malayalam Tracks" />
-                    <FeatureChip icon={<Zap className="w-4 h-4" />} text="Entrance Integration" />
+                    <FeatureChip icon={<GraduationCap className="w-4 h-4" />} text="CBSE / ICSE" />
+                    <FeatureChip icon={<Globe className="w-4 h-4" />} text="English & Malayalam" />
+                    <FeatureChip icon={<Zap className="w-4 h-4" />} text="Entrance Prep" />
                 </div>
             </section>
 
             <SubjectsGrid />
 
-            <section className="py-32 bg-[#fdc70b] text-primary relative overflow-hidden">
-                <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 items-center gap-20">
-                    <div className="space-y-8">
-                        <h2 className="text-4xl font-black italic uppercase tracking-tighter leading-none">Diagnostic <br /><span className="text-white px-3 py-1 bg-primary inline-block mt-3 rounded-xl italic">Mapping</span></h2>
-                        <p className="text-primary/70 font-bold italic text-lg leading-relaxed">Not sure which subject focus is right for your child? Our institutional diagnostic mapping helps identify core cognitive gaps before enrollment.</p>
-                        <button className="px-8 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:scale-105 transition-all">Start Mapping Free</button>
-                    </div>
+            {/* CTA */}
+            <section className="py-20 bg-primary text-white text-center">
+                <div className="container mx-auto px-6 max-w-2xl">
+                    <h2 className="text-3xl md:text-4xl font-extrabold font-display leading-tight mb-4">
+                        Not sure which subjects to focus on?
+                    </h2>
+                    <p className="text-white/60 mb-8">Book a free assessment and we&apos;ll help identify your child&apos;s strengths and areas for improvement.</p>
+                    <Link href="/contact" className="inline-block px-8 py-4 bg-white text-primary font-semibold text-sm rounded-xl shadow-lg hover:bg-gray-50 active:scale-[0.98] transition-all">
+                        Book Free Assessment
+                    </Link>
                 </div>
             </section>
 
+            <FloatingContact />
             <PublicFooter />
         </div>
     );
 }
 
-function FeatureChip({ icon, text }: { icon: any, text: string }) {
+function FeatureChip({ icon, text }: { icon: React.ReactNode, text: string }) {
     return (
-        <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 border border-gray-100 rounded-2xl hover:bg-white hover:shadow-lg hover:shadow-gray-200/40 transition-all">
-            <div className="text-primary">{icon}</div>
-            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">{text}</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-surface border border-gray-100 rounded-lg">
+            <span className="text-primary">{icon}</span>
+            <span className="text-sm font-medium text-gray-600">{text}</span>
         </div>
     );
 }

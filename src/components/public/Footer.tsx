@@ -7,90 +7,77 @@ import {
   Twitter, 
   MapPin, 
   Phone, 
-  Mail, 
-  GraduationCap, 
-  ArrowRight,
-  ShieldCheck,
-  Award
+  ArrowUpRight,
+  Star
 } from 'lucide-react';
 
 export default function PublicFooter() {
     return (
-        <footer className="relative bg-[#0F1115] text-white pt-24 pb-12 overflow-hidden selection:bg-primary/30">
-            {/* Background Decorative Elements */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -mr-48 -mt-48" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-[120px] -ml-48 -mb-48" />
-
+        <footer className="relative bg-[#1a1a2e] text-white pt-20 pb-10 overflow-hidden">
             <div className="container mx-auto px-6 relative z-10">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 mb-20">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 mb-16">
                     {/* Brand Section */}
-                    <div className="lg:col-span-4 space-y-8">
-                        <Link href="/" className="inline-flex items-center gap-3">
-                            <div className="relative w-12 h-12 bg-white rounded-xl p-2.5 shadow-2xl flex items-center justify-center">
-                                <Image src="/logo.png" alt="BrightPath" width={50} height={50} className="w-full h-full object-contain" />
+                    <div className="lg:col-span-4 space-y-6">
+                        <Link href="/" className="inline-flex items-center gap-2.5">
+                            <div className="relative w-10 h-10 bg-white rounded-lg p-2 flex items-center justify-center">
+                                <Image src="/logo.png" alt="BrightPath" width={36} height={36} className="w-full h-full object-contain" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-2xl font-black tracking-tighter leading-none italic uppercase">BRIGHTPATH</span>
-                                <span className="text-[10px] font-black tracking-[0.4em] text-primary uppercase mt-1">EDUVORA</span>
+                                <span className="text-lg font-bold tracking-tight leading-none font-display">BrightPath</span>
+                                <span className="text-[9px] font-semibold tracking-[0.2em] text-primary/80 uppercase mt-0.5">Eduvora</span>
                             </div>
                         </Link>
                         
-                        <p className="text-gray-400 font-medium text-sm leading-relaxed max-w-sm">
-                            Kerala's leading one-on-one online tuition academy. Empowering students with personalized academic guidance from local mentors who understand global standards.
+                        <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+                            Kerala&apos;s leading one-on-one online tuition academy. Personalized academic guidance from expert tutors who understand your child&apos;s needs.
                         </p>
 
-                        <div className="flex gap-4">
-                            <SocialIcon icon={<Instagram className="w-5 h-5" />} href="#" />
-                            <SocialIcon icon={<Linkedin className="w-5 h-5" />} href="#" />
-                            <SocialIcon icon={<Twitter className="w-5 h-5" />} href="#" />
+                        <div className="flex gap-3">
+                            <SocialIcon icon={<Instagram className="w-4 h-4" />} href="#" />
+                            <SocialIcon icon={<Linkedin className="w-4 h-4" />} href="#" />
+                            <SocialIcon icon={<Twitter className="w-4 h-4" />} href="#" />
                         </div>
                     </div>
 
                     {/* Navigation Columns */}
-                    <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-12">
+                    <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-10">
                         <div>
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8 border-l-2 border-primary pl-4">Academic Programs</h4>
-                            <ul className="space-y-4">
+                            <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-6">Programs</h4>
+                            <ul className="space-y-3">
                                 <FooterLink href="/tuition/tuition-by-classes/class-1-5">Primary (1-5)</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-classes/class-6-10">Secondary (6-10)</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-classes/class-11-12">Higher Secondary</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-subject/subject-specific">Subject Specialists</FooterLink>
-                                <FooterLink href="/tuition/tuition-by-subject/competitive-exams">Competitive Exams</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-classes/class-6">Secondary (6-10)</FooterLink>
+                                <FooterLink href="/tuition/tuition-by-classes/class-11">Higher Secondary</FooterLink>
+                                <FooterLink href="/subjects">All Subjects</FooterLink>
+                                <FooterLink href="/boards">Academic Boards</FooterLink>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8 border-l-2 border-primary pl-4">Academy</h4>
-                            <ul className="space-y-4">
-                                <FooterLink href="/about">Our Philosophy</FooterLink>
-                                <FooterLink href="/tutors">Expert Mentors</FooterLink>
-                                <FooterLink href="/testimonials">Success Stories</FooterLink>
-                                <FooterLink href="/blog">Academy Blog</FooterLink>
-                                <FooterLink href="/contact">Support Center</FooterLink>
+                            <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-6">Academy</h4>
+                            <ul className="space-y-3">
+                                <FooterLink href="/about">About Us</FooterLink>
+                                <FooterLink href="/tutors">Our Tutors</FooterLink>
+                                <FooterLink href="/testimonials">Testimonials</FooterLink>
+                                <FooterLink href="/blog">Blog</FooterLink>
+                                <FooterLink href="/contact">Contact</FooterLink>
                             </ul>
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em] mb-8 border-l-2 border-primary pl-4">Headquarters</h4>
-                            <ul className="space-y-5">
-                                <li className="flex gap-4 group">
-                                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                                        <MapPin className="w-4 h-4 text-primary" />
-                                    </div>
-                                    <div className="text-xs font-medium text-gray-400 uppercase tracking-widest leading-relaxed">
+                            <h4 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-6">Reach Us</h4>
+                            <ul className="space-y-4">
+                                <li className="flex gap-3">
+                                    <MapPin className="w-4 h-4 text-primary/70 shrink-0 mt-0.5" />
+                                    <span className="text-sm text-gray-400 leading-relaxed">
                                         Calicut, Kerala<br />
                                         India - 673001
-                                    </div>
+                                    </span>
                                 </li>
-                                <li className="flex gap-4 group">
-                                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                                        <Phone className="w-4 h-4 text-primary" />
-                                    </div>
-                                    <div className="text-xs font-medium text-gray-400 uppercase tracking-widest leading-relaxed">
-                                        +91 85908 78148<br />
+                                <li className="flex gap-3">
+                                    <Phone className="w-4 h-4 text-primary/70 shrink-0 mt-0.5" />
+                                    <span className="text-sm text-gray-400 leading-relaxed">
                                         +91 85908 78148
-                                    </div>
+                                    </span>
                                 </li>
                             </ul>
                         </div>
@@ -98,20 +85,20 @@ export default function PublicFooter() {
                 </div>
 
                 {/* Footer Bottom Bar */}
-                <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-10">
-                    <div className="flex flex-col md:flex-row items-center gap-8">
-                        <p className="text-[10px] font-black italic text-gray-500 uppercase tracking-[0.3em]">
-                            © 2026 BRIGHTPATH KERALA | ACADEMIC CORE
+                <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex flex-col md:flex-row items-center gap-6">
+                        <p className="text-sm text-gray-500">
+                            © 2026 BrightPath Eduvora. All rights reserved.
                         </p>
-                        <div className="flex gap-6">
-                            <Link href="/privacy" className="text-[9px] font-black text-gray-600 hover:text-white transition-colors uppercase tracking-[0.2em]">Privacy Polices</Link>
-                            <Link href="/terms" className="text-[9px] font-black text-gray-600 hover:text-white transition-colors uppercase tracking-[0.2em]">Usage Terms</Link>
+                        <div className="flex gap-5">
+                            <Link href="/privacy" className="text-xs text-gray-500 hover:text-white transition-colors">Privacy Policy</Link>
+                            <Link href="/terms" className="text-xs text-gray-500 hover:text-white transition-colors">Terms of Service</Link>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 px-6 py-3 bg-white/5 rounded-full border border-white/5">
-                        <Award className="w-4 h-4 text-secondary" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Kerala's #1 Rated Online Academy ★ 4.9/5</span>
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <Star className="w-3.5 h-3.5 fill-secondary text-secondary" />
+                        <span>4.9/5 rated by parents across Kerala</span>
                     </div>
                 </div>
             </div>
@@ -119,9 +106,9 @@ export default function PublicFooter() {
     );
 }
 
-function SocialIcon({ icon, href }: { icon: any, href: string }) {
+function SocialIcon({ icon, href }: { icon: React.ReactNode, href: string }) {
     return (
-        <a href={href} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all transform hover:-translate-y-1">
+        <a href={href} className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all">
             {icon}
         </a>
     );
@@ -130,9 +117,9 @@ function SocialIcon({ icon, href }: { icon: any, href: string }) {
 function FooterLink({ href, children }: { href: string, children: React.ReactNode }) {
     return (
         <li>
-            <Link href={href} className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-xs font-bold italic uppercase tracking-widest">
-                <ArrowRight className="w-3 h-3 text-primary opacity-0 -ml-5 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+            <Link href={href} className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1 group">
                 {children}
+                <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
         </li>
     );

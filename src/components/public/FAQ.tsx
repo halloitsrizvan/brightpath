@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
-import { ChevronDown, HelpCircle } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import ScrollReveal from './ScrollReveal';
 
 const faqData = [
     {
@@ -20,7 +21,7 @@ const faqData = [
     },
     {
         question: "How do parents track their child's progress?",
-        answer: "We provide detailed monthly progress analytical reports and hold regular parent-mentor meetings to discuss improvements and focus areas.",
+        answer: "We provide detailed monthly progress reports and hold regular parent-mentor meetings to discuss improvements and focus areas.",
         id: 4
     },
     {
@@ -34,63 +35,51 @@ export default function PublicFAQ() {
     const [openId, setOpenId] = useState<number | null>(1);
 
     return (
-        <section className="py-24 bg-gray-50/30">
-            <div className="container mx-auto px-6 max-w-4xl">
-                <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/10 mb-4">
-                        Got Questions?
+        <section className="py-20 bg-surface">
+            <div className="container mx-auto px-6 max-w-3xl">
+                <ScrollReveal>
+                    <div className="text-center mb-12">
+                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Got Questions?</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">
+                            Frequently Asked Questions
+                        </h2>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-none">
-                        Frequently Asked <span className="text-primary border-b-4 border-secondary/30">Questions.</span>
-                    </h2>
-                </div>
+                </ScrollReveal>
 
-                <div className="space-y-4">
-                    {faqData.map((faq) => (
-                        <div 
-                            key={faq.id} 
-                            onMouseEnter={() => setOpenId(faq.id)}
-                            onMouseLeave={() => setOpenId(null)}
-                            onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
-                            className={`rounded-2xl border transition-all duration-300 ${
-                                openId === faq.id 
-                                ? 'bg-white border-primary/20 shadow-xl shadow-gray-200/50' 
-                                : 'bg-white/50 border-gray-100'
-                            }`}
-                        >
-                            <div className="w-full px-8 py-6 flex items-center justify-between text-left cursor-pointer md:cursor-default">
-                                <div className="flex items-center gap-4">
-                                    <HelpCircle className={`w-5 h-5 transition-colors ${openId === faq.id ? 'text-primary' : 'text-gray-300'}`} />
-                                    <span className={`text-sm md:text-base font-black uppercase italic tracking-tight transition-colors ${openId === faq.id ? 'text-gray-900' : 'text-gray-600'}`}>
+                <div className="space-y-3">
+                    {faqData.map((faq, i) => (
+                        <ScrollReveal key={faq.id} delay={i * 0.06}>
+                            <div 
+                                className={`rounded-xl border transition-all duration-200 cursor-pointer ${
+                                    openId === faq.id 
+                                    ? 'bg-white border-primary/15 shadow-md shadow-gray-100/60' 
+                                    : 'bg-white/60 border-gray-100 hover:bg-white'
+                                }`}
+                                onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
+                            >
+                                <div className="w-full px-6 py-5 flex items-center justify-between text-left">
+                                    <span className={`text-sm md:text-[15px] font-semibold transition-colors ${
+                                        openId === faq.id ? 'text-gray-900' : 'text-gray-700'
+                                    }`}>
                                         {faq.question}
                                     </span>
+                                    <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-transform duration-200 ${
+                                        openId === faq.id ? 'rotate-180 text-primary' : 'text-gray-400'
+                                    }`} />
                                 </div>
-                                <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${openId === faq.id ? 'rotate-180 text-primary' : 'text-gray-400'}`} />
-                            </div>
-                            
-                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openId === faq.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                <div className="px-8 pb-8 pl-16">
-                                    <p className="text-sm md:text-base text-gray-500 font-medium leading-relaxed italic">
-                                        {faq.answer}
-                                    </p>
+                                
+                                <div className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                                    openId === faq.id ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                                }`}>
+                                    <div className="px-6 pb-5">
+                                        <p className="text-sm text-gray-500 leading-relaxed">
+                                            {faq.answer}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
                     ))}
-                </div>
-
-                <div className="mt-16 p-8 rounded-3xl bg-primary text-white text-center relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700" />
-                    <div className="relative z-10">
-                        <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Still have questions?</h3>
-                        <p className="text-sm font-bold opacity-80 mb-6">Our academic counsellors are here to help you choose the right path.</p>
-                        <button 
-                            onClick={() => window.open('https://wa.me/918590878148?text=Hi%20Brightpath%2C%20I%20need%20support%20regarding%20your%20academic%20programs.', '_blank')}
-                            className="px-8 py-3 bg-secondary text-gray-900 font-black text-[10px] uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg"
-                        >
-                            Contact Support
-                        </button>
-                    </div>
                 </div>
             </div>
         </section>

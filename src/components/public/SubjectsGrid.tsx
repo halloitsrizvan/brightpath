@@ -1,51 +1,42 @@
 'use client';
-import { Atom, Calculator, Microscope, PenTool, Globe, Music, FlaskConical, Languages } from 'lucide-react';
-import Image from 'next/image';
+import { Calculator, Atom, FlaskConical, Microscope, Languages, Globe } from 'lucide-react';
+import ScrollReveal from './ScrollReveal';
 
 const subjects = [
-    { name: "Mathematics", icon: <Calculator />, color: "bg-primary", focus: "Algebra, Calculus, Geometry", id: 1, img: "/sub-2.png" },
-    { name: "Physics", icon: <Atom />, color: "bg-violet-600", focus: "Mechanics, Optics, Nuclear", id: 2, img: "/sub-3.png" },
-    { name: "Chemistry", icon: <FlaskConical />, color: "bg-teal-600", focus: "Organic, Inorganic, Physical", id: 3, img: "/sub-4.png" },
-    { name: "Biology", icon: <Microscope />, color: "bg-green-600", focus: "Botany, Zoology, Genetics", id: 4, img: "/sub-5.png" },
-    { name: "English", icon: <Languages />, color: "bg-secondary", focus: "Literature, Grammar, Communication", id: 5, img: "/sub-6.png" },
-    { name: "Social Studies", icon: <Globe />, color: "bg-amber-600", focus: "History, Civics, Geography", id: 6, img: "/sub-7.png" },
+    { name: "Mathematics", icon: <Calculator className="w-5 h-5" />, focus: "Algebra, Calculus, Geometry", color: "bg-primary/10 text-primary", id: 1 },
+    { name: "Physics", icon: <Atom className="w-5 h-5" />, focus: "Mechanics, Optics, Nuclear", color: "bg-violet-50 text-violet-600", id: 2 },
+    { name: "Chemistry", icon: <FlaskConical className="w-5 h-5" />, focus: "Organic, Inorganic, Physical", color: "bg-teal-50 text-teal-600", id: 3 },
+    { name: "Biology", icon: <Microscope className="w-5 h-5" />, focus: "Botany, Zoology, Genetics", color: "bg-green-50 text-green-600", id: 4 },
+    { name: "English", icon: <Languages className="w-5 h-5" />, focus: "Literature, Grammar, Communication", color: "bg-amber-50 text-amber-600", id: 5 },
+    { name: "Social Studies", icon: <Globe className="w-5 h-5" />, focus: "History, Civics, Geography", color: "bg-rose-50 text-rose-600", id: 6 },
 ];
 
 export default function SubjectsGrid() {
     return (
-        <section className="py-24 bg-gray-50/30">
-            <div className="container mx-auto px-6 max-w-7xl">
-                <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/10 text-secondary rounded-full text-[10px] font-bold uppercase tracking-widest border border-secondary/20 mb-4">
-                        Academic Modules
+        <section className="py-20 bg-surface">
+            <div className="container mx-auto px-6 max-w-6xl">
+                <ScrollReveal>
+                    <div className="text-center mb-12">
+                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Subjects</p>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">
+                            Subjects We Teach
+                        </h2>
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black text-gray-900 italic uppercase tracking-tighter leading-none">
-                        The Subjects <span className="text-secondary border-b-4 border-primary/20">Spectrum.</span>
-                    </h2>
-                </div>
+                </ScrollReveal>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {subjects.map((s) => (
-                        <div key={s.id} className="relative p-8 rounded-2xl bg-white border border-gray-100 hover:shadow-2xl hover:shadow-gray-200/50 hover:-translate-y-1 transition-all duration-500 group overflow-hidden flex flex-col justify-between min-h-[200px]">
-                            {/* Graphic Background */}
-                            <div className="absolute top-0 right-0 w-2/5 h-full opacity-[0.15] group-hover:opacity-30 transition-all duration-700 pointer-events-none">
-                                <Image src={s.img} alt={s.name} fill className="object-cover scale-110 group-hover:scale-125 transition-transform duration-1000" />
-                                <div className="absolute inset-0 bg-gradient-to-l from-white via-white/40 to-transparent" />
-                            </div>
-
-                            <div className="relative z-10">
-                                <div className={`w-12 h-12 ${s.color} text-white rounded-xl flex items-center justify-center mb-5 shadow-lg shadow-gray-200 rotate-3 group-hover:rotate-6 transition-transform`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {subjects.map((s, i) => (
+                        <ScrollReveal key={s.id} delay={i * 0.08}>
+                            <div className="p-5 rounded-xl bg-white border border-gray-100/80 hover:shadow-lg hover:shadow-gray-100/60 transition-all duration-300 flex items-start gap-4 group">
+                                <div className={`w-10 h-10 ${s.color} rounded-lg flex items-center justify-center shrink-0`}>
                                     {s.icon}
                                 </div>
-                                <h3 className="text-xl font-black text-gray-800 italic uppercase tracking-tighter mb-2 leading-none">{s.name}</h3>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] leading-relaxed max-w-[75%]">{s.focus}</p>
+                                <div>
+                                    <h3 className="text-[15px] font-bold text-gray-900 mb-0.5">{s.name}</h3>
+                                    <p className="text-xs text-gray-400">{s.focus}</p>
+                                </div>
                             </div>
-
-                            <div className="mt-6 flex items-center gap-2 relative z-10 pt-4 border-t border-gray-50">
-                                <span className="w-8 h-[2px] bg-primary/20 rounded-full" />
-                                <span className="text-[9px] font-black text-primary uppercase tracking-widest">1:1 Specialized Track</span>
-                            </div>
-                        </div>
+                        </ScrollReveal>
                     ))}
                 </div>
             </div>
