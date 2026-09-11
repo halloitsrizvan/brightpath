@@ -251,7 +251,7 @@ export default function HomeClient() {
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={870} duration={2} />
+                                <AnimatedCounter end={40} duration={2} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Expert Tutors</p>
                         </div>
@@ -265,14 +265,14 @@ export default function HomeClient() {
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={298} duration={2} />
+                                <AnimatedCounter end={50} duration={2} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Subjects & Courses</p>
                         </div>
 
                         <div>
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={72920} duration={2.4} />
+                                <AnimatedCounter end={60} duration={2.4} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Active Students</p>
                         </div>
