@@ -33,7 +33,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         const fees = await Fee.find({ _id: { $in: ids } }).populate({
             path: 'studentId',
-            model: 'Student'
+            model: 'Student',
+            populate: [
+                { path: 'subjectAssignments.subjectId', model: 'Subject' },
+                { path: 'subjectAssignments.teacherId', model: 'Teacher' }
+            ]
         });
 
         if (fees.length === 0) return NextResponse.json({ message: "Fee records not found" }, { status: 404 });
@@ -108,14 +112,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                         const monthClasses = await Attendance.find({
                             studentId: student._id,
                             date: { $gte: startDate, $lte: queryEndDate },
-                            status: 'Present'
+                            status: { $regex: /^present$/i }
                         }).populate({
                             path: 'subjectId',
                             model: 'Subject'
                         }).populate({
                             path: 'teacherId',
                             model: 'Teacher'
-                        });
+                        }).lean();
                         allActivityRecords.push(...monthClasses);
                     }
                 }
@@ -125,7 +129,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         // Deduplicate records and sort by date
         const activityMap = new Map();
         for (const cls of allActivityRecords) {
-            activityMap.set(cls._id.toString(), cls);
+            const key = cls._id ? cls._id.toString() : `${cls.date}_${cls.durationMinutes}`;
+            activityMap.set(key, cls);
         }
         const uniqueActivityRecords = Array.from(activityMap.values());
         uniqueActivityRecords.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -180,8 +185,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                  .replace(/[\u2013\u2014]/g, '-')
                  .replace(/\u2026/g, '...')
                  .replace(/\u00A0/g, ' ');
-            // Strip any characters outside Latin-1 WinAnsi range to guarantee no runtime throw
             return s.replace(/[^\x00-\xFF]/g, '');
+        };
+
+        const truncate = (text: string, maxLen: number) => {
+            if (!text) return '';
+            const clean = text.trim();
+            return clean.length > maxLen ? clean.slice(0, maxLen - 1) + '...' : clean;
         };
 
         // 2. Content Header
@@ -205,7 +215,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         page.drawText(safeStr(`Invoice No: ${invoiceNum}`), { x: 380, y: rightY, size: 10, font });
         rightY -= 15;
         const paymentDateObj = fees[0]?.paymentDate ? new Date(fees[0].paymentDate) : new Date();
-        const formattedPaymentDate = paymentDateObj.toLocaleDateString();
+        const formattedPaymentDate = paymentDateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
         page.drawText(safeStr(`Date: ${formattedPaymentDate}`), { x: 380, y: rightY, size: 10, font });
         rightY -= 15;
         const monthsStr = billingMonths.join(', ');
@@ -213,7 +223,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         page.drawText(safeStr(`Billing: ${displayMonths || 'Current Term'}`), { x: 380, y: rightY, size: 10, font });
         rightY -= 15;
         if (overallCutoffDate) {
-            page.drawText(safeStr(`Cutoff: ${overallCutoffDate.toLocaleDateString()}`), { x: 380, y: rightY, size: 9, font: boldFont, color: primaryColor });
+            const formattedCutoff = overallCutoffDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+            page.drawText(safeStr(`Cutoff: ${formattedCutoff}`), { x: 380, y: rightY, size: 9, font: boldFont, color: primaryColor });
             rightY -= 15;
         }
         page.drawText('Status: PAID', { x: 380, y: rightY, size: 11, font: boldFont, color: rgb(0.1, 0.5, 0.1) });
@@ -222,24 +233,62 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         let totalActivityAmount = 0;
         let totalActivityHours = 0;
         const enrichedActivityRecords = uniqueActivityRecords.map((cls: any) => {
-            const hours = (cls.durationMinutes || 0) / 60;
+            const rawDoc = cls.toObject ? cls.toObject() : cls;
+            const hours = (rawDoc.durationMinutes || 0) / 60;
+            
+            // Extract subject name
+            const sObj = rawDoc.subjectId;
+            const sId = sObj?._id ? sObj._id.toString() : (sObj ? sObj.toString() : '');
+            let subjectName = sObj?.subjectName || sObj?.name || '';
+
+            // Extract teacher name
+            const tObj = rawDoc.teacherId;
+            const tId = tObj?._id ? tObj._id.toString() : (tObj ? tObj.toString() : '');
+            let teacherName = tObj?.name || tObj?.fullName || '';
+
+            // Check student.subjectAssignments fallbacks if subjectName or teacherName is missing
+            if (Array.isArray(student.subjectAssignments)) {
+                const matchedAssignment = student.subjectAssignments.find((a: any) => {
+                    const matchS = (a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId;
+                    const matchT = (a.teacherId?._id?.toString() || a.teacherId?.toString()) === tId;
+                    return matchS && matchT;
+                }) || student.subjectAssignments.find((a: any) => {
+                    return (a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId;
+                });
+
+                if (!subjectName && matchedAssignment?.subjectId) {
+                    subjectName = matchedAssignment.subjectId.subjectName || matchedAssignment.subjectId.name || '';
+                }
+                if (!teacherName && matchedAssignment?.teacherId) {
+                    teacherName = matchedAssignment.teacherId.name || matchedAssignment.teacherId.fullName || '';
+                }
+            }
+
+            if (!subjectName) subjectName = 'Tuition Session';
+            if (!teacherName) teacherName = 'Faculty Tutor';
+
             let rate = 0;
-            if (cls.billRateAtTime !== undefined && cls.billRateAtTime !== null) {
-                rate = cls.billRateAtTime;
-            } else if (student.subjectAssignments) {
-                const tId = (cls.teacherId as any)?._id?.toString() || (cls.teacherId as any)?.toString();
-                const sId = (cls.subjectId as any)?._id?.toString() || (cls.subjectId as any)?.toString();
+            if (rawDoc.billRateAtTime !== undefined && rawDoc.billRateAtTime !== null && rawDoc.billRateAtTime > 0) {
+                rate = rawDoc.billRateAtTime;
+            } else if (Array.isArray(student.subjectAssignments)) {
                 const assignment = student.subjectAssignments.find((a: any) => 
-                    (a.subjectId?.toString() === sId) && 
-                    (a.teacherId?.toString() === tId)
+                    ((a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId) && 
+                    ((a.teacherId?._id?.toString() || a.teacherId?.toString()) === tId)
+                ) || student.subjectAssignments.find((a: any) => 
+                    (a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId
                 );
                 if (assignment && assignment.billPerHour > 0) rate = assignment.billPerHour;
             }
+
             const lineAmount = Math.round(hours * rate);
             totalActivityAmount += lineAmount;
             totalActivityHours += hours;
+
             return {
-                ...cls,
+                _id: rawDoc._id?.toString(),
+                date: rawDoc.date,
+                subjectName,
+                teacherName,
                 hours,
                 rate,
                 lineAmount
@@ -252,8 +301,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             : totalAmount;
 
         y -= 40;
+        const ledgerDateStr = overallCutoffDate 
+            ? overallCutoffDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+            : '';
         const ledgerTitle = overallCutoffDate
-            ? `LEARNING ACTIVITY LEDGER (UP TO ${overallCutoffDate.toLocaleDateString().toUpperCase()})`
+            ? `LEARNING ACTIVITY LEDGER (UP TO ${ledgerDateStr})`
             : 'LEARNING ACTIVITY LEDGER';
         page.drawText(ledgerTitle, { x: 50, y, size: 11, font: boldFont, color: primaryColor });
         y -= 25;
@@ -291,9 +343,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                     y -= 30;
                 }
                 if (index % 2 === 0) page.drawRectangle({ x: 48, y: y - 5, width: 504, height: 20, color: lightGray });
-                page.drawText(safeStr(new Date(cls.date).toLocaleDateString()), { x: 56, y: y, size: 8, font, color: rgb(0.3, 0.3, 0.3) });
-                page.drawText(safeStr((cls.subjectId as any)?.subjectName || 'Module'), { x: 130, y: y, size: 8, font });
-                page.drawText(safeStr((cls.teacherId as any)?.name || 'N/A'), { x: 245, y: y, size: 8, font });
+
+                const formattedDate = cls.date 
+                    ? new Date(cls.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                    : '-';
+
+                page.drawText(safeStr(formattedDate), { x: 56, y: y, size: 8, font, color: rgb(0.3, 0.3, 0.3) });
+                page.drawText(safeStr(truncate(cls.subjectName, 20)), { x: 130, y: y, size: 8, font });
+                page.drawText(safeStr(truncate(cls.teacherName, 20)), { x: 245, y: y, size: 8, font });
                 page.drawText(safeStr(`${cls.hours.toFixed(2)} hr`), { x: 360, y: y, size: 8, font });
                 page.drawText(safeStr(cls.rate > 0 ? `INR ${cls.rate}` : '-'), { x: 425, y: y, size: 8, font });
                 page.drawText(safeStr(`INR ${cls.lineAmount.toLocaleString()}`), { x: 490, y: y, size: 8, font: boldFont });
