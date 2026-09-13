@@ -67,8 +67,9 @@ export default function StudentProfile() {
         
         try {
             setIsSaving(true);
+            const settlementId = `SETTLE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
             await Promise.all(selectedFees.map(id => 
-                api.put(`/finance/fees/${id}`, { paymentStatus: 'paid', paymentDate: new Date() })
+                api.put(`/finance/fees/${id}`, { paymentStatus: 'paid', paymentDate: new Date(), settlementId })
             ));
 
             toast.success(`Successfully settled ${selectedFees.length} months`);

@@ -38,17 +38,22 @@ export async function POST(req: NextRequest) {
         let totalClasses = 0;
         let totalHours = 0;
         let hasAttendanceRecords = false;
+        const feeBreakdown: { [key: string]: number } = {};
 
         for (const fee of fees) {
             const student = fee.studentId as any;
             if (!student) {
-                totalCalculated += (fee.amount || 0);
+                const amt = fee.amount || 0;
+                totalCalculated += amt;
+                feeBreakdown[fee._id.toString()] = amt;
                 continue;
             }
 
             const monthParts = (fee.month || '').trim().split(/\s+/);
             if (monthParts.length < 2) {
-                totalCalculated += (fee.amount || 0);
+                const amt = fee.amount || 0;
+                totalCalculated += amt;
+                feeBreakdown[fee._id.toString()] = amt;
                 continue;
             }
 
@@ -57,8 +62,10 @@ export async function POST(req: NextRequest) {
             const mName = rawMName.charAt(0).toUpperCase() + rawMName.slice(1).toLowerCase();
             const mIndex = monthNames.indexOf(mName);
 
-            if (mIndex === -1) {
-                totalCalculated += (fee.amount || 0);
+            if (mIndex === -1 || isNaN(year)) {
+                const amt = fee.amount || 0;
+                totalCalculated += amt;
+                feeBreakdown[fee._id.toString()] = amt;
                 continue;
             }
 
@@ -106,14 +113,17 @@ export async function POST(req: NextRequest) {
 
             if (attendances.length > 0 && feeAttendanceBill > 0) {
                 hasAttendanceRecords = true;
-                totalCalculated += Math.round(feeAttendanceBill);
+                const roundedBill = Math.round(feeAttendanceBill);
+                totalCalculated += roundedBill;
                 totalClasses += attendances.length;
                 totalHours += feeAttendanceHours;
+                feeBreakdown[fee._id.toString()] = roundedBill;
             } else {
                 // Prorate based on days if no attendance logs or flat fee
                 const cutoffDay = Math.min(queryEndDate.getDate(), totalDaysInMonth);
                 const prorated = Math.round((fee.amount || 0) * (cutoffDay / totalDaysInMonth));
                 totalCalculated += prorated;
+                feeBreakdown[fee._id.toString()] = prorated;
             }
         }
 
@@ -121,7 +131,8 @@ export async function POST(req: NextRequest) {
             amount: totalCalculated,
             isAttendanceBased: hasAttendanceRecords,
             classesCount: totalClasses,
-            hours: parseFloat(totalHours.toFixed(1))
+            hours: parseFloat(totalHours.toFixed(1)),
+            breakdown: feeBreakdown
         });
     } catch (err: any) {
         return NextResponse.json({ message: err.message }, { status: 500 });

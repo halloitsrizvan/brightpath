@@ -48,9 +48,12 @@ export default function FinanceHub() {
 
     const [billingCutoffDate, setBillingCutoffDate] = useState<string>(getTodayDateString());
     const [settlementAmount, setSettlementAmount] = useState<number>(0);
+    const [feeBreakdown, setFeeBreakdown] = useState<{ [id: string]: number }>({});
     const [isCalculatingAmount, setIsCalculatingAmount] = useState<boolean>(false);
     const [calculationNote, setCalculationNote] = useState<string>('');
     const [activeFeeIds, setActiveFeeIds] = useState<string[]>([]);
+    const [paidSearchQuery, setPaidSearchQuery] = useState<string>('');
+    const [paidFilterType, setPaidFilterType] = useState<'all' | 'multi' | 'single'>('all');
 
     const calculateCutoffAmount = async (ids: string[], cutoff: string) => {
         if (!ids || ids.length === 0 || !cutoff) return;
@@ -62,6 +65,9 @@ export default function FinanceHub() {
             });
             if (data && typeof data.amount === 'number') {
                 setSettlementAmount(data.amount);
+                if (data.breakdown) {
+                    setFeeBreakdown(data.breakdown);
+                }
                 if (data.isAttendanceBased) {
                     setCalculationNote(`${data.classesCount} class(es) (${data.hours} hrs) logged up to ${new Date(cutoff).toLocaleDateString()}`);
                 } else {
@@ -167,15 +173,22 @@ export default function FinanceHub() {
 
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
-                    // Settle all IDs with cutoff date and dynamic amount
-                    await Promise.all(idArray.map(id => 
-                        api.put(`/finance/fees/${id}`, { 
+                    const settlementId = `SETTLE-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+                    // Settle all IDs with cutoff date, individual amounts, and common settlementId
+                    await Promise.all(idArray.map(id => {
+                        const calculatedFeeAmount = (feeBreakdown && feeBreakdown[id] !== undefined)
+                            ? feeBreakdown[id]
+                            : (idArray.length === 1 ? (settlementAmount > 0 ? settlementAmount : amount) : (unpaidFees.find((f: any) => f._id === id)?.amount || Math.round(amount / idArray.length)));
+
+                        return api.put(`/finance/fees/${id}`, { 
                             paymentStatus: 'paid', 
                             paymentDate: new Date(),
                             billingCutoffDate: cutoffDateObj || new Date(),
-                            amount: settlementAmount > 0 ? settlementAmount : amount
-                        })
-                    ));
+                            amount: calculatedFeeAmount,
+                            settlementId
+                        });
+                    }));
                     
                     toast.success(idArray.length > 1 ? `${idArray.length} months settled` : "Payment Received Successfully");
                     fetchFinance();
@@ -235,20 +248,14 @@ export default function FinanceHub() {
         );
     };
 
-    const downloadInvoice = (feeId: string) => {
-        window.open(`/api/finance/invoice/${feeId}`, '_blank');
+    const downloadInvoice = (feeIds: string | string[]) => {
+        const idString = Array.isArray(feeIds) ? feeIds.join(',') : feeIds;
+        window.open(`/api/finance/invoice/${idString}`, '_blank');
     };
 
     const downloadPayslip = (salaryId: string) => {
         window.open(`/api/finance/payslip/${salaryId}`, '_blank');
     };
-
-    if (loading) return (
-        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
-            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <FinanceSkeleton />
-        </div>
-    );
 
     const { summary, unpaidFees, paidFees, unpaidSalaries, paidSalaries } = financeData || { summary: {}, unpaidFees: [], paidFees: [], unpaidSalaries: [], paidSalaries: [] };
 
@@ -278,6 +285,74 @@ export default function FinanceHub() {
         const n2 = new Date(b).getTime();
         return n2 - m1;
     });
+
+    // Grouping Paid Fees into Settled Transactions (supporting Multi-Month settlements as they settled)
+    const settledTransactions = useMemo(() => {
+        if (!paidFees || paidFees.length === 0) return [];
+
+        const groupMap: { [key: string]: any[] } = {};
+
+        paidFees.forEach((fee: any) => {
+            let key = '';
+            if (fee.settlementId) {
+                key = `settle_${fee.settlementId}`;
+            } else {
+                const sId = fee.studentId?._id || fee.studentId || 'unknown';
+                const pDate = fee.paymentDate ? new Date(fee.paymentDate).toISOString().slice(0, 16) : fee._id;
+                key = `legacy_${sId}_${pDate}`;
+            }
+
+            if (!groupMap[key]) {
+                groupMap[key] = [];
+            }
+            groupMap[key].push(fee);
+        });
+
+        return Object.entries(groupMap).map(([key, feesList]) => {
+            const firstFee = feesList[0];
+            const months = Array.from(new Set(feesList.map((f: any) => f.month).filter(Boolean))) as string[];
+            const totalAmount = feesList.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+            const feeIds = feesList.map((f: any) => f._id);
+            const paymentDate = firstFee.paymentDate || firstFee.createdAt;
+            const cutoffDate = feesList.find((f: any) => f.billingCutoffDate)?.billingCutoffDate;
+
+            return {
+                id: key,
+                feeIds,
+                fees: feesList,
+                student: firstFee.studentId,
+                transactionDate: paymentDate,
+                billingCutoffDate: cutoffDate,
+                months,
+                totalAmount,
+                isMultiMonth: months.length > 1,
+            };
+        }).sort((a, b) => new Date(b.transactionDate || 0).getTime() - new Date(a.transactionDate || 0).getTime());
+    }, [paidFees]);
+
+    const filteredSettledTransactions = useMemo(() => {
+        return settledTransactions.filter(tx => {
+            if (paidFilterType === 'multi' && !tx.isMultiMonth) return false;
+            if (paidFilterType === 'single' && tx.isMultiMonth) return false;
+
+            if (paidSearchQuery.trim()) {
+                const query = paidSearchQuery.toLowerCase().trim();
+                const studentName = tx.student?.fullName?.toLowerCase() || '';
+                const location = tx.student?.residentialLocation?.toLowerCase() || '';
+                const monthsStr = tx.months.join(' ').toLowerCase();
+                const matches = studentName.includes(query) || location.includes(query) || monthsStr.includes(query);
+                if (!matches) return false;
+            }
+            return true;
+        });
+    }, [settledTransactions, paidFilterType, paidSearchQuery]);
+
+    if (loading) return (
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
+            <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            <FinanceSkeleton />
+        </div>
+    );
 
     return (
         <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
@@ -702,57 +777,144 @@ export default function FinanceHub() {
 
                         {activeTab === 'paid' && (
                             <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between">
-                                    <h3 className="text-lg font-black text-gray-800 italic uppercase flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-xl bg-teal-500 text-white flex items-center justify-center shadow-lg shadow-teal-200"><CheckCircle2 className="w-4 h-4" /></div>
-                                        Settled Transactions
-                                    </h3>
-                                    <div className="hidden sm:flex items-center gap-2 bg-teal-50 px-3 py-1 rounded-lg">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
-                                        <span className="text-[8px] font-black text-teal-600 uppercase tracking-widest">Real-time Verified</span>
+                                <div className="p-6 md:p-8 border-b border-gray-50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-teal-500 text-white flex items-center justify-center shadow-lg shadow-teal-200 shrink-0">
+                                            <CheckCircle2 className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-lg font-black text-gray-800 italic uppercase leading-none">
+                                                Settled Transactions
+                                            </h3>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                                {settledTransactions.length} Settlements • {paidFees.length} Module Cycles Verified
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Search & Filter Controls */}
+                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                        <div className="relative w-full sm:w-60">
+                                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                            <input 
+                                                type="text"
+                                                value={paidSearchQuery}
+                                                onChange={(e) => setPaidSearchQuery(e.target.value)}
+                                                placeholder="Search student, month..."
+                                                className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-teal-500 transition"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 text-[9px] font-black uppercase tracking-wider shrink-0">
+                                            <button
+                                                onClick={() => setPaidFilterType('all')}
+                                                className={`px-3 py-1.5 rounded-lg transition-all ${paidFilterType === 'all' ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                                            >
+                                                All ({settledTransactions.length})
+                                            </button>
+                                            <button
+                                                onClick={() => setPaidFilterType('multi')}
+                                                className={`px-3 py-1.5 rounded-lg transition-all ${paidFilterType === 'multi' ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                                            >
+                                                Multi ({settledTransactions.filter(t => t.isMultiMonth).length})
+                                            </button>
+                                            <button
+                                                onClick={() => setPaidFilterType('single')}
+                                                className={`px-3 py-1.5 rounded-lg transition-all ${paidFilterType === 'single' ? 'bg-white text-teal-600 shadow-sm' : 'text-gray-400 hover:text-gray-700'}`}
+                                            >
+                                                Single ({settledTransactions.filter(t => !t.isMultiMonth).length})
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
                                 {/* Desktop View: Table */}
                                 <div className="hidden md:block overflow-x-auto">
-                                    <table className="w-full text-left border-collapse min-w-[700px] md:min-w-0">
+                                    <table className="w-full text-left border-collapse min-w-[750px] md:min-w-0">
                                         <thead>
                                             <tr className="text-[10px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
                                                 <th className="px-8 py-6">Transaction Date</th>
-                                                <th className="px-4 py-6">Student</th>
-                                                <th className="px-4 py-6 text-center">Module Month</th>
-                                                <th className="px-4 py-6 text-center">Amount</th>
-                                                <th className="px-8 py-6 text-right">Receipt</th>
+                                                <th className="px-4 py-6">Student Profile</th>
+                                                <th className="px-4 py-6">Settlement Type & Months</th>
+                                                <th className="px-4 py-6 text-center">Settled Amount</th>
+                                                <th className="px-8 py-6 text-right">Receipt / Invoice</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
-                                            {paidFees.length === 0 ? (
-                                                <tr><td colSpan={5} className="py-20 text-center text-gray-300 font-bold italic uppercase tracking-widest text-xs">No payment history available yet.</td></tr>
-                                            ) : paidFees.map((fee: any) => (
-                                                <tr key={fee._id} className="group hover:bg-gray-50/50 transition">
+                                            {filteredSettledTransactions.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={5} className="py-20 text-center text-gray-300 font-bold italic uppercase tracking-widest text-xs">
+                                                        No settled transactions matching criteria.
+                                                    </td>
+                                                </tr>
+                                            ) : filteredSettledTransactions.map((tx: any) => (
+                                                <tr key={tx.id} className="group hover:bg-gray-50/50 transition">
                                                     <td className="px-8 py-5">
-                                                        <p className="text-xs font-bold text-gray-800 italic">{fee.paymentDate ? new Date(fee.paymentDate).toLocaleDateString() : 'N/A'}</p>
-                                                        {fee.billingCutoffDate && (
+                                                        <p className="text-xs font-bold text-gray-800 italic">
+                                                            {tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : 'N/A'}
+                                                        </p>
+                                                        {tx.billingCutoffDate && (
                                                             <p className="text-[10px] font-semibold text-primary mt-0.5 italic">
-                                                                Cutoff: {new Date(fee.billingCutoffDate).toLocaleDateString()}
+                                                                Cutoff: {new Date(tx.billingCutoffDate).toLocaleDateString()}
                                                             </p>
                                                         )}
                                                     </td>
                                                     <td className="px-4 py-5">
-                                                        <p className="text-sm font-black text-gray-800">{fee.studentId?.fullName}</p>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 font-black flex items-center justify-center text-xs italic">
+                                                                {tx.student?.fullName?.charAt(0) || 'S'}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-black text-gray-800">{tx.student?.fullName || 'Student'}</p>
+                                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                                                                    {tx.student?.class ? `Class ${tx.student.class}` : 'Active Portfolio'} {tx.student?.residentialLocation ? `• ${tx.student.residentialLocation}` : ''}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-5">
+                                                        {tx.isMultiMonth ? (
+                                                            <div className="space-y-1.5">
+                                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-primary/10 to-teal-500/10 text-primary border border-primary/20 rounded-lg text-[9px] font-black uppercase tracking-wider italic">
+                                                                    <span>⚡ Multi-Month Settlement</span>
+                                                                    <span className="w-4 h-4 rounded-full bg-primary text-white text-[8px] flex items-center justify-center font-bold">
+                                                                        {tx.months.length}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {tx.months.map((m: string) => (
+                                                                        <span key={m} className="text-[9px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md italic">
+                                                                            {m}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-[10px] font-black text-primary uppercase tracking-tighter bg-primary/5 px-3 py-1.5 rounded-lg italic border border-primary/10">
+                                                                {tx.months[0] || 'Single Month'}
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td className="px-4 py-5 text-center">
-                                                        <span className="text-[10px] font-black text-primary uppercase tracking-tighter bg-primary/5 px-3 py-1 rounded-lg italic">{fee.month}</span>
-                                                    </td>
-                                                    <td className="px-4 py-5 text-center">
-                                                        <span className="text-sm font-black text-teal-600 italic tracking-tight">₹{fee.amount.toLocaleString()}</span>
+                                                        <span className="text-sm md:text-base font-black text-teal-600 italic tracking-tight">
+                                                            ₹{tx.totalAmount.toLocaleString()}
+                                                        </span>
+                                                        {tx.isMultiMonth && (
+                                                            <p className="text-[9px] font-bold text-gray-400 mt-0.5">
+                                                                {tx.fees.length} cycles settled
+                                                            </p>
+                                                        )}
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
                                                         <button
-                                                            onClick={() => downloadInvoice(fee._id)}
-                                                            className="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-xl transition border border-transparent hover:border-primary/20"
+                                                            onClick={() => downloadInvoice(tx.feeIds)}
+                                                            className="inline-flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-primary hover:bg-primary/5 rounded-xl transition border border-gray-200 hover:border-primary/20 font-bold text-xs shadow-sm ml-auto"
+                                                            title={tx.isMultiMonth ? "Download Consolidated Multi-Month Invoice" : "Download Invoice"}
                                                         >
-                                                            <Download className="w-5 h-5" />
+                                                            <Download className="w-4 h-4 text-teal-600" />
+                                                            <span className="text-[10px] font-black uppercase tracking-wider">
+                                                                {tx.isMultiMonth ? 'Batch Invoice' : 'Invoice'}
+                                                            </span>
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -762,31 +924,63 @@ export default function FinanceHub() {
                                 </div>
 
                                 {/* Mobile View: Div Cards */}
-                                <div className="block md:hidden p-3 space-y-2.5">
-                                    {paidFees.length === 0 ? (
-                                        <div className="py-12 text-center text-gray-400 font-bold italic uppercase tracking-widest text-xs">No payment history available yet.</div>
-                                    ) : paidFees.map((fee: any) => (
-                                        <div key={fee._id} className="p-3.5 rounded-xl border border-gray-100 bg-white flex items-center justify-between gap-3 shadow-sm">
-                                            <div className="min-w-0 flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <p className="text-xs font-black text-gray-900 truncate">{fee.studentId?.fullName}</p>
-                                                    <span className="text-[8px] font-black text-primary uppercase tracking-tighter bg-primary/5 px-2 py-0.5 rounded italic">
-                                                        {fee.month}
+                                <div className="block md:hidden p-3 space-y-3">
+                                    {filteredSettledTransactions.length === 0 ? (
+                                        <div className="py-12 text-center text-gray-400 font-bold italic uppercase tracking-widest text-xs">
+                                            No settled transactions matching criteria.
+                                        </div>
+                                    ) : filteredSettledTransactions.map((tx: any) => (
+                                        <div key={tx.id} className="p-4 rounded-2xl border border-gray-100 bg-white space-y-3 shadow-sm">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 font-black flex items-center justify-center text-xs italic shrink-0">
+                                                        {tx.student?.fullName?.charAt(0) || 'S'}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-black text-gray-900 truncate">{tx.student?.fullName || 'Student'}</p>
+                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5 truncate">
+                                                            {tx.student?.residentialLocation || 'Active Student'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {tx.isMultiMonth ? (
+                                                    <span className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-md text-[8px] font-black uppercase tracking-wider italic shrink-0">
+                                                        ⚡ {tx.months.length} Months
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 bg-primary/5 text-primary rounded-md text-[8px] font-black uppercase tracking-wider italic shrink-0">
+                                                        {tx.months[0]}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {tx.isMultiMonth && (
+                                                <div className="flex flex-wrap gap-1 pt-1">
+                                                    {tx.months.map((m: string) => (
+                                                        <span key={m} className="text-[8px] font-bold text-gray-600 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded italic">
+                                                            {m}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between pt-2 border-t border-gray-50 text-xs">
+                                                <div>
+                                                    <span className="text-[10px] font-bold text-gray-400 italic block">
+                                                        Paid: {tx.transactionDate ? new Date(tx.transactionDate).toLocaleDateString() : 'N/A'}
+                                                        {tx.billingCutoffDate && ` • Cutoff: ${new Date(tx.billingCutoffDate).toLocaleDateString()}`}
+                                                    </span>
+                                                    <span className="text-sm font-black text-teal-600 italic tracking-tight">
+                                                        ₹{tx.totalAmount.toLocaleString()}
                                                     </span>
                                                 </div>
-                                                <p className="text-[10px] font-bold text-gray-400 italic mt-0.5">
-                                                    Paid: {fee.paymentDate ? new Date(fee.paymentDate).toLocaleDateString() : 'N/A'}
-                                                    {fee.billingCutoffDate && ` • Cutoff: ${new Date(fee.billingCutoffDate).toLocaleDateString()}`}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <span className="text-xs font-black text-teal-600 italic tracking-tight">₹{fee.amount.toLocaleString()}</span>
                                                 <button
-                                                    onClick={() => downloadInvoice(fee._id)}
-                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition border border-gray-100"
+                                                    onClick={() => downloadInvoice(tx.feeIds)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-xl transition border border-teal-100 text-[9px] font-black uppercase tracking-wider"
                                                     title="Download Invoice"
                                                 >
-                                                    <Download className="w-4 h-4" />
+                                                    <Download className="w-3.5 h-3.5" />
+                                                    <span>{tx.isMultiMonth ? 'Batch Receipt' : 'Receipt'}</span>
                                                 </button>
                                             </div>
                                         </div>

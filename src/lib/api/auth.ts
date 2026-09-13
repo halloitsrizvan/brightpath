@@ -21,6 +21,13 @@ export async function checkAuth(req: NextRequest, roles: string[] = []) {
     }
 
     if (!token) {
+        try {
+            const { searchParams } = new URL(req.url);
+            token = searchParams.get('token') || undefined;
+        } catch (e) {}
+    }
+
+    if (!token) {
         throw new Error('No token, authorization denied');
     }
 
