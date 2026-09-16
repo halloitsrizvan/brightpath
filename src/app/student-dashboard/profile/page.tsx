@@ -78,8 +78,7 @@ export default function StudentProfile() {
             if (student?._id) await fetchFees(student._id);
             setSelectedFees([]);
             
-            const downloadUrl = `${process.env.NEXT_PUBLIC_API_URL || '/api'}/finance/invoice/${idsString}`;
-            window.open(downloadUrl, '_blank');
+            await handleDownloadInvoice(idsString, 'Batch_Receipt');
         } catch (error) {
             console.error(error);
             toast.error("Payment synchronization failed");

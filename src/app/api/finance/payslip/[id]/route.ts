@@ -157,7 +157,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         return new NextResponse(pdfBytes as any, {
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `attachment; filename=Payslips_${teacher.name.replace(/\s+/g, '_')}.pdf`
+                'Content-Disposition': `attachment; filename=Payslips_${teacher.name.replace(/\s+/g, '_')}.pdf`,
+                'Access-Control-Expose-Headers': 'Content-Disposition'
             }
         });
     } catch (err: any) {

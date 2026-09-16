@@ -193,9 +193,10 @@ export default function FinanceHub() {
                     toast.success(idArray.length > 1 ? `${idArray.length} months settled` : "Payment Received Successfully");
                     fetchFinance();
                     setSelectedFees([]);
-                    const queryCutoff = cutoff ? `?cutoffDate=${cutoff}` : '';
-                    window.open(`/api/finance/invoice/${idString}${queryCutoff}`, '_blank');
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    
+                    // Automatically trigger PDF invoice download
+                    downloadInvoice(idArray, cutoff);
                 } catch (err) {
                     toast.error("Process failed");
                     setConfirmModal(prev => ({ ...prev, loading: false }));
@@ -229,11 +230,10 @@ export default function FinanceHub() {
                     toast.success(idArray.length > 1 ? `${idArray.length} records disbursed` : "Salary disbursed");
                     fetchFinance();
                     setSelectedSalaries([]);
-                    
-                    // Open a single consolidated payslip for batch or single
-                    window.open(`/api/finance/payslip/${idString}`, '_blank');
-                    
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    
+                    // Automatically trigger PDF payslip download
+                    downloadPayslip(idArray);
                 } catch (err) {
                     toast.error("Process failed");
                     setConfirmModal(prev => ({ ...prev, loading: false }));
@@ -248,13 +248,70 @@ export default function FinanceHub() {
         );
     };
 
-    const downloadInvoice = (feeIds: string | string[]) => {
-        const idString = Array.isArray(feeIds) ? feeIds.join(',') : feeIds;
-        window.open(`/api/finance/invoice/${idString}`, '_blank');
+    const downloadInvoice = async (feeIds: string | string[], cutoffDate?: string) => {
+        try {
+            const idArray = Array.isArray(feeIds) ? feeIds : [feeIds];
+            const idString = idArray.join(',');
+            const queryCutoff = cutoffDate ? `?cutoffDate=${cutoffDate}` : '';
+
+            const response = await api.get(`/finance/invoice/${idString}${queryCutoff}`, {
+                responseType: 'blob'
+            });
+
+            let filename = `Invoice_${idString.slice(-6)}.pdf`;
+            const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
+            if (disposition) {
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to download invoice:", error);
+            toast.error("Failed to download invoice PDF");
+        }
     };
 
-    const downloadPayslip = (salaryId: string) => {
-        window.open(`/api/finance/payslip/${salaryId}`, '_blank');
+    const downloadPayslip = async (salaryIds: string | string[]) => {
+        try {
+            const idArray = Array.isArray(salaryIds) ? salaryIds : [salaryIds];
+            const idString = idArray.join(',');
+            const response = await api.get(`/finance/payslip/${idString}`, {
+                responseType: 'blob'
+            });
+
+            let filename = `Payslip_${idString.slice(-6)}.pdf`;
+            const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
+            if (disposition) {
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to download payslip:", error);
+            toast.error("Failed to download payslip PDF");
+        }
     };
 
     const { summary, unpaidFees, paidFees, unpaidSalaries, paidSalaries } = financeData || { summary: {}, unpaidFees: [], paidFees: [], unpaidSalaries: [], paidSalaries: [] };

@@ -387,7 +387,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         return new NextResponse(pdfBytes as any, {
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `inline; filename="${filename}"`
+                'Content-Disposition': `attachment; filename="${filename}"`,
+                'Access-Control-Expose-Headers': 'Content-Disposition'
             }
         });
     } catch (err: any) {
