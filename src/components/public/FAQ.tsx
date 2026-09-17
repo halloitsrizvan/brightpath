@@ -3,31 +3,46 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ScrollReveal from './ScrollReveal';
 
-const faqData = [
+export const faqData = [
     {
-        question: "What academic boards do you support?",
-        answer: "We provide specialized coaching for CBSE, ICSE, IGCSE, and Kerala State Board students from KG to 12th Grade.",
-        id: 1
+        id: 1,
+        question: "What academic boards and classes do BrightPath online tutors cover?",
+        answer: "BrightPath Eduvora provides personalized 1:1 online tuition for students from Kindergarten (KG) to 12th Grade across CBSE, ICSE / ISC, Kerala State Board (SCERT), and IGCSE curriculums. We offer specialized coaching for all core subjects including Mathematics, Physics, Chemistry, Biology, English, and Social Science."
     },
     {
-        question: "Is the mentorship entirely 1:1?",
-        answer: "Yes, every session at Brightpath is strictly 1:1. This ensures that the mentor can focus entirely on your child's specific learning speed and needs.",
-        id: 2
+        id: 2,
+        question: "How does 1:1 personalized online tuition differ from group tuition centers?",
+        answer: "In conventional group tuition, teachers progress at an average pace, often leaving struggling students behind or failing to challenge advanced learners. At BrightPath, every single class is strictly 1-on-1. The expert tutor designs every lesson around your child's specific learning pace, addresses doubts immediately, and builds deep conceptual mastery."
     },
     {
-        question: "How flexible are the class timings?",
-        answer: "Highly flexible. You can schedule sessions anywhere between 5:00 AM and 11:00 PM to suit your child's daily routine.",
-        id: 3
+        id: 3,
+        question: "How qualified and verified are the online tutors at BrightPath?",
+        answer: "Every BrightPath tutor undergoes a stringent multi-tier vetting process: comprehensive background and credential checks, subject-matter knowledge evaluations, and digital pedagogy training. Over 85% of our faculty hold postgraduate degrees or higher, with extensive experience in board exam preparation."
     },
     {
-        question: "How do parents track their child's progress?",
-        answer: "We provide detailed monthly progress reports and hold regular parent-mentor meetings to discuss improvements and focus areas.",
-        id: 4
+        id: 4,
+        question: "How flexible are class timings and scheduling for students?",
+        answer: "We offer maximum schedule flexibility. Sessions can be scheduled between 5:00 AM and 11:00 PM IST to fit your child's school routine, extracurricular activities, and time zones. If an unforeseen event arises, classes can be easily rescheduled with prior notice."
     },
     {
-        question: "Can I choose my preferred language of instruction?",
-        answer: "Absolutely. We offer instruction in English and Malayalam, allowing students to learn concepts in the language they are most comfortable with.",
-        id: 5
+        id: 5,
+        question: "How do parents monitor their child's academic progress?",
+        answer: "Transparency is fundamental to our system. Parents receive comprehensive monthly analytical progress reports highlighting attendance, chapter completion, quiz scores, and conceptual strengths. We also conduct scheduled parent-tutor review meetings to align on upcoming academic goals."
+    },
+    {
+        id: 6,
+        question: "Can students choose their preferred language of instruction?",
+        answer: "Yes. Mentors can teach in English, Malayalam, or a bilingual blend based on what helps the student grasp concepts most comfortably. This removes language barriers and helps students build genuine academic confidence."
+    },
+    {
+        id: 7,
+        question: "What digital tools and interactive whiteboards are used during sessions?",
+        answer: "Our virtual classrooms feature high-definition interactive digital whiteboards, real-time screen and document sharing, mathematical formula editors, and instant doubt-clearing tools. Students and tutors can write, solve problems, and annotate together just like an in-person desk session."
+    },
+    {
+        id: 8,
+        question: "Is there a free trial or assessment session before enrollment?",
+        answer: "Yes, we offer a 100% free, no-obligation 1:1 diagnostic demo session. During this session, an expert tutor assesses your child's foundational strengths, identifies key growth areas, and shares a customized learning roadmap tailored to their academic goals."
     }
 ];
 
@@ -84,7 +99,7 @@ export default function PublicFAQ() {
                     {faqData.map((faq, i) => {
                         const isOpen = openId === faq.id;
                         return (
-                            <ScrollReveal key={faq.id} delay={i * 0.06}>
+                            <ScrollReveal key={faq.id} delay={i * 0.05}>
                                 <div 
                                     className={`rounded-xl border transition-all duration-300 cursor-pointer ${
                                         isOpen 
@@ -96,11 +111,11 @@ export default function PublicFAQ() {
                                     onClick={() => handleClick(faq.id)}
                                 >
                                     <div className="w-full px-6 py-5 flex items-center justify-between text-left">
-                                        <span className={`text-sm md:text-[15px] font-semibold transition-colors duration-200 ${
+                                        <h3 className={`text-sm md:text-[15px] font-semibold transition-colors duration-200 m-0 ${
                                             isOpen ? 'text-primary font-bold' : 'text-gray-800'
                                         }`}>
                                             {faq.question}
-                                        </span>
+                                        </h3>
                                         <ChevronDown className={`w-4 h-4 shrink-0 ml-4 transition-transform duration-300 ${
                                             isOpen ? 'rotate-180 text-primary' : 'text-gray-400'
                                         }`} />

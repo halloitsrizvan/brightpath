@@ -48,7 +48,9 @@ export default async function BlogPage() {
             </header>
 
             <section className="py-16">
-                <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="container mx-auto px-6 max-w-5xl">
+                    <h2 className="sr-only">Latest Articles & Educational Insights</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {displayPosts.map((post: any) => (
                         <Link href={`/blog/${post.slug || post._id}`} key={post._id}>
                             <article className="group cursor-pointer rounded-xl overflow-hidden border border-gray-100/80 hover:shadow-lg hover:shadow-gray-100/60 transition-all duration-300 bg-white">
@@ -78,6 +80,7 @@ export default async function BlogPage() {
                             </article>
                         </Link>
                     ))}
+                    </div>
                 </div>
             </section>
 

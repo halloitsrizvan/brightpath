@@ -39,29 +39,37 @@ export default async function TutorsPage() {
 
             {/* Standards Bar */}
             <section className="py-12 bg-surface border-b border-gray-100">
+                <h2 className="sr-only">Our Tutor Quality & Verification Standards</h2>
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl">
                     <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center"><ShieldCheck className="w-5 h-5" /></div>
                         <div>
-                            <h4 className="text-sm font-semibold text-gray-900">Background Verified</h4>
+                            <h3 className="text-sm font-semibold text-gray-900">Background Verified</h3>
                             <p className="text-xs text-gray-400">100% verified faculty</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center"><Star className="w-5 h-5" /></div>
                         <div>
-                            <h4 className="text-sm font-semibold text-gray-900">Subject Experts</h4>
+                            <h3 className="text-sm font-semibold text-gray-900">Subject Experts</h3>
                             <p className="text-xs text-gray-400">Deep subject specialization</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center"><GraduationCap className="w-5 h-5" /></div>
                         <div>
-                            <h4 className="text-sm font-semibold text-gray-900">Advanced Degrees</h4>
+                            <h3 className="text-sm font-semibold text-gray-900">Advanced Degrees</h3>
                             <p className="text-xs text-gray-400">Post-graduate & PhD holders</p>
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section className="pt-12 text-center">
+                <h2 className="text-3xl font-extrabold text-gray-900 font-display">
+                    Our Verified Online Faculty
+                </h2>
+                <p className="text-sm text-gray-500 mt-2">Dedicated one-on-one mentors across all subjects and grades</p>
             </section>
 
             <PublicTutorsGrid tutors={tutors} />

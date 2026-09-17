@@ -147,7 +147,7 @@ function ContactCard({ icon, label, value, desc }: { icon: React.ReactNode, labe
             </div>
             <div>
                 <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-                <h4 className="text-sm font-bold text-gray-900 mb-0.5">{value}</h4>
+                <h3 className="text-sm font-bold text-gray-900 mb-0.5">{value}</h3>
                 <p className="text-xs text-gray-400">{desc}</p>
             </div>
         </div>

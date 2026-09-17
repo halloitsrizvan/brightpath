@@ -1,7 +1,7 @@
 'use client';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
-import PublicFAQ from '@/components/public/FAQ';
+import PublicFAQ, { faqData } from '@/components/public/FAQ';
 import FloatingContact from '@/components/public/FloatingContact';
 import ScrollReveal from '@/components/public/ScrollReveal';
 import Image from 'next/image';
@@ -66,22 +66,84 @@ export default function HomeClient() {
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "EducationalOrganization",
-                        "name": "BrightPath Eduvora",
-                        "url": "https://www.brightpatheduvora.com",
-                        "logo": "https://www.brightpatheduvora.com/icon.png",
-                        "description": "High-quality 1:1 personalized online tuition for KG to 12th grade. Learn Right. Grow Bright.",
-                        "address": {
-                            "@type": "PostalAddress",
-                            "addressCountry": "IN"
+                    __html: JSON.stringify([
+                        {
+                            "@context": "https://schema.org",
+                            "@type": ["EducationalOrganization", "LocalBusiness"],
+                            "@id": "https://www.brightpatheduvora.com/#organization",
+                            "name": "BrightPath Eduvora",
+                            "alternateName": ["BrightPath Online Tuition", "BrightPath Academy"],
+                            "url": "https://www.brightpatheduvora.com",
+                            "logo": "https://www.brightpatheduvora.com/icon.png",
+                            "image": "https://www.brightpatheduvora.com/bn2.png",
+                            "description": "BrightPath Eduvora provides personalized 1:1 online tuition for KG to 12th grade students. Certified expert tutors for CBSE, ICSE, State & IGCSE boards.",
+                            "telephone": "+918590878148",
+                            "email": "brightpathacademycalicut@gmail.com",
+                            "priceRange": "$$",
+                            "address": {
+                                "@type": "PostalAddress",
+                                "streetAddress": "Mavoor Road",
+                                "addressLocality": "Calicut",
+                                "addressRegion": "Kerala",
+                                "postalCode": "673001",
+                                "addressCountry": "IN"
+                            },
+                            "geo": {
+                                "@type": "GeoCoordinates",
+                                "latitude": 11.2588,
+                                "longitude": 75.7804
+                            },
+                            "openingHoursSpecification": [
+                                {
+                                    "@type": "OpeningHoursSpecification",
+                                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                                    "opens": "05:00",
+                                    "closes": "23:00"
+                                }
+                            ],
+                            "aggregateRating": {
+                                "@type": "AggregateRating",
+                                "ratingValue": "4.9",
+                                "reviewCount": "128",
+                                "bestRating": "5",
+                                "worstRating": "1"
+                            },
+                            "areaServed": [
+                                { "@type": "Country", "name": "India" },
+                                { "@type": "Country", "name": "United Arab Emirates" },
+                                { "@type": "Country", "name": "Qatar" },
+                                { "@type": "Country", "name": "Saudi Arabia" },
+                                { "@type": "AdministrativeArea", "name": "Kerala" }
+                            ],
+                            "sameAs": [
+                                "https://www.facebook.com/brightpatheduvora",
+                                "https://www.instagram.com/brightpatheduvora"
+                            ]
                         },
-                        "sameAs": [
-                            "https://www.facebook.com/brightpatheduvora",
-                            "https://www.instagram.com/brightpatheduvora"
-                        ]
-                    })
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "WebSite",
+                            "@id": "https://www.brightpatheduvora.com/#website",
+                            "url": "https://www.brightpatheduvora.com",
+                            "name": "BrightPath Eduvora",
+                            "description": "Personalized 1:1 online tuition for KG-12 students.",
+                            "publisher": {
+                                "@id": "https://www.brightpatheduvora.com/#organization"
+                            }
+                        },
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "FAQPage",
+                            "mainEntity": faqData.map(item => ({
+                                "@type": "Question",
+                                "name": item.question,
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": item.answer
+                                }
+                            }))
+                        }
+                    ])
                 }}
             />
 
@@ -103,13 +165,13 @@ export default function HomeClient() {
                                 <div className="space-y-5">
                                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/80 text-amber-700 text-xs font-bold tracking-wider uppercase">
                                         <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                        <span>100% Satisfaction Guarantee</span>
+                                        <span>Kerala&apos;s #1 Rated 1:1 Online Tuition</span>
                                     </div>
 
-                                    <h1 className="text-4xl sm:text-5xl lg:text-[58px] font-extrabold text-gray-950 tracking-tight font-display leading-[1.12]">
+                                    <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-gray-950 tracking-tight font-display leading-[1.14]">
                                         Find Your <br />
                                         <span className="relative inline-block text-primary">
-                                            Perfect Tutor
+                                            Perfect Online Tutor
                                             {/* Decorative playful doodle accent next to Tutor */}
                                             <span className="absolute -top-3 -right-10 hidden sm:inline-block text-secondary">
                                                 <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -117,10 +179,13 @@ export default function HomeClient() {
                                                 </svg>
                                             </span>
                                         </span>
+                                        <span className="block text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 mt-2.5">
+                                            1:1 Online Tuition for KG to 12th Grade Students
+                                        </span>
                                     </h1>
 
                                     <p className="text-base sm:text-lg text-gray-600 max-w-lg leading-relaxed">
-                                        We help you find the perfect certified tutor for 1-on-1 lessons. It is completely personalized, private, and tailored for KG to 12th Grade academic excellence.
+                                        BrightPath Eduvora connects students with certified expert tutors for interactive 1-on-1 lessons. Tailored curriculum support for CBSE, ICSE, Kerala State, and IGCSE boards with flexible timings.
                                     </p>
 
                                     {/* Action Buttons */}
@@ -366,7 +431,7 @@ export default function HomeClient() {
                                         Personalized Professional Online Tutor on Your Schedule
                                     </h3>
                                     <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                                        Our scheduling system allows you to select classes based on your free time. Keep track of your student&apos;s class and tutoring schedules, and never miss your lectures. The best online class scheduling system with easy accessibility.
+                                        Our intuitive scheduling system allows students to select classes based on their free time and daily routine. Keep track of your student&apos;s class and tutoring schedules with zero travel stress. The best online tuition platform designed for busy academic lifestyles.
                                     </p>
                                     <div className="pt-2">
                                         <button
@@ -387,12 +452,12 @@ export default function HomeClient() {
                             {/* Text Left */}
                             <div className="lg:col-span-7 space-y-5 order-2 lg:order-1">
                                 <ScrollReveal direction="left">
-                                    <p className="text-xs font-bold text-amber-500 uppercase tracking-widest font-display">Customize with Your Schedule</p>
+                                    <p className="text-xs font-bold text-amber-500 uppercase tracking-widest font-display">Expert Academic Mentorship</p>
                                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-950 font-display leading-tight">
                                         Talented and Qualified Tutors to Serve You for Help
                                     </h3>
                                     <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                                        Our scheduling system allows you to select based on your free time. Every tutor at BrightPath is thoroughly vetted, subject-certified, and trained in modern digital pedagogical tools to guide your child to top academic performance.
+                                        Every expert tutor at BrightPath is thoroughly vetted, subject-certified, and trained in modern digital pedagogical tools. We pair each KG to 12th grade student with a dedicated mentor who adapts to their unique learning style and curriculum requirements.
                                     </p>
                                     <div className="pt-2">
                                         <button
@@ -473,6 +538,63 @@ export default function HomeClient() {
                 </div>
             </section>
 
+            {/* 1:1 ONLINE TUITION ADVANTAGE SECTION */}
+            <section className="py-20 lg:py-24 bg-white">
+                <div className="container mx-auto px-6 max-w-6xl">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 font-display">The 1:1 Advantage</p>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 font-display leading-tight">
+                            Why Personalized 1:1 Online Tuition Excels Over Traditional Group Coaching
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-600 mt-4 leading-relaxed">
+                            Every child absorbs concepts differently. In overcrowded physical classrooms and group coaching centers, lessons move at an average speed, leaving doubts unresolved. BrightPath transforms learning through individual attention, responsive pacing, and research-backed pedagogical methods.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="p-6 rounded-2xl bg-amber-50/50 border border-amber-100 hover:shadow-md transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm mb-4">
+                                01
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Zero Classroom Hesitation</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                Students often fear asking questions in front of peers. In private 1:1 sessions, students feel completely safe to clarify doubts immediately without hesitation or peer pressure.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-sky-50/50 border border-sky-100 hover:shadow-md transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-sm mb-4">
+                                02
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Conceptual Core Mastery</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                Instead of encouraging mechanical memorization, our expert online tutors focus on first principles and practical examples to ensure fundamental clarity that lasts across grades.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-100 hover:shadow-md transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm mb-4">
+                                03
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Tailored Study Roadmap</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                Lesson plans are custom crafted for your school curriculum, upcoming periodic tests, and revision needs rather than following a rigid, one-size-fits-all textbook syllabus.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-purple-50/50 border border-purple-100 hover:shadow-md transition-all">
+                            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-sm mb-4">
+                                04
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Exam Stress Reduction</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+                                Continuous practice with previous year question papers, regular mock tests, and systematic time management techniques build calm self-assurance before crucial board examinations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* TESTIMONIALS SECTION - Directly Inspired by UI Image with Automatic Sliding */}
             <section
                 className="py-24 bg-white relative overflow-hidden select-none"
@@ -540,7 +662,7 @@ export default function HomeClient() {
                             >
                                 {/* Active Student Info */}
                                 <div className="space-y-1">
-                                    <h4 className="text-lg font-bold text-gray-950">{currentReview.name}</h4>
+                                    <h3 className="text-lg font-bold text-gray-950">{currentReview.name}</h3>
                                     <p className="text-xs text-gray-500 font-medium">{currentReview.role}</p>
 
                                     {/* 5 Gold Stars */}
@@ -603,8 +725,196 @@ export default function HomeClient() {
                 </div>
             </section>
 
+            {/* GRADE LEVELS AND CURRICULUM SECTION */}
+            <section className="py-20 lg:py-24 bg-gray-50/80 border-t border-gray-100">
+                <div className="container mx-auto px-6 max-w-6xl">
+                    <div className="text-center max-w-3xl mx-auto mb-14">
+                        <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 font-display">Academic Stages</p>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 font-display leading-tight">
+                            Personalized Online Tuition from KG to 12th Grade
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
+                            Discover specialized pedagogical programs designed for every stage of your child&apos;s schooling journey.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+                        {/* Primary */}
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full uppercase">KG to Class 5</span>
+                                <span className="text-xs text-gray-400 font-medium">Foundational Stage</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Primary School Foundations</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Developing genuine curiosity and self-confidence during the most critical cognitive years. Our friendly mentors guide young learners through phonics, English and Malayalam reading fluency, fundamental arithmetic, and early scientific inquiry using colorful visual models.
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Phonics & Grammar</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Mental Math</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Malayalam Reading</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Confidence Building</span>
+                            </div>
+                        </div>
+
+                        {/* Middle School */}
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-bold rounded-full uppercase">Class 6 to Class 8</span>
+                                <span className="text-xs text-gray-400 font-medium">Transition Stage</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Middle School Core Concept Development</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                As academic demands increase, students transition from simple rote learning to abstract thinking. We focus deeply on Algebra, Geometry, Physics fundamentals, Chemistry concepts, Biology diagrams, and structured essay writing to establish an unshakeable base before high school.
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Algebra & Geometry</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">General Science</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Social Sciences</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Language Proficiency</span>
+                            </div>
+                        </div>
+
+                        {/* Secondary */}
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase">Class 9 & Class 10</span>
+                                <span className="text-xs text-gray-400 font-medium">Board Preparation</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Secondary School & Board Exam Excellence</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Rigorous, targeted exam preparation for CBSE Board, ICSE, and Kerala SSLC examinations. Our certified mentors provide comprehensive chapter revisions, step-by-step mathematical problem solving, previous years&apos; question analyses, and regular timed mock tests.
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">CBSE & ICSE Board Prep</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Kerala SSLC Specialization</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Previous Years Papers</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Speed & Accuracy Drills</span>
+                            </div>
+                        </div>
+
+                        {/* Higher Secondary */}
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full uppercase">Class 11 & Class 12</span>
+                                <span className="text-xs text-gray-400 font-medium">Stream Specialization</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Higher Secondary & Entrance Foundations</h3>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                Advanced subject-matter expertise for Plus One and Plus Two students across Science and Commerce streams. Master complex Physics derivations, Organic Chemistry mechanisms, Advanced Calculus, and Biology alongside competitive exam foundations (NEET, JEE, KEAM).
+                            </p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Plus One & Plus Two Coaching</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Physics & Chemistry Derivations</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Calculus & Vectors</span>
+                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Entrance Exam Foundation</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Academic Boards Banner */}
+                    <div className="p-8 sm:p-10 rounded-3xl bg-[#1a1a2e] text-white">
+                        <div className="max-w-3xl mb-8">
+                            <p className="text-xs font-bold text-amber-400 uppercase tracking-widest mb-2 font-display">Academic Curriculum Coverage</p>
+                            <h3 className="text-2xl sm:text-3xl font-extrabold font-display leading-tight">
+                                Complete Alignment with National & International Educational Boards
+                            </h3>
+                            <p className="text-sm text-gray-300 mt-2 leading-relaxed">
+                                Our syllabus mapping ensures that your 1:1 online tuition sessions match your school&apos;s prescribed textbooks and upcoming examination timetables with 100% precision.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
+                                <h4 className="text-base font-bold text-white mb-1">CBSE (NCERT)</h4>
+                                <p className="text-xs text-gray-300 leading-relaxed">NCERT textbook solutions, exemplar exercises, assertion-reasoning practice, and case-study questions.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
+                                <h4 className="text-base font-bold text-white mb-1">Kerala State (SCERT)</h4>
+                                <p className="text-xs text-gray-300 leading-relaxed">SCERT textbooks taught in English or Malayalam with previous SSLC and Plus Two model exam questions.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
+                                <h4 className="text-base font-bold text-white mb-1">ICSE & ISC Board</h4>
+                                <p className="text-xs text-gray-300 leading-relaxed">In-depth analytical syllabi, detailed science lab concepts, literature analysis, and mathematical rigor.</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
+                                <h4 className="text-base font-bold text-white mb-1">IGCSE & Cambridge</h4>
+                                <p className="text-xs text-gray-300 leading-relaxed">International standards, inquiry-based investigations, past papers, and progressive grading support.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Promotional Banner Carousel */}
             <BannerCarousel />
+
+            {/* 4-STEP LEARNING JOURNEY */}
+            <section className="py-20 lg:py-24 bg-white">
+                <div className="container mx-auto px-6 max-w-6xl">
+                    <div className="text-center max-w-2xl mx-auto mb-16">
+                        <p className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2 font-display">How It Works</p>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 font-display leading-tight">
+                            Your 4-Step Pathway to Academic Excellence
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
+                            Getting started with Kerala&apos;s leading personalized 1:1 online tuition academy is simple, transparent, and proven.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="p-6 rounded-2xl bg-surface border border-gray-100 text-center hover:shadow-md transition-all">
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-extrabold text-lg mx-auto mb-4 shadow-md shadow-primary/20">
+                                1
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Free Diagnostic Session</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                                We assess your child&apos;s foundational understanding, learning speed, and specific academic goals with zero commitment required.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-surface border border-gray-100 text-center hover:shadow-md transition-all">
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-extrabold text-lg mx-auto mb-4 shadow-md shadow-primary/20">
+                                2
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Dedicated Mentor Match</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                                We pair the student with a certified subject expert matching their curriculum, learning personality, and language preference.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-surface border border-gray-100 text-center hover:shadow-md transition-all">
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-extrabold text-lg mx-auto mb-4 shadow-md shadow-primary/20">
+                                3
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Live 1:1 Virtual Classes</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                                Interactive lessons using digital whiteboards, screen sharing, and real-time problem-solving at times that fit your schedule.
+                            </p>
+                        </div>
+
+                        <div className="p-6 rounded-2xl bg-surface border border-gray-100 text-center hover:shadow-md transition-all">
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-extrabold text-lg mx-auto mb-4 shadow-md shadow-primary/20">
+                                4
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Continuous Progress Reports</h3>
+                            <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                                Parents receive weekly updates and monthly analytical reports with regular parent-mentor meetings to ensure steady improvement.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="text-center mt-12">
+                        <button
+                            onClick={() => setIsDemoModalOpen(true)}
+                            className="px-8 py-4 bg-[#FDC70B] hover:bg-[#eab308] text-gray-950 font-bold text-sm rounded-full shadow-lg shadow-amber-400/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer inline-flex items-center gap-2"
+                        >
+                            <span>Book Free 1:1 Assessment Today</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            </section>
 
             {/* FAQ Section */}
             <PublicFAQ />

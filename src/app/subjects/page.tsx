@@ -21,12 +21,12 @@ export default function SubjectsPage() {
             
             <header className="pt-32 pb-16 bg-surface">
                 <div className="container mx-auto px-6 max-w-3xl text-center">
-                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Subjects</p>
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Academic Subjects</p>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 font-display leading-tight mb-4">
-                        Subjects We Teach
+                        1:1 Online Tuition Subjects for KG to 12th Grade
                     </h1>
                     <p className="text-lg text-gray-500 leading-relaxed">
-                        Comprehensive subject coverage from Grade 1 foundations to Grade 12 board specializations.
+                        Comprehensive personalized subject coaching from early foundational years to Grade 12 board and entrance specializations.
                     </p>
                 </div>
             </header>

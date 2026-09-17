@@ -38,6 +38,12 @@ export default function BoardsPage() {
 
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-6 max-w-5xl">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">
+                            Supported Educational Boards & Syllabus Overview
+                        </h2>
+                        <p className="text-sm text-gray-500 mt-2">Comprehensive curriculum mapping for primary, secondary, and higher secondary students</p>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {boards.map((board) => (
                             <div key={board.name} className="p-7 rounded-2xl bg-surface border border-gray-100/80 hover:bg-white hover:shadow-lg hover:shadow-gray-100/60 transition-all duration-300 group">

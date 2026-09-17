@@ -2,10 +2,18 @@ import { Metadata } from 'next';
 import HomeClient from './HomeClient';
 
 export const metadata: Metadata = {
-    title: "BrightPath Eduvora | 1:1 Online Tuition Academy KG-12",
-    description: "Learn Right. Grow Bright. High-quality 1:1 personalized online tuition for KG to 12th grade. Global standards, trusted tutors, and expert mentorship for academic excellence.",
+    title: "BrightPath Eduvora | 1:1 Online Tuition & Expert Mentors for KG-12 Students",
+    description: "BrightPath Eduvora provides personalized 1:1 online tuition for KG to 12th grade students. Certified expert tutors for CBSE, ICSE, State & IGCSE boards.",
     alternates: {
-        canonical: '/',
+        canonical: 'https://www.brightpatheduvora.com',
+    },
+    openGraph: {
+        title: "BrightPath Eduvora | 1:1 Online Tuition & Expert Mentors",
+        description: "Personalized 1:1 online tuition for KG to 12th grade students. Expert tutors, flexible scheduling, and custom study plans.",
+        url: "https://www.brightpatheduvora.com",
+        siteName: "BrightPath Eduvora",
+        locale: "en_US",
+        type: "website",
     },
 };
 

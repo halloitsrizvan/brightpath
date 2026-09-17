@@ -92,7 +92,7 @@ function SystemPoint({ icon, title, desc, color = "text-primary" }: { icon: Reac
         <div className="flex gap-3 items-start">
             <div className={`${color} mt-0.5 shrink-0`}>{icon}</div>
             <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-0.5">{title}</h4>
+                <h3 className="text-sm font-semibold text-gray-900 mb-0.5">{title}</h3>
                 <p className="text-xs text-gray-400 leading-relaxed">{desc}</p>
             </div>
         </div>

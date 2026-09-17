@@ -17,9 +17,9 @@ export default function SubjectsGrid() {
             <div className="container mx-auto px-6 max-w-6xl">
                 <ScrollReveal>
                     <div className="text-center mb-12">
-                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Subjects</p>
+                        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Our Core Subjects</p>
                         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">
-                            Subjects We Teach
+                            Core Disciplines & Specialized Mentorship
                         </h2>
                     </div>
                 </ScrollReveal>

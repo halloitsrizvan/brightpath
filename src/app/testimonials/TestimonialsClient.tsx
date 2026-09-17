@@ -77,7 +77,7 @@ export default function TestimonialsClient() {
                                         <Image src={t.img} alt={t.name} fill className="object-cover" unoptimized />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-semibold text-gray-900">{t.name}</h4>
+                                        <h3 className="text-sm font-semibold text-gray-900">{t.name}</h3>
                                         <p className="text-xs text-gray-400">{t.role}</p>
                                     </div>
                                 </div>

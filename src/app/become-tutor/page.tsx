@@ -152,7 +152,7 @@ function Step({ num, title, desc }: { num: string, title: string, desc: string }
         <div className="flex gap-4 items-start">
             <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0 text-sm font-bold">{num}</div>
             <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-0.5">{title}</h4>
+                <h3 className="text-sm font-semibold text-gray-900 mb-0.5">{title}</h3>
                 <p className="text-xs text-gray-400">{desc}</p>
             </div>
         </div>
@@ -162,7 +162,7 @@ function Step({ num, title, desc }: { num: string, title: string, desc: string }
 function QualifyPoint({ title, desc }: { title: string, desc: string }) {
     return (
         <div>
-            <h4 className="text-sm font-semibold text-primary mb-0.5">{title}</h4>
+            <h3 className="text-sm font-semibold text-primary mb-0.5">{title}</h3>
             <p className="text-xs text-gray-400">{desc}</p>
         </div>
     );
