@@ -462,41 +462,83 @@ export default function FinanceHub() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-12 px-2">
                         <div className="bg-primary p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Operational Expenses</p>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Operational Expenses</p>
+                                {/* <span className="text-[8px] md:text-[9px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    {selectedMonth === 'All Records' ? 'All Time' : selectedMonth}
+                                </span> */}
+                            </div>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 leading-none">₹{(summary.totalExpenses || 0).toLocaleString()}</h3>
-                             <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
+                            <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
                                 <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
-                                <span className="truncate">Regular monthly overheads</span>
+                                <span className="truncate">Monthly overheads & costs</span>
                             </div>
                         </div>
 
                         <div className="bg-white p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/30">
-                            <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Total Received Amount</p>
-                            <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-teal-600 mb-4 leading-none">₹{(summary.totalReceived || 0).toLocaleString()}</h3>
-                            <div className="flex items-center gap-2 md:gap-4">
-                                <div className="w-12 h-1 bg-teal-50 rounded-full flex-1 overflow-hidden">
-                                    <div className="bg-teal-500 h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalReceived / ((summary.totalReceivable || 0) + (summary.totalReceived || 1))) * 100)}%` }}></div>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Total Received Amount</p>
+                                {/* <span className="text-[8px] md:text-[9px] font-black text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    {selectedMonth === 'All Records' ? 'All Time' : selectedMonth}
+                                </span> */}
+                            </div>
+                            <h3 className="text-xl md:text-3xl font-black italic tracking-tighter text-teal-600 mb-3 leading-none">
+                                ₹{(summary.totalReceived || 0).toLocaleString()}
+                            </h3>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[8px] md:text-[9px] font-bold">
+                                    <span className="text-gray-400">
+                                        Receivable: <span className="text-rose-500 font-black">₹{(summary.totalReceivable || 0).toLocaleString()}</span>
+                                    </span>
+                                    <span className="text-teal-600 font-black">
+                                        {(((summary.totalReceived || 0) / (((summary.totalReceivable || 0) + (summary.totalReceived || 0)) || 1)) * 100).toFixed(0)}% Collected
+                                    </span>
                                 </div>
-                                <span className="text-[8px] md:text-[9px] font-black text-teal-600 uppercase whitespace-nowrap">₹{(summary.totalReceivable || 0).toLocaleString()}</span>
+                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                        className="bg-teal-500 h-full rounded-full transition-all duration-500" 
+                                        style={{ width: `${Math.min(100, ((summary.totalReceived || 0) / (((summary.totalReceivable || 0) + (summary.totalReceived || 0)) || 1)) * 100)}%` }}
+                                    ></div>
+                                </div>
                             </div>
                         </div>
 
                         <div className="bg-[#F8F9FA] p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-primary border border-gray-100 shadow-xl shadow-gray-200/20 relative overflow-hidden group">
-                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Salary Paid</p>
-                            <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 text-gray-800 leading-none">₹{(summary.totalDisbursed || 0).toLocaleString()}</h3>
-                            <div className="flex items-center gap-2 md:gap-4">
-                                <div className="w-12 h-1 bg-primary/10 rounded-full flex-1 overflow-hidden">
-                                    <div className="bg-primary h-full rounded-full" style={{ width: `${Math.min(100, (summary.totalDisbursed / ((summary.totalPayable || 0) + (summary.totalDisbursed || 1))) * 100)}%` }}></div>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Total Salary Paid</p>
+                                {/* <span className="text-[8px] md:text-[9px] font-black text-primary/70 bg-primary/5 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    {selectedMonth === 'All Records' ? 'All Time' : selectedMonth}
+                                </span> */}
+                            </div>
+                            <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-3 text-gray-800 leading-none">₹{(summary.totalDisbursed || 0).toLocaleString()}</h3>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[8px] md:text-[9px] font-bold">
+                                    <span className="text-gray-400">
+                                        Payable: <span className="text-orange-500 font-black">₹{(summary.totalPayable || 0).toLocaleString()}</span>
+                                    </span>
+                                    <span className="text-primary font-black">
+                                        {(((summary.totalDisbursed || 0) / (((summary.totalPayable || 0) + (summary.totalDisbursed || 0)) || 1)) * 100).toFixed(0)}% Disbursed
+                                    </span>
                                 </div>
-                                <span className="text-[8px] md:text-[9px] font-black text-primary uppercase whitespace-nowrap">₹{(summary.totalPayable || 0).toLocaleString()}</span>
+                                <div className="w-full h-1.5 bg-gray-200/60 rounded-full overflow-hidden">
+                                    <div 
+                                        className="bg-primary h-full rounded-full transition-all duration-500" 
+                                        style={{ width: `${Math.min(100, ((summary.totalDisbursed || 0) / (((summary.totalPayable || 0) + (summary.totalDisbursed || 0)) || 1)) * 100)}%` }}
+                                    ></div>
+                                </div>
                             </div>
                         </div>
 
                         <div className={`p-4 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl relative overflow-hidden group ${summary.profit >= 0 ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-rose-600 text-white shadow-rose-200'}`}>
                             <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Realized Profit</p>
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Realized Profit</p>
+                                {/* <span className="text-[8px] md:text-[9px] font-bold text-white/80 bg-white/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    {selectedMonth === 'All Records' ? 'All Time' : selectedMonth}
+                                </span> */}
+                            </div>
                             <h3 className="text-xl md:text-3xl font-black italic tracking-tighter mb-4 leading-none">₹{(summary.profit || 0).toLocaleString()}</h3>
-                             <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
+                            <div className="flex items-center gap-1.5 md:gap-2 text-[8px] md:text-[10px] font-bold text-white/80">
                                 <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 shrink-0" />
                                 <span className="truncate">Margin: {((summary.profit / (summary.totalReceived || 1)) * 100).toFixed(1)}%</span>
                             </div>
