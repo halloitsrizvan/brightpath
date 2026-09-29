@@ -58,6 +58,7 @@ export default function FinanceHub() {
     const [isCalculatingAmount, setIsCalculatingAmount] = useState<boolean>(false);
     const [calculationNote, setCalculationNote] = useState<string>('');
     const [activeFeeIds, setActiveFeeIds] = useState<string[]>([]);
+    const [modalMobileTab, setModalMobileTab] = useState<'summary' | 'activities'>('summary');
     const [paidSearchQuery, setPaidSearchQuery] = useState<string>('');
     const [paidFilterType, setPaidFilterType] = useState<'all' | 'multi' | 'single'>('all');
 
@@ -181,6 +182,7 @@ export default function FinanceHub() {
         setCutoffActivities([]);
         setCutoffSummary(null);
         setCalculationNote('Calculating activity up to cutoff...');
+        setModalMobileTab('summary');
 
         // Calculate dynamic amount based on today's cutoff
         calculateCutoffAmount(idArray, todayStr);
@@ -1333,272 +1335,460 @@ export default function FinanceHub() {
 
             {/* Premium Confirmation Modal */}
             {confirmModal.isOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in duration-300">
                     <div 
                         className="absolute inset-0 bg-primary/20 backdrop-blur-md" 
                         onClick={() => !confirmModal.loading && setConfirmModal(prev => ({...prev, isOpen: false}))}
                     ></div>
                     
-                    <div className={`bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-4 border-white max-h-[92vh] overflow-y-auto ${confirmModal.isFee ? 'max-w-4xl lg:max-w-5xl w-full' : 'max-w-md w-full'}`}>
+                    <div className={`bg-white rounded-[1.75rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-2 sm:border-4 border-white max-h-[92vh] flex flex-col ${confirmModal.isFee ? 'max-w-4xl lg:max-w-5xl w-full' : 'max-w-md w-full'}`}>
                         
                         {/* Close Button at Top-Right */}
                         <button
                             onClick={() => !confirmModal.loading && setConfirmModal(prev => ({...prev, isOpen: false}))}
                             disabled={confirmModal.loading}
-                            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700 flex items-center justify-center transition z-20 cursor-pointer"
+                            className="absolute top-4 right-4 sm:top-5 sm:right-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-gray-700 flex items-center justify-center transition z-20 cursor-pointer"
                             title="Close"
                         >
                             <X className="w-4 h-4" />
                         </button>
 
                         {confirmModal.isFee ? (
-                            /* Two-Column Layout for Fee Settlement */
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-                                
-                                {/* Left Column: Settlement Controls & Calculations */}
-                                <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                            <div className="flex flex-col h-full overflow-hidden">
+                                {/* Header (Always Visible) */}
+                                <div className="flex items-center gap-3 mb-3 pr-8 flex-shrink-0">
+                                    <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center text-primary flex-shrink-0">
+                                        <Wallet className="w-5 h-5 md:w-6 md:h-6" />
+                                    </div>
                                     <div>
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div className="w-11 h-11 bg-primary/10 rounded-2xl flex items-center justify-center text-primary flex-shrink-0">
-                                                <Wallet className="w-6 h-6" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg md:text-xl font-black text-gray-900 italic uppercase tracking-tighter leading-tight">
-                                                    {confirmModal.title}
-                                                </h3>
-                                                <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                                    Billing Reconciliation
-                                                </span>
-                                            </div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <h3 className="text-base sm:text-lg md:text-xl font-black text-gray-900 italic uppercase tracking-tighter leading-tight">
+                                                {confirmModal.title}
+                                            </h3>
+                                            <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                Billing Reconciliation
+                                            </span>
                                         </div>
-                                        <p className="text-gray-400 font-bold text-xs leading-relaxed mb-4">
+                                        <p className="text-gray-400 font-bold text-[11px] md:text-xs leading-snug mt-0.5 line-clamp-1 sm:line-clamp-none">
                                             {confirmModal.message}
                                         </p>
-
-                                        {/* Settlement Amount Card */}
-                                        <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-teal-500/10 border border-primary/20 shadow-sm mb-4">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-[9px] font-black uppercase tracking-widest text-primary">
-                                                        Calculated Settlement Due
-                                                    </p>
-                                                    <div className="flex items-baseline gap-2 mt-0.5">
-                                                        <span className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">
-                                                            ₹{settlementAmount.toLocaleString()}
-                                                        </span>
-                                                        {isCalculatingAmount && (
-                                                            <span className="text-[8px] font-black text-primary animate-pulse uppercase tracking-wider bg-primary/15 px-2 py-0.5 rounded-full">
-                                                                Updating...
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-primary/20 font-black text-lg italic flex-shrink-0">
-                                                    <IndianRupee className="w-5 h-5" />
-                                                </div>
-                                            </div>
-                                            {calculationNote && (
-                                                <p className="text-[10px] font-bold text-gray-500 mt-2 italic border-t border-primary/10 pt-2">
-                                                    {calculationNote}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Cutoff Date Picker */}
-                                        <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/80 mb-2">
-                                            <div className="flex items-center justify-between mb-1.5">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-indigo-900/80">
-                                                    Bill Activity Until (Cutoff Date)
-                                                </label>
-                                                <span className="text-[8px] font-black text-primary bg-white border border-primary/20 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
-                                                    Configurable
-                                                </span>
-                                            </div>
-                                            <input 
-                                                type="date"
-                                                value={billingCutoffDate}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setBillingCutoffDate(val);
-                                                    if (val && activeFeeIds.length > 0) {
-                                                        calculateCutoffAmount(activeFeeIds, val);
-                                                    }
-                                                }}
-                                                className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-sm transition"
-                                            />
-                                            <p className="text-[9px] text-indigo-950/60 font-medium mt-2 italic leading-tight">
-                                                Classes & hours on the right update automatically as you adjust this cutoff date.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Modal Action Buttons */}
-                                    <div className="flex gap-3 pt-2">
-                                        <button
-                                            onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                                            disabled={confirmModal.loading}
-                                            className="flex-1 py-3.5 bg-gray-100 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={() => confirmModal.onConfirm(billingCutoffDate)}
-                                            disabled={confirmModal.loading || isCalculatingAmount}
-                                            className="flex-[2] py-3.5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-102 active:scale-98 transition disabled:opacity-50 italic"
-                                        >
-                                            {confirmModal.loading ? 'Processing...' : `Confirm (₹${settlementAmount.toLocaleString()})`}
-                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Right Column: Attendance Activity Table */}
-                                <div className="lg:col-span-7 bg-slate-50/80 p-4 md:p-5 rounded-3xl border border-slate-200/80 flex flex-col justify-between min-h-[380px]">
-                                    <div>
-                                        {/* Header */}
-                                        <div className="flex items-center justify-between mb-3.5 pb-3 border-b border-slate-200">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-700 flex items-center justify-center font-bold">
-                                                    <BookOpen className="w-4 h-4" />
+                                {/* Mobile Tab Switcher (Visible on Mobile only) */}
+                                <div className="flex lg:hidden bg-slate-100/90 p-1 rounded-xl mb-3 flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalMobileTab('summary')}
+                                        className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer ${modalMobileTab === 'summary' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        <Wallet className="w-3.5 h-3.5" />
+                                        <span>Settlement</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setModalMobileTab('activities')}
+                                        className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer ${modalMobileTab === 'activities' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        <span>Classes ({cutoffActivities.length})</span>
+                                    </button>
+                                </div>
+
+                                {/* Content Area: Desktop View */}
+                                <div className="hidden lg:grid lg:grid-cols-12 gap-8 items-start overflow-y-auto pr-1">
+                                    {/* Left Column: Settlement Controls & Calculations */}
+                                    <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
+                                        <div>
+                                            {/* Settlement Amount Card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-teal-500/10 border border-primary/20 shadow-sm mb-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-[9px] font-black uppercase tracking-widest text-primary">
+                                                            Calculated Settlement Due
+                                                        </p>
+                                                        <div className="flex items-baseline gap-2 mt-0.5">
+                                                            <span className="text-3xl font-black text-gray-900 italic tracking-tight">
+                                                                ₹{settlementAmount.toLocaleString()}
+                                                            </span>
+                                                            {isCalculatingAmount && (
+                                                                <span className="text-[8px] font-black text-primary animate-pulse uppercase tracking-wider bg-primary/15 px-2 py-0.5 rounded-full">
+                                                                    Updating...
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-primary/20 font-black text-lg italic flex-shrink-0">
+                                                        <IndianRupee className="w-5 h-5" />
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h4 className="text-xs md:text-sm font-black text-gray-900 uppercase italic tracking-tight">
-                                                        Included Activity Records
-                                                    </h4>
-                                                    <p className="text-[9px] font-bold text-gray-400">
-                                                        Class sessions logged up to selected cutoff date
+                                                {calculationNote && (
+                                                    <p className="text-[10px] font-bold text-gray-500 mt-2 italic border-t border-primary/10 pt-2">
+                                                        {calculationNote}
                                                     </p>
-                                                </div>
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="px-2.5 py-1 bg-white text-teal-700 font-black text-[10px] rounded-lg border border-teal-200 shadow-2xs italic">
-                                                    {cutoffActivities.length} Class{cutoffActivities.length !== 1 ? 'es' : ''}
-                                                </span>
+
+                                            {/* Cutoff Date Picker */}
+                                            <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/80 mb-2">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-indigo-900/80">
+                                                        Bill Activity Until (Cutoff Date)
+                                                    </label>
+                                                    <span className="text-[8px] font-black text-primary bg-white border border-primary/20 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
+                                                        Configurable
+                                                    </span>
+                                                </div>
+                                                <input 
+                                                    type="date"
+                                                    value={billingCutoffDate}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setBillingCutoffDate(val);
+                                                        if (val && activeFeeIds.length > 0) {
+                                                            calculateCutoffAmount(activeFeeIds, val);
+                                                        }
+                                                    }}
+                                                    className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-sm transition"
+                                                />
+                                                <p className="text-[9px] text-indigo-950/60 font-medium mt-2 italic leading-tight">
+                                                    Classes & hours on the right update automatically as you adjust this cutoff date.
+                                                </p>
                                             </div>
                                         </div>
 
-                                        {/* Table / List Container */}
-                                        {isCalculatingAmount ? (
-                                            <div className="py-14 flex flex-col items-center justify-center space-y-3">
-                                                <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                                                <p className="text-xs font-bold text-gray-400 italic">Recalculating learning activities...</p>
+                                        {/* Desktop Modal Action Buttons */}
+                                        <div className="flex gap-3 pt-2">
+                                            <button
+                                                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                                                disabled={confirmModal.loading}
+                                                className="flex-1 py-3.5 bg-gray-100 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition cursor-pointer"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={() => confirmModal.onConfirm(billingCutoffDate)}
+                                                disabled={confirmModal.loading || isCalculatingAmount}
+                                                className="flex-[2] py-3.5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-102 active:scale-98 transition disabled:opacity-50 italic cursor-pointer"
+                                            >
+                                                {confirmModal.loading ? 'Processing...' : `Confirm (₹${settlementAmount.toLocaleString()})`}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Attendance Activity Table */}
+                                    <div className="lg:col-span-7 bg-slate-50/80 p-5 rounded-3xl border border-slate-200/80 flex flex-col justify-between min-h-[380px]">
+                                        <div>
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between mb-3.5 pb-3 border-b border-slate-200">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-700 flex items-center justify-center font-bold">
+                                                        <BookOpen className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-black text-gray-900 uppercase italic tracking-tight">
+                                                            Included Activity Records
+                                                        </h4>
+                                                        <p className="text-[9px] font-bold text-gray-400">
+                                                            Class sessions logged up to selected cutoff date
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="px-2.5 py-1 bg-white text-teal-700 font-black text-[10px] rounded-lg border border-teal-200 shadow-2xs italic">
+                                                        {cutoffActivities.length} Class{cutoffActivities.length !== 1 ? 'es' : ''}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        ) : cutoffActivities.length === 0 ? (
-                                            <div className="py-12 px-4 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/60 my-2">
-                                                <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-2.5" />
-                                                <p className="text-xs font-black text-gray-700 uppercase tracking-tight">No Attendance Logs Found</p>
-                                                <p className="text-[10px] text-gray-400 font-medium mt-1 max-w-xs mx-auto">
-                                                    No active class sessions were logged before or on this cutoff date.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-                                                <div className="max-h-[260px] overflow-y-auto">
-                                                    <table className="w-full text-left border-collapse text-xs">
-                                                        <thead className="bg-gray-50/90 text-[9px] font-black text-gray-400 uppercase tracking-widest sticky top-0 z-10 border-b border-gray-100 backdrop-blur-xs">
-                                                            <tr>
-                                                                <th className="px-3 py-2.5">Date</th>
-                                                                <th className="px-3 py-2.5">Subject & Tutor</th>
-                                                                <th className="px-3 py-2.5 text-center">Duration</th>
-                                                                <th className="px-3 py-2.5 text-right">Rate</th>
-                                                                <th className="px-3 py-2.5 text-right">Amount</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-gray-100">
-                                                            {cutoffActivities.map((act: any, idx: number) => {
-                                                                const dateStr = act.date ? new Date(act.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
-                                                                return (
-                                                                    <tr key={act._id || idx} className="hover:bg-teal-50/30 transition">
-                                                                        <td className="px-3 py-2.5 font-bold text-gray-800 whitespace-nowrap">
-                                                                            <div className="flex items-center gap-1.5">
-                                                                                <div className="w-2 h-2 rounded-full bg-teal-500"></div>
-                                                                                <span>{dateStr}</span>
-                                                                            </div>
-                                                                        </td>
-                                                                        <td className="px-3 py-2.5">
-                                                                            <p className="font-bold text-gray-900 leading-tight">{act.subjectName}</p>
-                                                                            <p className="text-[9px] font-medium text-gray-400 leading-tight">{act.teacherName}</p>
-                                                                        </td>
-                                                                        <td className="px-3 py-2.5 text-center whitespace-nowrap">
-                                                                            <span className="font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded text-[10px]">
-                                                                                {act.hours.toFixed(1)} hr
-                                                                            </span>
-                                                                        </td>
-                                                                        <td className="px-3 py-2.5 text-right font-medium text-gray-500 whitespace-nowrap">
-                                                                            ₹{act.billRate}/hr
-                                                                        </td>
-                                                                        <td className="px-3 py-2.5 text-right font-black text-gray-900 whitespace-nowrap">
-                                                                            ₹{act.amount.toLocaleString()}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            })}
-                                                        </tbody>
-                                                    </table>
+
+                                            {/* Table Container */}
+                                            {isCalculatingAmount ? (
+                                                <div className="py-14 flex flex-col items-center justify-center space-y-3">
+                                                    <div className="w-7 h-7 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                    <p className="text-xs font-bold text-gray-400 italic">Recalculating learning activities...</p>
+                                                </div>
+                                            ) : cutoffActivities.length === 0 ? (
+                                                <div className="py-12 px-4 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/60 my-2">
+                                                    <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-2.5" />
+                                                    <p className="text-xs font-black text-gray-700 uppercase tracking-tight">No Attendance Logs Found</p>
+                                                    <p className="text-[10px] text-gray-400 font-medium mt-1 max-w-xs mx-auto">
+                                                        No active class sessions were logged before or on this cutoff date.
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
+                                                    <div className="max-h-[260px] overflow-y-auto">
+                                                        <table className="w-full text-left border-collapse text-xs">
+                                                            <thead className="bg-gray-50/90 text-[9px] font-black text-gray-400 uppercase tracking-widest sticky top-0 z-10 border-b border-gray-100 backdrop-blur-xs">
+                                                                <tr>
+                                                                    <th className="px-3 py-2.5">Date</th>
+                                                                    <th className="px-3 py-2.5">Subject & Tutor</th>
+                                                                    <th className="px-3 py-2.5 text-center">Duration</th>
+                                                                    <th className="px-3 py-2.5 text-right">Rate</th>
+                                                                    <th className="px-3 py-2.5 text-right">Amount</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-gray-100">
+                                                                {cutoffActivities.map((act: any, idx: number) => {
+                                                                    const dateStr = act.date ? new Date(act.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
+                                                                    return (
+                                                                        <tr key={act._id || idx} className="hover:bg-teal-50/30 transition">
+                                                                            <td className="px-3 py-2.5 font-bold text-gray-800 whitespace-nowrap">
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                                                                                    <span>{dateStr}</span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-3 py-2.5">
+                                                                                <p className="font-bold text-gray-900 leading-tight">{act.subjectName}</p>
+                                                                                <p className="text-[9px] font-medium text-gray-400 leading-tight">{act.teacherName}</p>
+                                                                            </td>
+                                                                            <td className="px-3 py-2.5 text-center whitespace-nowrap">
+                                                                                <span className="font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded text-[10px]">
+                                                                                    {act.hours.toFixed(1)} hr
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="px-3 py-2.5 text-right font-medium text-gray-500 whitespace-nowrap">
+                                                                                ₹{act.billRate}/hr
+                                                                            </td>
+                                                                            <td className="px-3 py-2.5 text-right font-black text-gray-900 whitespace-nowrap">
+                                                                                ₹{act.amount.toLocaleString()}
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Summary Footer Pill */}
+                                        {cutoffActivities.length > 0 && !isCalculatingAmount && (
+                                            <div className="mt-3.5 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] font-bold text-gray-500 bg-white/80 p-2.5 rounded-xl border border-slate-100">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-3.5 h-3.5 text-primary" />
+                                                    <span>Total Logged: <strong className="text-gray-900">{cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs</strong></span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span>Gross: <strong className="text-gray-900">₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
+                                                    {cutoffSummary && cutoffSummary.paid > 0 && (
+                                                        <span className="text-emerald-600 ml-2 font-bold">(-₹{cutoffSummary.paid.toLocaleString()} paid)</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
+                                </div>
 
-                                    {/* Summary Footer Pill */}
-                                    {cutoffActivities.length > 0 && !isCalculatingAmount && (
-                                        <div className="mt-3.5 pt-3 border-t border-slate-200 flex items-center justify-between text-[10px] font-bold text-gray-500 bg-white/80 p-2.5 rounded-xl border border-slate-100">
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="w-3.5 h-3.5 text-primary" />
-                                                <span>Total Logged: <strong className="text-gray-900">{cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs</strong></span>
-                                            </div>
-                                            <div className="text-right">
-                                                <span>Gross: <strong className="text-gray-900">₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
-                                                {cutoffSummary && cutoffSummary.paid > 0 && (
-                                                    <span className="text-emerald-600 ml-2 font-bold">(-₹{cutoffSummary.paid.toLocaleString()} paid)</span>
+                                {/* Content Area: Mobile Responsive View */}
+                                <div className="block lg:hidden flex-1 overflow-y-auto pr-0.5 space-y-3">
+                                    {modalMobileTab === 'summary' ? (
+                                        <div className="space-y-3 animate-in fade-in duration-150">
+                                            {/* Settlement Amount Card */}
+                                            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-teal-500/10 border border-primary/20 shadow-xs">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-[9px] font-black uppercase tracking-widest text-primary">
+                                                            Calculated Settlement Due
+                                                        </p>
+                                                        <div className="flex items-baseline gap-2 mt-0.5">
+                                                            <span className="text-2xl sm:text-3xl font-black text-gray-900 italic tracking-tight">
+                                                                ₹{settlementAmount.toLocaleString()}
+                                                            </span>
+                                                            {isCalculatingAmount && (
+                                                                <span className="text-[8px] font-black text-primary animate-pulse uppercase tracking-wider bg-primary/15 px-2 py-0.5 rounded-full">
+                                                                    Updating...
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-primary/20 font-black text-lg italic flex-shrink-0">
+                                                        <IndianRupee className="w-5 h-5" />
+                                                    </div>
+                                                </div>
+                                                {calculationNote && (
+                                                    <p className="text-[10px] font-bold text-gray-500 mt-2 italic border-t border-primary/10 pt-2 leading-relaxed">
+                                                        {calculationNote}
+                                                    </p>
                                                 )}
                                             </div>
+
+                                            {/* Cutoff Date Picker */}
+                                            <div className="p-3.5 rounded-2xl bg-indigo-50/50 border border-indigo-100/80">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-indigo-900/80">
+                                                        Cutoff Date
+                                                    </label>
+                                                    <span className="text-[8px] font-black text-primary bg-white border border-primary/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                                                        Configurable
+                                                    </span>
+                                                </div>
+                                                <input 
+                                                    type="date"
+                                                    value={billingCutoffDate}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setBillingCutoffDate(val);
+                                                        if (val && activeFeeIds.length > 0) {
+                                                            calculateCutoffAmount(activeFeeIds, val);
+                                                        }
+                                                    }}
+                                                    className="w-full px-3 py-2 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-xs transition"
+                                                />
+                                                <p className="text-[9px] text-indigo-950/60 font-medium mt-1.5 italic leading-tight">
+                                                    Activity & amount update automatically based on cutoff date.
+                                                </p>
+                                            </div>
+
+                                            {/* Activity Quick Link Card */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setModalMobileTab('activities')}
+                                                className="w-full p-3 rounded-2xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 text-left transition flex items-center justify-between group cursor-pointer"
+                                            >
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-700 flex items-center justify-center font-bold flex-shrink-0">
+                                                        <BookOpen className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-black text-gray-900 uppercase italic">
+                                                            {cutoffActivities.length} Classes Included
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-400 font-bold">
+                                                            {cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs logged
+                                                            {cutoffSummary && cutoffSummary.paid > 0 && ` • ₹${cutoffSummary.paid.toLocaleString()} prev. paid`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center text-primary font-bold text-xs group-hover:translate-x-0.5 transition">
+                                                    <span>View</span>
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </div>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        /* Activities List on Mobile */
+                                        <div className="space-y-2.5 animate-in fade-in duration-150">
+                                            {isCalculatingAmount ? (
+                                                <div className="py-12 flex flex-col items-center justify-center space-y-2">
+                                                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                                    <p className="text-xs font-bold text-gray-400 italic">Updating classes...</p>
+                                                </div>
+                                            ) : cutoffActivities.length === 0 ? (
+                                                <div className="py-10 px-4 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/60">
+                                                    <Calendar className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                                    <p className="text-xs font-black text-gray-700 uppercase">No Classes Logged</p>
+                                                    <p className="text-[10px] text-gray-400 mt-1">No attendance logs before cutoff date.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                                                    {cutoffActivities.map((act: any, idx: number) => {
+                                                        const dateStr = act.date ? new Date(act.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
+                                                        return (
+                                                            <div key={act._id || idx} className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 flex flex-col gap-1.5 shadow-2xs">
+                                                                <div className="flex items-center justify-between">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                                                                        <span className="text-xs font-black text-gray-800">{dateStr}</span>
+                                                                        <span className="text-[9px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                                                                            {act.subjectName}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-xs font-black text-gray-900">
+                                                                        ₹{act.amount.toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between text-[10px] text-gray-500">
+                                                                    <span className="truncate max-w-[170px] font-medium text-gray-600">{act.teacherName || 'Tutor'}</span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="bg-white border border-gray-200 px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-700">
+                                                                            {act.hours.toFixed(1)} hr
+                                                                        </span>
+                                                                        <span className="text-gray-400 font-medium">₹{act.billRate}/hr</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* Mobile Activities Summary */}
+                                            {cutoffActivities.length > 0 && !isCalculatingAmount && (
+                                                <div className="p-2.5 rounded-xl bg-slate-100/80 border border-slate-200 flex items-center justify-between text-[10px] font-bold text-gray-600">
+                                                    <span>Total: <strong>{cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs</strong></span>
+                                                    <span>Gross: <strong>₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Mobile Sticky / Bottom Action Bar (Visible on Mobile only) */}
+                                <div className="flex lg:hidden gap-2.5 pt-3 mt-3 border-t border-slate-100 flex-shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                                        disabled={confirmModal.loading}
+                                        className="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => confirmModal.onConfirm(billingCutoffDate)}
+                                        disabled={confirmModal.loading || isCalculatingAmount}
+                                        className="flex-[2] py-3 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/25 active:scale-98 transition disabled:opacity-50 italic cursor-pointer truncate px-2"
+                                    >
+                                        {confirmModal.loading ? 'Processing...' : `Confirm (₹${settlementAmount.toLocaleString()})`}
+                                    </button>
                                 </div>
                             </div>
                         ) : (
                             /* Compact Single-Column Layout for Disbursement / Non-Fee Modals */
                             <div>
-                                <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6 animate-bounce">
-                                    <Wallet className="w-8 h-8 md:w-10 md:h-10" />
+                                <div className="w-14 h-14 md:w-20 md:h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-4 md:mb-6 animate-bounce">
+                                    <Wallet className="w-7 h-7 md:w-10 md:h-10" />
                                 </div>
-                                <h3 className="text-xl md:text-2xl font-black text-gray-900 italic uppercase tracking-tighter mb-3 leading-none">
+                                <h3 className="text-lg md:text-2xl font-black text-gray-900 italic uppercase tracking-tighter mb-2 md:mb-3 leading-none">
                                     {confirmModal.title}
                                 </h3>
-                                <p className="text-gray-400 font-bold text-xs md:text-sm leading-relaxed mb-6">
+                                <p className="text-gray-400 font-bold text-xs md:text-sm leading-relaxed mb-4 md:mb-6">
                                     {confirmModal.message}
                                 </p>
 
-                                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-teal-500/10 border-2 border-primary/20 shadow-sm">
+                                <div className="mb-4 md:mb-6 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-teal-500/10 border-2 border-primary/20 shadow-sm">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-[10px] font-black uppercase tracking-widest text-primary">
                                                 Disbursement Amount
                                             </p>
                                             <div className="flex items-baseline gap-2 mt-1">
-                                                <span className="text-3xl font-black text-gray-900 italic tracking-tight">
+                                                <span className="text-2xl md:text-3xl font-black text-gray-900 italic tracking-tight">
                                                     ₹{settlementAmount.toLocaleString()}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/25 font-black text-xl italic flex-shrink-0">
-                                            <IndianRupee className="w-6 h-6" />
+                                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/25 font-black text-xl italic flex-shrink-0">
+                                            <IndianRupee className="w-5 h-5 md:w-6 md:h-6" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4">
+                                <div className="flex gap-3 md:gap-4">
                                     <button
                                         onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                         disabled={confirmModal.loading}
-                                        className="flex-1 py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition"
+                                        className="flex-1 py-3 md:py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition cursor-pointer"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         onClick={() => confirmModal.onConfirm(billingCutoffDate)}
                                         disabled={confirmModal.loading || isCalculatingAmount}
-                                        className="flex-[2] py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition disabled:opacity-50 italic"
+                                        className="flex-[2] py-3 md:py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition disabled:opacity-50 italic cursor-pointer"
                                     >
                                         {confirmModal.loading ? 'Processing...' : `Confirm Disbursement (₹${settlementAmount.toLocaleString()})`}
                                     </button>
