@@ -60,6 +60,14 @@ export default function HomeClient() {
         return () => clearInterval(timer);
     }, [isPaused, testimonials.length]);
 
+    // Auto-open Free Demo modal 3 seconds after landing on website
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsDemoModalOpen(true);
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
         <div className="min-h-screen bg-white relative overflow-x-hidden">
             {/* SEO Structured Data */}
