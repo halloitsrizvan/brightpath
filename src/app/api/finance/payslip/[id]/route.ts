@@ -36,30 +36,69 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             const startDate = new Date(parseInt(year), mIndex, 1);
             const endDate = new Date(parseInt(year), mIndex + 1, 0, 23, 59, 59);
 
-            const classes = await Attendance.find({
+            const allMonthClasses = await Attendance.find({
                 teacherId: teacher._id,
                 date: { $gte: startDate, $lte: endDate },
                 status: 'Present'
             }).populate('studentId').populate('subjectId');
 
+            // Find all paid student fees for this month
+            const Fee = (await import('@/models/Fee')).default;
+            const paidFees = await Fee.find({
+                month: salary.month,
+                paymentStatus: 'paid'
+            });
+
+            const studentPaidCutoffs: { [sId: string]: (Date | null)[] } = {};
+            for (const fee of paidFees) {
+                const sId = fee.studentId.toString();
+                if (!studentPaidCutoffs[sId]) studentPaidCutoffs[sId] = [];
+                studentPaidCutoffs[sId].push(fee.billingCutoffDate ? new Date(fee.billingCutoffDate) : null);
+            }
+
+            // Filter classes to only those where student fee was paid and within disbursement cutoff if any
+            const disburseCutoff = salary.disbursementCutoffDate ? new Date(salary.disbursementCutoffDate) : null;
+            if (disburseCutoff) disburseCutoff.setHours(23, 59, 59, 999);
+
+            const classes = allMonthClasses.filter(cls => {
+                const sId = (cls.studentId as any)?._id?.toString();
+                if (!sId) return false;
+                const classDate = new Date(cls.date);
+
+                const isStudentPaid = studentPaidCutoffs[sId] ? studentPaidCutoffs[sId].some(cutoff => {
+                    if (!cutoff) return true;
+                    const end = new Date(cutoff);
+                    end.setHours(23, 59, 59, 999);
+                    return classDate.getTime() <= end.getTime();
+                }) : false;
+
+                const isWithinDisburseCutoff = disburseCutoff ? classDate.getTime() <= disburseCutoff.getTime() : true;
+                return isStudentPaid && isWithinDisburseCutoff;
+            });
+
             let baseEarnings = 0;
+            let totalQualifiedHours = 0;
             for (const cls of classes) {
                 const student = cls.studentId as any;
                 if (!student) continue;
                 let rate = (teacher as any).salaryPerHour || 0;
-                if (student.subjectAssignments) {
+                if (cls.salaryRateAtTime !== undefined && cls.salaryRateAtTime !== null) {
+                    rate = cls.salaryRateAtTime;
+                } else if (student.subjectAssignments) {
                     const assignment = student.subjectAssignments.find((a: any) => 
                         (a.subjectId?.toString() === cls.subjectId?._id?.toString() || a.subjectId?.toString() === cls.subjectId?.toString()) && 
                         a.teacherId?.toString() === (teacher as any)._id.toString()
                     );
                     if (assignment && assignment.salaryPerHour > 0) rate = assignment.salaryPerHour;
                 }
-                baseEarnings += (cls.durationMinutes / 60) * rate;
+                const hrs = (cls.durationMinutes || 0) / 60;
+                totalQualifiedHours += hrs;
+                baseEarnings += hrs * rate;
             }
 
             const allRules = await IncentiveRule.find({ active: true });
             const reachedIncentive = allRules
-                .filter(r => r.targetTeachers.some((tid: any) => tid.toString() === (teacher as any)._id.toString()) && r.targetHours <= salary.totalHours)
+                .filter(r => r.targetTeachers.some((tid: any) => tid.toString() === (teacher as any)._id.toString()) && r.targetHours <= totalQualifiedHours)
                 .reduce((max, r) => Math.max(max, r.incentiveAmount), 0);
 
             let page = pdfDoc.addPage([600, 800]);

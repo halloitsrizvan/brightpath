@@ -21,7 +21,31 @@ export async function syncFinancialsForMonth(month: string) {
         status: 'Present'
     }).populate('studentId').populate('teacherId');
 
-    const teacherCalcs: { [key: string]: { earnings: number, hours: number, baseRate: number } } = {};
+    // Fetch all paid fees for the month to determine which student attendances are paid
+    const paidFeesForMonth = await Fee.find({
+        month,
+        paymentStatus: 'paid'
+    });
+
+    // Map studentId -> array of paid cutoff dates (null means entire month is paid)
+    const studentPaidCutoffs: { [studentId: string]: (Date | null)[] } = {};
+    for (const fee of paidFeesForMonth) {
+        const sId = fee.studentId.toString();
+        if (!studentPaidCutoffs[sId]) studentPaidCutoffs[sId] = [];
+        studentPaidCutoffs[sId].push(fee.billingCutoffDate ? new Date(fee.billingCutoffDate) : null);
+    }
+
+    const teacherCalcs: { 
+        [key: string]: { 
+            earnings: number, 
+            hours: number, 
+            qualifiedEarnings: number, 
+            qualifiedHours: number, 
+            pendingStudentEarnings: number,
+            pendingStudentHours: number,
+            baseRate: number 
+        } 
+    } = {};
     const studentCalcs: { [key: string]: { totalBill: number, hours: number } } = {};
 
     for (const rec of allAttendances) {
@@ -32,6 +56,7 @@ export async function syncFinancialsForMonth(month: string) {
         const tId = teacher._id.toString();
         const sId = student._id.toString();
         const hours = (rec.durationMinutes || 0) / 60;
+        const attDate = new Date(rec.date);
 
         let billRate = 0;
         let salaryRate = teacher.salaryPerHour || 0;
@@ -59,9 +84,37 @@ export async function syncFinancialsForMonth(month: string) {
             if (assignment && assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
         }
 
-        if (!teacherCalcs[tId]) teacherCalcs[tId] = { earnings: 0, hours: 0, baseRate: teacher.salaryPerHour || 0 };
-        teacherCalcs[tId].earnings += hours * salaryRate;
+        if (!teacherCalcs[tId]) {
+            teacherCalcs[tId] = { 
+                earnings: 0, 
+                hours: 0, 
+                qualifiedEarnings: 0, 
+                qualifiedHours: 0, 
+                pendingStudentEarnings: 0,
+                pendingStudentHours: 0,
+                baseRate: teacher.salaryPerHour || 0 
+            };
+        }
+
+        const classEarnings = hours * salaryRate;
+        teacherCalcs[tId].earnings += classEarnings;
         teacherCalcs[tId].hours += hours;
+
+        // Check if student has paid for this class session based on paid fee cutoff dates
+        const isStudentPaid = studentPaidCutoffs[sId] ? studentPaidCutoffs[sId].some((cutoff) => {
+            if (!cutoff) return true; // Full month paid
+            const endOfDayCutoff = new Date(cutoff);
+            endOfDayCutoff.setHours(23, 59, 59, 999);
+            return attDate.getTime() <= endOfDayCutoff.getTime();
+        }) : false;
+
+        if (isStudentPaid) {
+            teacherCalcs[tId].qualifiedEarnings += classEarnings;
+            teacherCalcs[tId].qualifiedHours += hours;
+        } else {
+            teacherCalcs[tId].pendingStudentEarnings += classEarnings;
+            teacherCalcs[tId].pendingStudentHours += hours;
+        }
 
         if (!studentCalcs[sId]) studentCalcs[sId] = { totalBill: 0, hours: 0 };
         studentCalcs[sId].totalBill += hours * billRate;
@@ -73,23 +126,33 @@ export async function syncFinancialsForMonth(month: string) {
     // Update Salaries
     for (const tId in teacherCalcs) {
         const data = teacherCalcs[tId];
-        const reachedIncentive = allRules
+        
+        const qualifiedIncentive = allRules
+            .filter(r => r.targetTeachers.some((id: any) => id.toString() === tId) && r.targetHours <= data.qualifiedHours)
+            .reduce((max, r) => Math.max(max, r.incentiveAmount), 0);
+
+        const totalIncentive = allRules
             .filter(r => r.targetTeachers.some((id: any) => id.toString() === tId) && r.targetHours <= data.hours)
             .reduce((max, r) => Math.max(max, r.incentiveAmount), 0);
 
-        const finalMonthlySalary = Math.round(data.earnings + reachedIncentive);
+        const finalQualifiedSalary = Math.round(data.qualifiedEarnings + qualifiedIncentive);
+        const finalTotalSalary = Math.round(data.earnings + totalIncentive);
+        const pendingStudentSalary = Math.max(0, finalTotalSalary - finalQualifiedSalary);
 
         const existingSalary = await Salary.findOne({ teacherId: tId, month });
         if (existingSalary && existingSalary.paidStatus === 'paid') {
-            continue; // CRITICAL: Protect paid records from updates
+            continue; // CRITICAL: Protect fully paid records from updates
         }
 
         await Salary.findOneAndUpdate(
             { teacherId: tId, month },
             { 
                 totalHours: parseFloat(data.hours.toFixed(2)),
+                qualifiedHours: parseFloat(data.qualifiedHours.toFixed(2)),
                 salaryPerHour: data.baseRate,
-                totalSalary: finalMonthlySalary
+                totalSalary: finalTotalSalary,
+                qualifiedSalary: finalQualifiedSalary,
+                pendingStudentSalary: pendingStudentSalary
             },
             { upsert: true, new: true }
         );

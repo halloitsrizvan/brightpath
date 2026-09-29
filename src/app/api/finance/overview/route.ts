@@ -57,7 +57,12 @@ export async function GET(req: NextRequest) {
 
         // Calculate summary statistics
         const totalReceivable = unpaidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
-        const totalPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
+        const totalPayable = unpaidSalaries.reduce((acc, salary) => {
+            const qualified = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+            return acc + (qualified || 0);
+        }, 0);
+        const totalAccruedPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
+        const totalPendingStudentPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.pendingStudentSalary || 0), 0);
         const totalReceived = paidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
         const totalDisbursed = paidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
         const totalExpenses = allExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0);
@@ -71,6 +76,8 @@ export async function GET(req: NextRequest) {
             summary: {
                 totalReceivable,
                 totalPayable,
+                totalAccruedPayable,
+                totalPendingStudentPayable,
                 totalReceived,
                 totalDisbursed,
                 totalExpenses,

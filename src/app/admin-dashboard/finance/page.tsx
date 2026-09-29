@@ -116,6 +116,43 @@ export default function FinanceHub() {
         }
     };
 
+    const calculateSalaryDisbursement = async (ids: string[], cutoff: string) => {
+        if (!ids || ids.length === 0 || !cutoff) return;
+        try {
+            setIsCalculatingAmount(true);
+            const { data } = await api.post('/finance/salary/calculate-disbursement', {
+                salaryIds: ids,
+                cutoffDate: cutoff
+            });
+            if (data && typeof data.amount === 'number') {
+                setSettlementAmount(data.amount);
+                if (data.breakdown) {
+                    setFeeBreakdown(data.breakdown);
+                }
+                if (Array.isArray(data.activities)) {
+                    setCutoffActivities(data.activities);
+                } else {
+                    setCutoffActivities([]);
+                }
+                setCutoffSummary({ 
+                    gross: data.totalAccrued, 
+                    paid: data.pendingStudentAmount, 
+                    net: data.amount 
+                });
+                const cutoffParts = String(cutoff).split('-');
+                const formattedCutoff = cutoffParts.length === 3 
+                    ? new Date(parseInt(cutoffParts[0]), parseInt(cutoffParts[1]) - 1, parseInt(cutoffParts[2])).toLocaleDateString()
+                    : new Date(cutoff).toLocaleDateString();
+
+                setCalculationNote(`${data.qualifiedClassesCount} of ${data.classesCount} class(es) (${data.qualifiedHours} hrs) qualified based on student payments up to ${formattedCutoff}`);
+            }
+        } catch (err) {
+            console.error("Failed to calculate salary disbursement:", err);
+        } finally {
+            setIsCalculatingAmount(false);
+        }
+    };
+
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -124,13 +161,15 @@ export default function FinanceHub() {
         onConfirm: (cutoffDate?: string) => void;
         loading: boolean;
         isFee?: boolean;
+        isSalary?: boolean;
     }>({
         isOpen: false,
         title: '',
         message: '',
         onConfirm: () => { },
         loading: false,
-        isFee: false
+        isFee: false,
+        isSalary: false
     });
 
     const monthsOptions = useMemo(() => {
@@ -250,27 +289,59 @@ export default function FinanceHub() {
 
     const markSalaryPaid = (salaryIds: string | string[], tutorName: string, amount: number) => {
         const idArray = Array.isArray(salaryIds) ? salaryIds : [salaryIds];
-        const idString = idArray.join(',');
-        setActiveFeeIds([]);
+        const todayStr = getTodayDateString();
+        setBillingCutoffDate(todayStr);
+        setActiveFeeIds(idArray);
         setSettlementAmount(amount);
-        setCalculationNote('');
+        settlementAmountRef.current = amount;
+        setFeeBreakdown({});
+        feeBreakdownRef.current = {};
+        setCutoffActivities([]);
+        setCutoffSummary(null);
+        setCalculationNote('Calculating student-paid qualified sessions...');
+        setModalMobileTab('summary');
+
+        // Dynamically calculate qualified disbursement based on student paid status
+        calculateSalaryDisbursement(idArray, todayStr);
 
         setConfirmModal({
             isOpen: true,
             title: idArray.length > 1 ? "Batch Disbursement" : "Disburse Payroll",
-            message: idArray.length > 1 
-                ? `Initiate batch disbursement of ₹${amount.toLocaleString()} to ${tutorName} for ${idArray.length} records? This will generate payslips for all.`
-                : `Initiate salary disbursement of ₹${amount.toLocaleString()} to ${tutorName}? A payslip will be generated and logged.`,
+            message: `Disbursing remuneration for ${tutorName}. Only class sessions where students have settled their fee bills are qualified for payout.`,
             loading: false,
             isFee: false,
-            onConfirm: async () => {
+            isSalary: true,
+            onConfirm: async (selectedCutoff?: string) => {
+                const cutoff = selectedCutoff || todayStr;
+                let cutoffDateObj: Date | null = null;
+                if (cutoff) {
+                    const parsed = new Date(cutoff);
+                    if (!isNaN(parsed.getTime())) {
+                        cutoffDateObj = new Date(`${cutoff}T23:59:59.999Z`);
+                    }
+                }
+
                 setConfirmModal(prev => ({ ...prev, loading: true }));
                 try {
-                    await Promise.all(idArray.map(id => 
-                        api.put(`/finance/salary/${id}`, { paidStatus: 'paid' })
-                    ));
+                    const latestBreakdown = feeBreakdownRef.current;
+                    const latestSettlementAmount = settlementAmountRef.current;
+
+                    await Promise.all(idArray.map(id => {
+                        const calculatedSalaryAmount = (latestBreakdown && latestBreakdown[id] !== undefined)
+                            ? latestBreakdown[id]
+                            : (idArray.length === 1 ? (latestSettlementAmount > 0 ? latestSettlementAmount : amount) : Math.round(amount / idArray.length));
+
+                        return api.put(`/finance/salary/${id}`, { 
+                            paidStatus: 'paid',
+                            paymentDate: new Date(),
+                            disbursementCutoffDate: cutoffDateObj || new Date(),
+                            totalSalary: calculatedSalaryAmount,
+                            qualifiedSalary: calculatedSalaryAmount,
+                            disbursedAmount: calculatedSalaryAmount
+                        });
+                    }));
                     
-                    toast.success(idArray.length > 1 ? `${idArray.length} records disbursed` : "Salary disbursed");
+                    toast.success(idArray.length > 1 ? `${idArray.length} records disbursed` : "Salary disbursed successfully");
                     fetchFinance();
                     setSelectedSalaries([]);
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -1150,7 +1221,7 @@ export default function FinanceHub() {
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-4 md:gap-6">
-                                                <p className="text-sm md:text-lg font-black text-orange-600 italic">₹{groupedSalaries[month].reduce((sum: any, s: any) => sum + (s.totalSalary || 0), 0).toLocaleString()}</p>
+                                                <p className="text-sm md:text-lg font-black text-orange-600 italic">₹{groupedSalaries[month].reduce((sum: any, s: any) => sum + ((s.qualifiedSalary !== undefined ? s.qualifiedSalary : s.totalSalary) || 0), 0).toLocaleString()}</p>
                                                 {expandedMonths.includes(`salary_${month}`) ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
                                             </div>
                                         </button>
@@ -1164,155 +1235,215 @@ export default function FinanceHub() {
                                                             <tr className="text-[9px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
                                                                 <th className="pb-3 px-4">Tutor Profile</th>
                                                                 <th className="pb-3 text-center">Class Hours</th>
-                                                                <th className="pb-3 text-center">Net Salary</th>
-                                                                <th className="pb-3 text-right pr-4">Status</th>
+                                                                <th className="pb-3 text-center">Disburseable Net</th>
+                                                                <th className="pb-3 text-right pr-4">Status / Action</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-50">
-                                                            {groupedSalaries[month].map((salary: any) => (
-                                                                <tr key={salary._id} className={`${selectedSalaries.includes(salary._id) ? 'bg-orange-50/50' : ''} hover:bg-gray-50/50 transition-colors`}>
-                                                                    <td className="py-4 px-4">
-                                                                        <div className="flex items-center gap-3">
-                                                                            {salary.paidStatus !== 'paid' && (
-                                                                                <button 
-                                                                                    onClick={() => {
-                                                                                        const isSelected = selectedSalaries.includes(salary._id);
-                                                                                        if (!isSelected) {
-                                                                                            const currentlySelectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
-                                                                                            if (currentlySelectedData.length > 0) {
-                                                                                                const firstTeacherId = currentlySelectedData[0].teacherId?._id;
-                                                                                                if (salary.teacherId?._id !== firstTeacherId) {
-                                                                                                    toast.error("Please select payrolls for a single tutor at a time.");
-                                                                                                    return;
+                                                            {groupedSalaries[month].map((salary: any) => {
+                                                                const disburseable = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                                const pending = salary.pendingStudentSalary || 0;
+                                                                const isFullyPaid = salary.paidStatus === 'paid';
+                                                                const hasPendingFees = pending > 0;
+
+                                                                return (
+                                                                    <tr key={salary._id} className={`${selectedSalaries.includes(salary._id) ? 'bg-orange-50/50' : ''} hover:bg-gray-50/50 transition-colors`}>
+                                                                        <td className="py-4 px-4">
+                                                                            <div className="flex items-center gap-3">
+                                                                                {!isFullyPaid && (
+                                                                                    <button 
+                                                                                        onClick={() => {
+                                                                                            const isSelected = selectedSalaries.includes(salary._id);
+                                                                                            if (!isSelected) {
+                                                                                                const currentlySelectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
+                                                                                                if (currentlySelectedData.length > 0) {
+                                                                                                    const firstTeacherId = currentlySelectedData[0].teacherId?._id;
+                                                                                                    if (salary.teacherId?._id !== firstTeacherId) {
+                                                                                                        toast.error("Please select payrolls for a single tutor at a time.");
+                                                                                                        return;
+                                                                                                    }
                                                                                                 }
+                                                                                                setSelectedSalaries(prev => [...prev, salary._id]);
+                                                                                            } else {
+                                                                                                setSelectedSalaries(prev => prev.filter(id => id !== salary._id));
                                                                                             }
-                                                                                            setSelectedSalaries(prev => [...prev, salary._id]);
-                                                                                        } else {
-                                                                                            setSelectedSalaries(prev => prev.filter(id => id !== salary._id));
-                                                                                        }
-                                                                                    }}
-                                                                                    className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectedSalaries.includes(salary._id) ? 'bg-orange-500 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-white border-gray-200 hover:border-orange-500/40'}`}
+                                                                                        }}
+                                                                                        className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${selectedSalaries.includes(salary._id) ? 'bg-orange-500 border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-white border-gray-200 hover:border-orange-500/40'}`}
+                                                                                    >
+                                                                                        {selectedSalaries.includes(salary._id) && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                                                    </button>
+                                                                                )}
+                                                                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-[10px] font-black italic">{salary.teacherId?.name?.charAt(0)}</div>
+                                                                                <div>
+                                                                                    <p className="text-xs md:text-sm font-black text-gray-800">{salary.teacherId?.name}</p>
+                                                                                    <p className="text-[8px] font-bold text-gray-400 italic font-mono uppercase tracking-tighter">Rate: ₹{salary.salaryPerHour}/hr</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="py-4 text-center">
+                                                                            <span className="text-xs md:text-sm font-black text-gray-700 tracking-tighter italic block">
+                                                                                {salary.totalHours} hrs
+                                                                            </span>
+                                                                            {salary.qualifiedHours !== undefined && salary.qualifiedHours < salary.totalHours && (
+                                                                                <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-100 italic inline-block mt-0.5">
+                                                                                    {salary.qualifiedHours} hrs student-paid
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+                                                                        <td className="py-4 text-center">
+                                                                            <div className="inline-flex flex-col items-center">
+                                                                                <span className="text-xs md:text-sm font-black text-gray-900 italic tracking-tight">
+                                                                                    ₹{(disburseable || 0).toLocaleString()}
+                                                                                </span>
+                                                                                {hasPendingFees && (
+                                                                                    <span className="text-[8px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full mt-0.5 inline-flex items-center gap-1">
+                                                                                        <Clock className="w-2.5 h-2.5" />
+                                                                                        ₹{pending.toLocaleString()} pending student fee
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="py-4 text-right pr-4">
+                                                                            {isFullyPaid ? (
+                                                                                <div className="flex items-center justify-end gap-3">
+                                                                                    <button
+                                                                                        onClick={() => downloadPayslip(salary._id)}
+                                                                                        className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition border border-transparent hover:border-primary/20"
+                                                                                        title="Download Payslip"
+                                                                                    >
+                                                                                        <Download className="w-4 h-4" />
+                                                                                    </button>
+                                                                                    <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 italic">Disbursed</span>
+                                                                                </div>
+                                                                            ) : disburseable <= 0 ? (
+                                                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 text-gray-400 font-bold text-[9px] uppercase tracking-wider rounded-xl border border-gray-200">
+                                                                                    <Clock className="w-3 h-3 text-amber-500" />
+                                                                                    <span>Awaiting Student Fees</span>
+                                                                                </span>
+                                                                            ) : (
+                                                                                <button
+                                                                                    onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, disburseable)}
+                                                                                    className="px-4 md:px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 italic cursor-pointer"
                                                                                 >
-                                                                                    {selectedSalaries.includes(salary._id) && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                                                    Disburse (₹{disburseable.toLocaleString()})
                                                                                 </button>
                                                                             )}
-                                                                            <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 text-[10px] font-black italic">{salary.teacherId?.name?.charAt(0)}</div>
-                                                                            <div>
-                                                                                <p className="text-xs md:text-sm font-black text-gray-800">{salary.teacherId?.name}</p>
-                                                                                <p className="text-[8px] font-bold text-gray-400 italic font-mono uppercase tracking-tighter">Rate: ₹{salary.salaryPerHour}/hr</p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="py-4 text-center">
-                                                                        <span className="text-xs md:text-sm font-black text-gray-600 tracking-tighter italic">{salary.totalHours} hrs</span>
-                                                                    </td>
-                                                                    <td className="py-4 text-center">
-                                                                        <span className="text-xs md:text-sm font-black text-gray-900 italic tracking-tight">₹{(salary.totalSalary || 0).toLocaleString()}</span>
-                                                                    </td>
-                                                                    <td className="py-4 text-right pr-4">
-                                                                        {salary.paidStatus === 'paid' ? (
-                                                                            <div className="flex items-center justify-end gap-3">
-                                                                                <button
-                                                                                    onClick={() => downloadPayslip(salary._id)}
-                                                                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition border border-transparent hover:border-primary/20"
-                                                                                >
-                                                                                    <Download className="w-4 h-4" />
-                                                                                </button>
-                                                                                <span className="text-[9px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 italic">Disbursed</span>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <button
-                                                                                onClick={() => markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary)}
-                                                                                className="px-4 md:px-6 py-2 bg-primary hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition shadow-lg shadow-primary/10 italic"
-                                                                            >
-                                                                                Disburse
-                                                                            </button>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
                                                         </tbody>
                                                     </table>
                                                 </div>
 
                                                 {/* Mobile View: Div Cards */}
                                                 <div className="block md:hidden space-y-2.5">
-                                                    {groupedSalaries[month].map((salary: any) => (
-                                                        <div 
-                                                            key={salary._id}
-                                                            onClick={() => {
-                                                                if (salary.paidStatus === 'paid') return;
-                                                                const isSelected = selectedSalaries.includes(salary._id);
-                                                                if (!isSelected) {
-                                                                    const currentlySelectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
-                                                                    if (currentlySelectedData.length > 0) {
-                                                                        const firstTeacherId = currentlySelectedData[0].teacherId?._id;
-                                                                        if (salary.teacherId?._id !== firstTeacherId) {
-                                                                            toast.error("Please select payrolls for a single tutor at a time.");
-                                                                            return;
-                                                                        }
-                                                                    }
-                                                                    setSelectedSalaries(prev => [...prev, salary._id]);
-                                                                } else {
-                                                                    setSelectedSalaries(prev => prev.filter(id => id !== salary._id));
-                                                                }
-                                                            }}
-                                                            className={`p-3.5 rounded-xl border transition-all ${
-                                                                salary.paidStatus === 'paid'
-                                                                    ? 'bg-gray-50/70 border-gray-100'
-                                                                    : selectedSalaries.includes(salary._id)
-                                                                    ? 'bg-orange-500/10 border-orange-500 shadow-sm cursor-pointer'
-                                                                    : 'bg-white border-gray-100 hover:border-gray-200 cursor-pointer'
-                                                            } flex items-center justify-between gap-3`}
-                                                        >
-                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black italic shrink-0 transition-all ${
-                                                                    salary.paidStatus === 'paid'
-                                                                        ? 'bg-teal-50 text-teal-600 border border-teal-100'
-                                                                        : selectedSalaries.includes(salary._id)
-                                                                        ? 'bg-orange-500 text-white'
-                                                                        : 'bg-gray-100 text-gray-500'
-                                                                }`}>
-                                                                    {selectedSalaries.includes(salary._id) ? <CheckCircle2 className="w-4 h-4 text-white" /> : salary.teacherId?.name?.charAt(0)}
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <p className="text-xs font-black text-gray-900 truncate">{salary.teacherId?.name}</p>
-                                                                    <p className="text-[9px] font-bold text-gray-400 italic">
-                                                                        {salary.totalHours} hrs • Rate: ₹{salary.salaryPerHour}/hr
-                                                                    </p>
-                                                                </div>
-                                                            </div>
+                                                    {groupedSalaries[month].map((salary: any) => {
+                                                        const disburseable = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                        const pending = salary.pendingStudentSalary || 0;
+                                                        const isFullyPaid = salary.paidStatus === 'paid';
+                                                        const hasPendingFees = pending > 0;
 
-                                                            <div className="flex items-center gap-2 shrink-0">
-                                                                <span className="text-xs font-black text-gray-900 italic tracking-tight">₹{(salary.totalSalary || 0).toLocaleString()}</span>
-                                                                {salary.paidStatus === 'paid' ? (
-                                                                    <div className="flex items-center gap-1">
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                downloadPayslip(salary._id);
-                                                                            }}
-                                                                            className="p-1.5 text-gray-400 hover:text-primary rounded-lg"
-                                                                            title="Download Payslip"
-                                                                        >
-                                                                            <Download className="w-4 h-4" />
-                                                                        </button>
-                                                                        <span className="text-[8px] font-black text-teal-600 uppercase tracking-wider bg-teal-50 px-2 py-0.5 rounded border border-teal-100 italic">Disbursed</span>
+                                                        return (
+                                                            <div 
+                                                                key={salary._id}
+                                                                onClick={() => {
+                                                                    if (isFullyPaid) return;
+                                                                    const isSelected = selectedSalaries.includes(salary._id);
+                                                                    if (!isSelected) {
+                                                                        const currentlySelectedData = allSalaries.filter((s: any) => selectedSalaries.includes(s._id));
+                                                                        if (currentlySelectedData.length > 0) {
+                                                                            const firstTeacherId = currentlySelectedData[0].teacherId?._id;
+                                                                            if (salary.teacherId?._id !== firstTeacherId) {
+                                                                                toast.error("Please select payrolls for a single tutor at a time.");
+                                                                                return;
+                                                                            }
+                                                                        }
+                                                                        setSelectedSalaries(prev => [...prev, salary._id]);
+                                                                    } else {
+                                                                        setSelectedSalaries(prev => prev.filter(id => id !== salary._id));
+                                                                    }
+                                                                }}
+                                                                className={`p-3.5 rounded-xl border transition-all ${
+                                                                    isFullyPaid
+                                                                        ? 'bg-gray-50/70 border-gray-100'
+                                                                        : selectedSalaries.includes(salary._id)
+                                                                        ? 'bg-orange-500/10 border-orange-500 shadow-sm cursor-pointer'
+                                                                        : 'bg-white border-gray-100 hover:border-gray-200 cursor-pointer'
+                                                                } flex flex-col gap-2.5`}
+                                                            >
+                                                                <div className="flex items-center justify-between gap-3">
+                                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black italic shrink-0 transition-all ${
+                                                                            isFullyPaid
+                                                                                ? 'bg-teal-50 text-teal-600 border border-teal-100'
+                                                                                : selectedSalaries.includes(salary._id)
+                                                                                ? 'bg-orange-500 text-white'
+                                                                                : 'bg-gray-100 text-gray-500'
+                                                                        }`}>
+                                                                            {selectedSalaries.includes(salary._id) ? <CheckCircle2 className="w-4 h-4 text-white" /> : salary.teacherId?.name?.charAt(0)}
+                                                                        </div>
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-xs font-black text-gray-900 truncate">{salary.teacherId?.name}</p>
+                                                                            <p className="text-[9px] font-bold text-gray-400 italic">
+                                                                                {salary.totalHours} hrs • Rate: ₹{salary.salaryPerHour}/hr
+                                                                            </p>
+                                                                        </div>
                                                                     </div>
-                                                                ) : (
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            markSalaryPaid(salary._id, salary.teacherId?.name, salary.totalSalary);
-                                                                        }}
-                                                                        className="px-3 py-1.5 bg-primary text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm italic"
-                                                                    >
-                                                                        Disburse
-                                                                    </button>
-                                                                )}
+
+                                                                    <div className="text-right shrink-0">
+                                                                        <span className="text-xs font-black text-gray-900 italic tracking-tight">
+                                                                            ₹{(disburseable || 0).toLocaleString()}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Sub-row: Pending indicator & Action */}
+                                                                <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
+                                                                    <div>
+                                                                        {hasPendingFees && (
+                                                                            <span className="text-[8px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                                                                                <Clock className="w-2.5 h-2.5" />
+                                                                                ₹{pending.toLocaleString()} pending
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+
+                                                                    <div>
+                                                                        {isFullyPaid ? (
+                                                                            <div className="flex items-center gap-1">
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        downloadPayslip(salary._id);
+                                                                                    }}
+                                                                                    className="p-1.5 text-gray-400 hover:text-primary rounded-lg"
+                                                                                    title="Download Payslip"
+                                                                                >
+                                                                                    <Download className="w-4 h-4" />
+                                                                                </button>
+                                                                                <span className="text-[8px] font-black text-teal-600 uppercase tracking-wider bg-teal-50 px-2 py-0.5 rounded border border-teal-100 italic">Disbursed</span>
+                                                                            </div>
+                                                                        ) : disburseable <= 0 ? (
+                                                                            <span className="text-[8px] font-bold text-gray-400 bg-gray-50 border border-gray-200 px-2 py-1 rounded-lg uppercase tracking-wider">
+                                                                                Awaiting Fees
+                                                                            </span>
+                                                                        ) : (
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    markSalaryPaid(salary._id, salary.teacherId?.name, disburseable);
+                                                                                }}
+                                                                                className="px-3 py-1.5 bg-primary text-white font-black text-[9px] uppercase tracking-wider rounded-lg shadow-sm italic cursor-pointer"
+                                                                            >
+                                                                                Disburse
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ))}
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         )}
@@ -1341,7 +1472,7 @@ export default function FinanceHub() {
                         onClick={() => !confirmModal.loading && setConfirmModal(prev => ({...prev, isOpen: false}))}
                     ></div>
                     
-                    <div className={`bg-white rounded-[1.75rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-2 sm:border-4 border-white max-h-[92vh] flex flex-col ${confirmModal.isFee ? 'max-w-4xl lg:max-w-5xl w-full' : 'max-w-md w-full'}`}>
+                    <div className={`bg-white rounded-[1.75rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200 border-2 sm:border-4 border-white max-h-[92vh] flex flex-col ${(confirmModal.isFee || confirmModal.isSalary) ? 'max-w-4xl lg:max-w-5xl w-full' : 'max-w-md w-full'}`}>
                         
                         {/* Close Button at Top-Right */}
                         <button
@@ -1353,7 +1484,7 @@ export default function FinanceHub() {
                             <X className="w-4 h-4" />
                         </button>
 
-                        {confirmModal.isFee ? (
+                        {(confirmModal.isFee || confirmModal.isSalary) ? (
                             <div className="flex flex-col h-full overflow-hidden">
                                 {/* Header (Always Visible) */}
                                 <div className="flex items-center gap-3 mb-3 pr-8 flex-shrink-0">
@@ -1366,7 +1497,7 @@ export default function FinanceHub() {
                                                 {confirmModal.title}
                                             </h3>
                                             <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                                Billing Reconciliation
+                                                {confirmModal.isSalary ? 'Payroll Reconciliation' : 'Billing Reconciliation'}
                                             </span>
                                         </div>
                                         <p className="text-gray-400 font-bold text-[11px] md:text-xs leading-snug mt-0.5 line-clamp-1 sm:line-clamp-none">
@@ -1383,7 +1514,7 @@ export default function FinanceHub() {
                                         className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer ${modalMobileTab === 'summary' ? 'bg-white text-primary shadow-xs' : 'text-gray-500 hover:text-gray-800'}`}
                                     >
                                         <Wallet className="w-3.5 h-3.5" />
-                                        <span>Settlement</span>
+                                        <span>{confirmModal.isSalary ? 'Disbursement' : 'Settlement'}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -1397,15 +1528,15 @@ export default function FinanceHub() {
 
                                 {/* Content Area: Desktop View */}
                                 <div className="hidden lg:grid lg:grid-cols-12 gap-8 items-start overflow-y-auto pr-1">
-                                    {/* Left Column: Settlement Controls & Calculations */}
+                                    {/* Left Column: Settlement / Disbursement Controls & Calculations */}
                                     <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
                                         <div>
-                                            {/* Settlement Amount Card */}
+                                            {/* Settlement / Disbursement Amount Card */}
                                             <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-teal-500/10 border border-primary/20 shadow-sm mb-4">
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <p className="text-[9px] font-black uppercase tracking-widest text-primary">
-                                                            Calculated Settlement Due
+                                                            {confirmModal.isSalary ? 'Qualified Tutor Remuneration' : 'Calculated Settlement Due'}
                                                         </p>
                                                         <div className="flex items-baseline gap-2 mt-0.5">
                                                             <span className="text-3xl font-black text-gray-900 italic tracking-tight">
@@ -1433,7 +1564,7 @@ export default function FinanceHub() {
                                             <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/80 mb-2">
                                                 <div className="flex items-center justify-between mb-1.5">
                                                     <label className="text-[10px] font-black uppercase tracking-widest text-indigo-900/80">
-                                                        Bill Activity Until (Cutoff Date)
+                                                        {confirmModal.isSalary ? 'Disburse Activity Until (Cutoff Date)' : 'Bill Activity Until (Cutoff Date)'}
                                                     </label>
                                                     <span className="text-[8px] font-black text-primary bg-white border border-primary/20 px-2 py-0.5 rounded uppercase tracking-wider shadow-2xs">
                                                         Configurable
@@ -1446,13 +1577,19 @@ export default function FinanceHub() {
                                                         const val = e.target.value;
                                                         setBillingCutoffDate(val);
                                                         if (val && activeFeeIds.length > 0) {
-                                                            calculateCutoffAmount(activeFeeIds, val);
+                                                            if (confirmModal.isSalary) {
+                                                                calculateSalaryDisbursement(activeFeeIds, val);
+                                                            } else {
+                                                                calculateCutoffAmount(activeFeeIds, val);
+                                                            }
                                                         }
                                                     }}
                                                     className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-sm transition"
                                                 />
                                                 <p className="text-[9px] text-indigo-950/60 font-medium mt-2 italic leading-tight">
-                                                    Classes & hours on the right update automatically as you adjust this cutoff date.
+                                                    {confirmModal.isSalary 
+                                                        ? 'Classes qualified by student payments update automatically as you adjust this cutoff date.'
+                                                        : 'Classes & hours on the right update automatically as you adjust this cutoff date.'}
                                                 </p>
                                             </div>
                                         </div>
@@ -1468,10 +1605,10 @@ export default function FinanceHub() {
                                             </button>
                                             <button
                                                 onClick={() => confirmModal.onConfirm(billingCutoffDate)}
-                                                disabled={confirmModal.loading || isCalculatingAmount}
+                                                disabled={confirmModal.loading || isCalculatingAmount || settlementAmount <= 0}
                                                 className="flex-[2] py-3.5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-102 active:scale-98 transition disabled:opacity-50 italic cursor-pointer"
                                             >
-                                                {confirmModal.loading ? 'Processing...' : `Confirm (₹${settlementAmount.toLocaleString()})`}
+                                                {confirmModal.loading ? 'Processing...' : (confirmModal.isSalary ? `Confirm Disbursement (₹${settlementAmount.toLocaleString()})` : `Confirm (₹${settlementAmount.toLocaleString()})`)}
                                             </button>
                                         </div>
                                     </div>
@@ -1487,10 +1624,12 @@ export default function FinanceHub() {
                                                     </div>
                                                     <div>
                                                         <h4 className="text-sm font-black text-gray-900 uppercase italic tracking-tight">
-                                                            Included Activity Records
+                                                            {confirmModal.isSalary ? 'Tutor Class Sessions' : 'Included Activity Records'}
                                                         </h4>
                                                         <p className="text-[9px] font-bold text-gray-400">
-                                                            Class sessions logged up to selected cutoff date
+                                                            {confirmModal.isSalary 
+                                                                ? 'Only sessions where students paid fee bills are qualified'
+                                                                : 'Class sessions logged up to selected cutoff date'}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1522,26 +1661,30 @@ export default function FinanceHub() {
                                                             <thead className="bg-gray-50/90 text-[9px] font-black text-gray-400 uppercase tracking-widest sticky top-0 z-10 border-b border-gray-100 backdrop-blur-xs">
                                                                 <tr>
                                                                     <th className="px-3 py-2.5">Date</th>
-                                                                    <th className="px-3 py-2.5">Subject & Tutor</th>
+                                                                    <th className="px-3 py-2.5">{confirmModal.isSalary ? 'Subject & Student' : 'Subject & Tutor'}</th>
                                                                     <th className="px-3 py-2.5 text-center">Duration</th>
                                                                     <th className="px-3 py-2.5 text-right">Rate</th>
                                                                     <th className="px-3 py-2.5 text-right">Amount</th>
+                                                                    {confirmModal.isSalary && <th className="px-3 py-2.5 text-center">Student Fee</th>}
                                                                 </tr>
                                                             </thead>
                                                             <tbody className="divide-y divide-gray-100">
                                                                 {cutoffActivities.map((act: any, idx: number) => {
                                                                     const dateStr = act.date ? new Date(act.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
+                                                                    const isUnqualified = confirmModal.isSalary && !act.isQualified;
                                                                     return (
-                                                                        <tr key={act._id || idx} className="hover:bg-teal-50/30 transition">
+                                                                        <tr key={act._id || idx} className={`transition ${isUnqualified ? 'bg-amber-50/30 opacity-70' : 'hover:bg-teal-50/30'}`}>
                                                                             <td className="px-3 py-2.5 font-bold text-gray-800 whitespace-nowrap">
                                                                                 <div className="flex items-center gap-1.5">
-                                                                                    <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                                                                                    <div className={`w-2 h-2 rounded-full ${isUnqualified ? 'bg-amber-400' : 'bg-teal-500'}`}></div>
                                                                                     <span>{dateStr}</span>
                                                                                 </div>
                                                                             </td>
                                                                             <td className="px-3 py-2.5">
                                                                                 <p className="font-bold text-gray-900 leading-tight">{act.subjectName}</p>
-                                                                                <p className="text-[9px] font-medium text-gray-400 leading-tight">{act.teacherName}</p>
+                                                                                <p className="text-[9px] font-medium text-gray-400 leading-tight">
+                                                                                    {confirmModal.isSalary ? (act.studentName || 'Student') : (act.teacherName || 'Tutor')}
+                                                                                </p>
                                                                             </td>
                                                                             <td className="px-3 py-2.5 text-center whitespace-nowrap">
                                                                                 <span className="font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded text-[10px]">
@@ -1549,11 +1692,28 @@ export default function FinanceHub() {
                                                                                 </span>
                                                                             </td>
                                                                             <td className="px-3 py-2.5 text-right font-medium text-gray-500 whitespace-nowrap">
-                                                                                ₹{act.billRate}/hr
+                                                                                ₹{confirmModal.isSalary ? (act.salaryRate || 0) : (act.billRate || 0)}/hr
                                                                             </td>
                                                                             <td className="px-3 py-2.5 text-right font-black text-gray-900 whitespace-nowrap">
                                                                                 ₹{act.amount.toLocaleString()}
                                                                             </td>
+                                                                            {confirmModal.isSalary && (
+                                                                                <td className="px-3 py-2.5 text-center whitespace-nowrap">
+                                                                                    {act.isQualified ? (
+                                                                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                                                            Paid
+                                                                                        </span>
+                                                                                    ) : !act.isStudentPaid ? (
+                                                                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                                                                                            Unpaid
+                                                                                        </span>
+                                                                                    ) : (
+                                                                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-slate-100 text-slate-700 border border-slate-200">
+                                                                                            Beyond Cutoff
+                                                                                        </span>
+                                                                                    )}
+                                                                                </td>
+                                                                            )}
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -1572,9 +1732,20 @@ export default function FinanceHub() {
                                                     <span>Total Logged: <strong className="text-gray-900">{cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs</strong></span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span>Gross: <strong className="text-gray-900">₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
-                                                    {cutoffSummary && cutoffSummary.paid > 0 && (
-                                                        <span className="text-emerald-600 ml-2 font-bold">(-₹{cutoffSummary.paid.toLocaleString()} paid)</span>
+                                                    {confirmModal.isSalary ? (
+                                                        <>
+                                                            <span>Disburseable: <strong className="text-emerald-700">₹{settlementAmount.toLocaleString()}</strong></span>
+                                                            {cutoffSummary && cutoffSummary.paid > 0 && (
+                                                                <span className="text-amber-600 ml-2 font-bold">(₹{cutoffSummary.paid.toLocaleString()} pending fee)</span>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span>Gross: <strong className="text-gray-900">₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
+                                                            {cutoffSummary && cutoffSummary.paid > 0 && (
+                                                                <span className="text-emerald-600 ml-2 font-bold">(-₹{cutoffSummary.paid.toLocaleString()} paid)</span>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
                                             </div>
@@ -1586,12 +1757,12 @@ export default function FinanceHub() {
                                 <div className="block lg:hidden flex-1 overflow-y-auto pr-0.5 space-y-3">
                                     {modalMobileTab === 'summary' ? (
                                         <div className="space-y-3 animate-in fade-in duration-150">
-                                            {/* Settlement Amount Card */}
+                                            {/* Settlement / Disbursement Amount Card */}
                                             <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-teal-500/10 border border-primary/20 shadow-xs">
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <p className="text-[9px] font-black uppercase tracking-widest text-primary">
-                                                            Calculated Settlement Due
+                                                            {confirmModal.isSalary ? 'Qualified Tutor Remuneration' : 'Calculated Settlement Due'}
                                                         </p>
                                                         <div className="flex items-baseline gap-2 mt-0.5">
                                                             <span className="text-2xl sm:text-3xl font-black text-gray-900 italic tracking-tight">
@@ -1632,13 +1803,19 @@ export default function FinanceHub() {
                                                         const val = e.target.value;
                                                         setBillingCutoffDate(val);
                                                         if (val && activeFeeIds.length > 0) {
-                                                            calculateCutoffAmount(activeFeeIds, val);
+                                                            if (confirmModal.isSalary) {
+                                                                calculateSalaryDisbursement(activeFeeIds, val);
+                                                            } else {
+                                                                calculateCutoffAmount(activeFeeIds, val);
+                                                            }
                                                         }
                                                     }}
                                                     className="w-full px-3 py-2 rounded-xl border border-indigo-200/80 bg-white font-bold text-xs text-gray-800 focus:outline-none focus:border-primary shadow-xs transition"
                                                 />
                                                 <p className="text-[9px] text-indigo-950/60 font-medium mt-1.5 italic leading-tight">
-                                                    Activity & amount update automatically based on cutoff date.
+                                                    {confirmModal.isSalary 
+                                                        ? 'Classes & disburseable amounts update automatically based on cutoff date.'
+                                                        : 'Activity & amount update automatically based on cutoff date.'}
                                                 </p>
                                             </div>
 
@@ -1654,11 +1831,13 @@ export default function FinanceHub() {
                                                     </div>
                                                     <div>
                                                         <p className="text-xs font-black text-gray-900 uppercase italic">
-                                                            {cutoffActivities.length} Classes Included
+                                                            {cutoffActivities.length} Classes Logged
                                                         </p>
                                                         <p className="text-[10px] text-gray-400 font-bold">
-                                                            {cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs logged
-                                                            {cutoffSummary && cutoffSummary.paid > 0 && ` • ₹${cutoffSummary.paid.toLocaleString()} prev. paid`}
+                                                            {cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs total
+                                                            {confirmModal.isSalary 
+                                                                ? ` • ${cutoffActivities.filter((a: any) => a.isQualified).length} student-paid`
+                                                                : (cutoffSummary && cutoffSummary.paid > 0 ? ` • ₹${cutoffSummary.paid.toLocaleString()} prev. paid` : '')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -1686,27 +1865,37 @@ export default function FinanceHub() {
                                                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                                                     {cutoffActivities.map((act: any, idx: number) => {
                                                         const dateStr = act.date ? new Date(act.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
+                                                        const isUnqualified = confirmModal.isSalary && !act.isQualified;
                                                         return (
-                                                            <div key={act._id || idx} className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80 flex flex-col gap-1.5 shadow-2xs">
+                                                            <div key={act._id || idx} className={`p-3 rounded-xl border flex flex-col gap-1.5 shadow-2xs ${isUnqualified ? 'bg-amber-50/40 border-amber-200/80 opacity-80' : 'bg-slate-50/80 border-slate-200/80'}`}>
                                                                 <div className="flex items-center justify-between">
                                                                     <div className="flex items-center gap-1.5">
-                                                                        <div className="w-2 h-2 rounded-full bg-teal-500"></div>
+                                                                        <div className={`w-2 h-2 rounded-full ${isUnqualified ? 'bg-amber-400' : 'bg-teal-500'}`}></div>
                                                                         <span className="text-xs font-black text-gray-800">{dateStr}</span>
                                                                         <span className="text-[9px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wider">
                                                                             {act.subjectName}
                                                                         </span>
                                                                     </div>
-                                                                    <span className="text-xs font-black text-gray-900">
-                                                                        ₹{act.amount.toLocaleString()}
-                                                                    </span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-xs font-black text-gray-900">
+                                                                            ₹{act.amount.toLocaleString()}
+                                                                        </span>
+                                                                    </div>
                                                                 </div>
                                                                 <div className="flex items-center justify-between text-[10px] text-gray-500">
-                                                                    <span className="truncate max-w-[170px] font-medium text-gray-600">{act.teacherName || 'Tutor'}</span>
+                                                                    <span className="truncate max-w-[150px] font-medium text-gray-600">
+                                                                        {confirmModal.isSalary ? (act.studentName || 'Student') : (act.teacherName || 'Tutor')}
+                                                                    </span>
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="bg-white border border-gray-200 px-1.5 py-0.5 rounded text-[9px] font-bold text-gray-700">
                                                                             {act.hours.toFixed(1)} hr
                                                                         </span>
-                                                                        <span className="text-gray-400 font-medium">₹{act.billRate}/hr</span>
+                                                                        <span className="text-gray-400 font-medium">₹{confirmModal.isSalary ? (act.salaryRate || 0) : (act.billRate || 0)}/hr</span>
+                                                                        {confirmModal.isSalary && (
+                                                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-black ${act.isQualified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                                                                {act.isQualified ? 'Paid' : 'Unpaid'}
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1719,7 +1908,7 @@ export default function FinanceHub() {
                                             {cutoffActivities.length > 0 && !isCalculatingAmount && (
                                                 <div className="p-2.5 rounded-xl bg-slate-100/80 border border-slate-200 flex items-center justify-between text-[10px] font-bold text-gray-600">
                                                     <span>Total: <strong>{cutoffActivities.reduce((s: number, a: any) => s + (a.hours || 0), 0).toFixed(1)} hrs</strong></span>
-                                                    <span>Gross: <strong>₹{cutoffActivities.reduce((s: number, a: any) => s + (a.amount || 0), 0).toLocaleString()}</strong></span>
+                                                    <span>{confirmModal.isSalary ? `Disburseable: ` : `Gross: `}<strong>₹{settlementAmount.toLocaleString()}</strong></span>
                                                 </div>
                                             )}
                                         </div>
@@ -1739,10 +1928,10 @@ export default function FinanceHub() {
                                     <button
                                         type="button"
                                         onClick={() => confirmModal.onConfirm(billingCutoffDate)}
-                                        disabled={confirmModal.loading || isCalculatingAmount}
+                                        disabled={confirmModal.loading || isCalculatingAmount || settlementAmount <= 0}
                                         className="flex-[2] py-3 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/25 active:scale-98 transition disabled:opacity-50 italic cursor-pointer truncate px-2"
                                     >
-                                        {confirmModal.loading ? 'Processing...' : `Confirm (₹${settlementAmount.toLocaleString()})`}
+                                        {confirmModal.loading ? 'Processing...' : (confirmModal.isSalary ? `Confirm Disbursement (₹${settlementAmount.toLocaleString()})` : `Confirm (₹${settlementAmount.toLocaleString()})`)}
                                     </button>
                                 </div>
                             </div>
