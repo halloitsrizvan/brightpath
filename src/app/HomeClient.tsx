@@ -316,28 +316,28 @@ export default function HomeClient() {
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={40} duration={2} />
+                                <AnimatedCounter end={100} suffix="+" duration={2} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Expert Tutors</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={20000} suffix="+" duration={2.2} />
+                                <AnimatedCounter end={10000} suffix="+" duration={2.2} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Hours Tutored</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={50} duration={2} />
+                                <AnimatedCounter end={50} duration={2}  suffix="+" />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Subjects & Courses</p>
                         </div>
 
                         <div>
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={60} duration={2.4} />
+                                <AnimatedCounter end={80} suffix="+" duration={2.4} />
                             </p>
                             <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Active Students</p>
                         </div>

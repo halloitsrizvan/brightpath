@@ -77,27 +77,45 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 const mIndex = monthNames.indexOf(mName);
                 
                 if (mIndex !== -1 && !isNaN(year)) {
-                    const startDate = new Date(year, mIndex, 1);
+                    // If there are prior paid fees for this student in the same billing month,
+                    // start the activity query AFTER the last prior cutoff date
+                    const priorPaidFees = await Fee.find({
+                        studentId: student._id,
+                        month: fee.month,
+                        paymentStatus: 'paid',
+                        _id: { $nin: fees.map((f: any) => f._id) },
+                        paymentDate: { $lt: fee.paymentDate || fee.updatedAt || new Date() }
+                    }).sort({ paymentDate: 1, billingCutoffDate: 1 });
+
+                    let startDate = new Date(year, mIndex, 1, 0, 0, 0, 0);
+                    if (priorPaidFees.length > 0) {
+                        const lastPrior = priorPaidFees[priorPaidFees.length - 1];
+                        const lastCutoff = lastPrior.billingCutoffDate || lastPrior.paymentDate;
+                        if (lastCutoff) {
+                            startDate = new Date(new Date(lastCutoff).getTime() + 1);
+                        }
+                    }
+
                     const totalDaysInMonth = new Date(year, mIndex + 1, 0).getDate();
-                    const endDate = new Date(year, mIndex, totalDaysInMonth, 23, 59, 59);
+                    const endDate = new Date(year, mIndex, totalDaysInMonth, 23, 59, 59, 999);
 
                     // Determine query end date based on cutoff parameters, saved fee.billingCutoffDate, or paymentDate
                     let targetEndDate = endDate;
                     if (cutoffDateParam) {
                         const parsed = new Date(cutoffDateParam);
                         if (!isNaN(parsed.getTime())) {
-                            targetEndDate = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59);
+                            targetEndDate = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
                         }
                     } else if (cutoffDayParam) {
                         const day = parseInt(cutoffDayParam, 10);
                         if (!isNaN(day) && day >= 1 && day <= 31) {
                             const validDay = Math.min(day, totalDaysInMonth);
-                            targetEndDate = new Date(year, mIndex, validDay, 23, 59, 59);
+                            targetEndDate = new Date(year, mIndex, validDay, 23, 59, 59, 999);
                         }
                     } else if (fee.billingCutoffDate) {
                         const feeCutoff = new Date(fee.billingCutoffDate);
                         if (!isNaN(feeCutoff.getTime())) {
-                            targetEndDate = new Date(feeCutoff.getFullYear(), feeCutoff.getMonth(), feeCutoff.getDate(), 23, 59, 59);
+                            targetEndDate = new Date(feeCutoff.getFullYear(), feeCutoff.getMonth(), feeCutoff.getDate(), 23, 59, 59, 999);
                         }
                     } else if (fee.paymentDate && new Date(fee.paymentDate) < endDate) {
                         targetEndDate = new Date(fee.paymentDate);
@@ -295,10 +313,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             };
         });
 
-        // Use true activity total if attendance was logged, otherwise fallback to stored fee sum
-        const finalInvoiceTotal = (enrichedActivityRecords.length > 0 && totalActivityAmount > 0)
-            ? totalActivityAmount
-            : totalAmount;
+        // The invoice is a receipt for the settled fee amount of this transaction
+        const finalInvoiceTotal = totalAmount;
 
         y -= 40;
         const ledgerDateStr = overallCutoffDate 
