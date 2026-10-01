@@ -2,8 +2,10 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
-import { Menu, Filter, Trash2, Edit3, Eye, PlusCircle, Search, Calendar, BookOpen, User, CheckCircle } from 'lucide-react';
+import { Menu, Trash2, Eye, Search, BookOpen, Shield, GraduationCap, Award, Calendar, User } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
+import { useAdminPermissions } from '@/hooks/useAdminPermissions';
+import AccessDenied from '@/components/admin/AccessDenied';
 
 interface Exam {
     _id: string;
@@ -29,104 +31,89 @@ interface Exam {
 const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: boolean, onClose: () => void }) => {
     if (!isOpen || !exam) return null;
 
+    const images = exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : []);
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300 border border-white/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="bg-white rounded-2xl w-full max-w-xl overflow-hidden relative z-10 shadow-2xl border border-gray-100 max-h-[90vh] flex flex-col">
                 {/* Modal Header */}
-                <div className="bg-[#45308D] p-8 text-white relative">
-                    <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
-                        <span className="text-2xl">&times;</span>
-                    </button>
-                    <div className="flex items-center gap-6">
-                        <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-3xl font-bold border border-white/30 italic">
-                            {exam.studentId?.fullName?.charAt(0)}
+                <div className="bg-[#45308D] p-5 text-white flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-base font-black italic">
+                            {exam.studentId?.fullName?.charAt(0) || 'S'}
                         </div>
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase">{exam.studentId?.fullName}</h2>
-                            <p className="text-white/70 font-black text-[10px] uppercase tracking-[0.2em] mt-1">Institutional Exam Registry</p>
+                            <h2 className="text-base font-bold leading-tight">{exam.studentId?.fullName}</h2>
+                            <p className="text-[11px] text-white/70 font-medium">Exam Assessment Details</p>
                         </div>
                     </div>
+                    <button 
+                        onClick={onClose} 
+                        className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white text-lg font-bold"
+                    >
+                        &times;
+                    </button>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Class Segment</p>
-                            <p className="text-sm font-bold text-gray-800 italic uppercase">{exam.studentId?.class || '-'}</p>
+                <div className="p-5 space-y-4 overflow-y-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Class / Grade</p>
+                            <p className="text-xs font-bold text-gray-900">{exam.studentId?.class ? `Class ${exam.studentId?.class}` : '-'}</p>
                         </div>
-                        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Subject Node</p>
-                            <p className="text-sm font-bold text-[#45308D] italic uppercase">{exam.subject}</p>
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Subject</p>
+                            <p className="text-xs font-bold text-[#45308D]">{exam.subject}</p>
                         </div>
-                        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Timeline</p>
-                            <p className="text-sm font-bold text-gray-800 italic uppercase">{exam.examDate ? new Date(exam.examDate).toLocaleDateString() : exam.examMonth}</p>
+                        <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Timeline</p>
+                            <p className="text-xs font-bold text-gray-900">{exam.examDate ? new Date(exam.examDate).toLocaleDateString() : exam.examMonth}</p>
                         </div>
-                        <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Quantum</p>
-                            <p className="text-lg font-black text-primary">{(exam.marks || 0)} <span className="text-[10px] text-gray-400 tracking-normal italic uppercase">/ {(exam.maxMarks || 0)}</span></p>
+                        <div className="bg-[#45308D]/5 p-3 rounded-xl border border-[#45308D]/10">
+                            <p className="text-[10px] font-bold text-[#45308D] uppercase tracking-wider mb-0.5">Score</p>
+                            <p className="text-xs font-black text-[#45308D]">{exam.marks || 0} <span className="text-[10px] text-gray-400 font-medium">/ {exam.maxMarks || 0}</span></p>
                         </div>
                     </div>
 
-                    <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 flex items-center justify-between">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Authorized Examiner</p>
-                        <p className="text-xs font-black text-primary italic uppercase">{exam.teacherId?.name || 'Administrator'}</p>
+                    <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 flex items-center justify-between text-xs">
+                        <span className="font-semibold text-gray-500">Authorized Tutor / Examiner</span>
+                        <span className="font-bold text-[#45308D]">{exam.teacherId?.name || 'Administrator'}</span>
                     </div>
 
-                    {(exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : [])).length > 0 && (() => {
-                        const images = exam.paperImages && exam.paperImages.length > 0 ? exam.paperImages : (exam.paperImage ? [exam.paperImage] : []);
-                        return (
-                            <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
-                                    Evidence Capture {images.length > 1 && `(${images.length} Pages)`}
-                                </p>
-                                {images.length > 1 ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {images.map((img: string, idx: number) => (
-                                            <div key={idx} className="rounded-2xl overflow-hidden border-2 border-gray-100 shadow-sm bg-gray-900 aspect-[3/4] relative group">
-                                                <img
-                                                    src={img}
-                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-90"
-                                                    alt={`Page ${idx + 1}`}
-                                                    onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
-                                                />
-                                                <div className="absolute top-2 left-2 bg-black/70 backdrop-blur text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-white/20">
-                                                    Page {idx + 1}
-                                                </div>
-                                                <a
-                                                    href={img}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="absolute bottom-2 right-2 bg-white/95 px-3 py-1 rounded-xl text-[10px] font-bold text-primary shadow hover:bg-white transition"
-                                                >
-                                                    Open
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="rounded-3xl overflow-hidden border-4 border-gray-50 shadow-md bg-gray-100 aspect-video relative group">
+                    {images.length > 0 && (
+                        <div>
+                            <p className="text-xs font-bold text-gray-700 mb-2">Answer Paper Capture ({images.length} {images.length > 1 ? 'pages' : 'page'})</p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                {images.map((img: string, idx: number) => (
+                                    <div key={idx} className="rounded-xl overflow-hidden border border-gray-200 bg-gray-900 aspect-[3/4] relative group">
                                         <img
-                                            src={images[0]}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            alt="Answer Paper"
-                                            onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/600x400?text=Image+Not+Found")}
+                                            src={img}
+                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-95"
+                                            alt={`Page ${idx + 1}`}
+                                            onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/400x600?text=Paper+Image")}
                                         />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors pointer-events-none"></div>
-                                        <a href={images[0]} target="_blank" rel="noreferrer" className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-6 py-2 rounded-full text-[10px] font-black text-primary shadow-lg hover:bg-white transition-all transform hover:scale-105 uppercase tracking-widest italic">
-                                            Enlarge Source
+                                        <div className="absolute top-1.5 left-1.5 bg-black/70 text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
+                                            Page {idx + 1}
+                                        </div>
+                                        <a
+                                            href={img}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="absolute bottom-1.5 right-1.5 bg-white px-2.5 py-0.5 rounded-md text-[10px] font-bold text-[#45308D] shadow-xs hover:bg-gray-50 transition"
+                                        >
+                                            View
                                         </a>
                                     </div>
-                                )}
+                                ))}
                             </div>
-                        );
-                    })()}
+                        </div>
+                    )}
 
                     <div>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 ml-1">Analytical Insights</p>
-                        <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100 min-h-[100px] italic text-xs font-medium text-gray-500 leading-relaxed shadow-inner">
+                        <p className="text-xs font-bold text-gray-700 mb-1.5">Teacher Feedback & Progress Notes</p>
+                        <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-xs text-gray-600 font-medium leading-relaxed">
                             {exam.progressNote || "No specific feedback provided for this exam record."}
                         </div>
                     </div>
@@ -137,12 +124,15 @@ const ViewExamModal = ({ exam, isOpen, onClose }: { exam: Exam | null, isOpen: b
 };
 
 export default function AdminExams() {
+    const { canAccess, isViewOnly, roleName, loading: permissionsLoading } = useAdminPermissions();
     const [exams, setExams] = useState<Exam[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterQuery, setFilterQuery] = useState('');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedExam, setSelectedExam] = useState<Exam | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+    const viewOnly = isViewOnly('exams');
 
     useEffect(() => {
         fetchExams();
@@ -161,7 +151,8 @@ export default function AdminExams() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Erase this scholarly record permanentely?')) return;
+        if (viewOnly) return;
+        if (!window.confirm('Are you sure you want to delete this exam record?')) return;
 
         try {
             await api.delete(`/exams/${id}`);
@@ -183,8 +174,12 @@ export default function AdminExams() {
         );
     });
 
+    const averageScore = exams.length > 0
+        ? Math.round(exams.reduce((sum, e) => sum + ((e.marks / (e.maxMarks || 100)) * 100), 0) / exams.length)
+        : 0;
+
     return (
-        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900">
             <Toaster position="top-right" />
             <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -203,116 +198,212 @@ export default function AdminExams() {
             />
 
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
-                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
-                    <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all">
-                        <Menu className="w-6 h-6" />
+                {/* Mobile Header Bar */}
+                <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white/80 backdrop-blur-md shadow-xs p-3.5 flex items-center justify-between lg:hidden border-b border-gray-100">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 bg-white border border-gray-200 rounded-xl text-[#45308D] shadow-xs active:scale-95 transition-all"
+                    >
+                        <Menu className="w-5 h-5" />
                     </button>
                     <div className="text-right">
-                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Exams Hub</h2>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                        <h2 className="text-base font-extrabold text-[#45308D] tracking-tight leading-none">Exams</h2>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{roleName || 'Admin'}</span>
                     </div>
                 </header>
 
-                <div className="p-4 md:p-12 mt-20 lg:mt-0">
-                    {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 mt-4 px-2">
-                        <div>
-                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Exam Registry</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 ml-1">Scholarly Performance Database</p>
-                        </div>
+                <main className="p-4 md:p-8 flex-1 space-y-6 lg:mt-0 mt-14">
+                    {!permissionsLoading && !canAccess('exams') ? (
+                        <AccessDenied roleName={roleName} pageName="Exam Registry" />
+                    ) : (
+                        <>
+                            {/* Header Card */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-xs">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#45308D] bg-[#45308D]/5 px-2.5 py-0.5 rounded-md border border-[#45308D]/10">
+                                            Academic Assessment
+                                        </span>
+                                        {viewOnly && (
+                                            <span className="px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                                                <Shield className="w-3 h-3" /> View Only
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1.5 leading-tight">
+                                        Exam Registry
+                                    </h1>
+                                    <p className="text-xs font-medium text-gray-500 mt-0.5">Scholarly performance scores & examination answer sheet records</p>
+                                </div>
 
-                        <div className="relative group w-full md:w-80">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search scholarly nodes..."
-                                className="w-full bg-white border-2 border-gray-100 py-3.5 pl-11 pr-12 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest placeholder:text-gray-300 focus:outline-none focus:border-primary transition-all shadow-sm"
-                                value={filterQuery}
-                                onChange={(e) => setFilterQuery(e.target.value)}
-                            />
-                            {filterQuery && (
-                                <button
-                                    onClick={() => setFilterQuery('')}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-gray-300 hover:text-red-500 uppercase"
-                                >
-                                    Reset
-                                </button>
-                            )}
-                        </div>
-                    </div>
+                                <div className="relative w-full sm:w-72">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search by student, subject, tutor..." 
+                                        value={filterQuery}
+                                        onChange={(e) => setFilterQuery(e.target.value)}
+                                        className="w-full h-10 pl-9 pr-3.5 bg-white border border-gray-200 focus:border-[#45308D] focus:ring-1 focus:ring-[#45308D]/20 rounded-xl outline-none text-xs font-semibold text-gray-900 transition-all placeholder:text-gray-400"
+                                    />
+                                </div>
+                            </div>
 
-                    <div className="bg-white rounded-[2rem] md:rounded-[3rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 mx-2">
-                        {loading ? (
-                            <div className="p-32 text-center text-primary font-black italic uppercase tracking-widest animate-pulse">Syncing historical records...</div>
-                        ) : filteredExams.length === 0 ? (
-                            <div className="p-24 text-center">
-                                <Search className="w-16 h-16 text-gray-100 mx-auto mb-6" />
-                                <p className="text-gray-400 font-bold italic uppercase tracking-widest text-[9px]">No scholarly records detected in the matrix.</p>
+                            {/* Stat Highlights */}
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Exam Logs</p>
+                                        <p className="text-2xl font-black text-gray-900 mt-0.5">{exams.length}</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-[#45308D]/5 text-[#45308D] flex items-center justify-center border border-[#45308D]/10">
+                                        <BookOpen className="w-5 h-5" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Average Performance</p>
+                                        <p className="text-2xl font-black text-emerald-700 mt-0.5">{averageScore}%</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                        <Award className="w-5 h-5" />
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs col-span-2 sm:col-span-1 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Tested Subjects</p>
+                                        <p className="text-2xl font-black text-indigo-700 mt-0.5">
+                                            {new Set(exams.map(e => e.subject)).size}
+                                        </p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                                        <GraduationCap className="w-5 h-5" />
+                                    </div>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
-                                    <thead>
-                                        <tr className="text-[9px] md:text-[10px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
-                                            <th className="px-8 py-7">Learner Enrollment</th>
-                                            <th className="px-4 py-7">Subject Vector</th>
-                                            <th className="px-4 py-7 hidden md:table-cell">Authorized Tutor</th>
-                                            <th className="px-4 py-7">Chronicle Date</th>
-                                            <th className="px-4 py-7">Result</th>
-                                            <th className="px-8 py-7 text-right">Operations</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {filteredExams.map((exam) => (
-                                            <tr key={exam._id} className="group hover:bg-gray-50/50 transition duration-300">
-                                                <td className="px-8 py-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-primary font-black italic tracking-tighter text-xs group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
-                                                            {exam.studentId?.fullName?.charAt(0)}
+
+                            {/* Table & List Card */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
+                                {loading ? (
+                                    <div className="py-16 text-center text-[#45308D] font-bold text-xs animate-pulse">
+                                        Loading exam registry...
+                                    </div>
+                                ) : filteredExams.length === 0 ? (
+                                    <div className="py-16 text-center text-gray-400 font-medium text-xs">
+                                        No exam records found matching your query.
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Desktop Table View */}
+                                        <div className="hidden md:block overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="bg-gray-50/70 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                                        <th className="px-5 py-3.5">Learner Profile</th>
+                                                        <th className="px-5 py-3.5">Subject</th>
+                                                        <th className="px-5 py-3.5 hidden md:table-cell">Examiner Tutor</th>
+                                                        <th className="px-5 py-3.5">Exam Timeline</th>
+                                                        <th className="px-5 py-3.5">Score Result</th>
+                                                        <th className="px-5 py-3.5 text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {filteredExams.map((exam) => (
+                                                        <tr key={exam._id} className="hover:bg-gray-50/60 transition-colors">
+                                                            <td className="px-5 py-3.5">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-9 h-9 rounded-xl bg-[#45308D]/5 text-[#45308D] flex items-center justify-center font-black text-xs border border-[#45308D]/10 shrink-0">
+                                                                        {exam.studentId?.fullName?.charAt(0) || 'S'}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs font-bold text-gray-900">{exam.studentId?.fullName}</p>
+                                                                        <span className="text-[10px] text-gray-400 font-medium">
+                                                                            {exam.studentId?.class ? `Class ${exam.studentId?.class}` : 'Grade N/A'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-5 py-3.5">
+                                                                <span className="px-2.5 py-0.5 bg-[#45308D]/5 text-[#45308D] text-[10px] font-bold rounded-md">
+                                                                    {exam.subject}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-5 py-3.5 hidden md:table-cell text-xs font-semibold text-gray-700">
+                                                                {exam.teacherId?.name || 'Administrator'}
+                                                            </td>
+                                                            <td className="px-5 py-3.5 text-xs text-gray-600 font-medium">
+                                                                {exam.examDate ? new Date(exam.examDate).toLocaleDateString() : exam.examMonth}
+                                                            </td>
+                                                            <td className="px-5 py-3.5">
+                                                                <span className="text-xs font-black text-gray-900">{exam.marks || 0}</span>
+                                                                <span className="text-[10px] text-gray-400 font-bold ml-1">/ {exam.maxMarks || 0}</span>
+                                                            </td>
+                                                            <td className="px-5 py-3.5 text-right">
+                                                                <div className="flex items-center justify-end gap-1">
+                                                                    <button 
+                                                                        onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }}
+                                                                        className="p-1.5 text-gray-400 hover:text-[#45308D] hover:bg-[#45308D]/5 rounded-lg transition" 
+                                                                        title="View Exam Details"
+                                                                    >
+                                                                        <Eye className="w-4 h-4" />
+                                                                    </button>
+                                                                    {!viewOnly && (
+                                                                        <button 
+                                                                            onClick={() => handleDelete(exam._id)} 
+                                                                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" 
+                                                                            title="Delete Exam"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile Card View */}
+                                        <div className="block md:hidden p-3 space-y-2.5">
+                                            {filteredExams.map((exam) => (
+                                                <div 
+                                                    key={exam._id}
+                                                    className="p-3.5 rounded-xl border border-gray-100 bg-white hover:bg-gray-50/60 transition-all flex flex-col justify-between gap-2.5 shadow-xs"
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-xs font-bold text-gray-900">{exam.studentId?.fullName}</p>
+                                                            <p className="text-[11px] text-gray-400">{exam.studentId?.class ? `Class ${exam.studentId?.class}` : ''} • {exam.subject}</p>
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-black text-gray-900 tracking-tight leading-none mb-1 uppercase italic">{exam.studentId?.fullName}</span>
-                                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest italic">{exam.studentId?.class}</span>
+                                                        <span className="px-2.5 py-0.5 text-xs font-black text-[#45308D] bg-[#45308D]/5 rounded-md border border-[#45308D]/10 shrink-0">
+                                                            {exam.marks}/{exam.maxMarks}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between text-[11px] text-gray-500 pt-2 border-t border-gray-50">
+                                                        <span>{exam.examDate ? new Date(exam.examDate).toLocaleDateString() : exam.examMonth}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <button onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }} className="p-1 text-gray-400 hover:text-[#45308D] rounded transition">
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            {!viewOnly && (
+                                                                <button onClick={() => handleDelete(exam._id)} className="p-1 text-gray-400 hover:text-rose-500 rounded transition">
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
-                                                </td>
-                                                <td className="px-4 py-6">
-                                                    <span className="px-5 py-2 bg-primary/5 text-primary text-[9px] font-black uppercase tracking-widest rounded-xl italic border border-primary/5">{exam.subject}</span>
-                                                </td>
-                                                <td className="px-4 py-6 text-gray-400 text-[10px] font-black uppercase italic hidden md:table-cell">{exam.teacherId?.name || 'Admin'}</td>
-                                                <td className="px-4 py-6">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap italic">{exam.examDate ? new Date(exam.examDate).toLocaleDateString() : exam.examMonth}</p>
-                                                </td>
-                                                <td className="px-4 py-6">
-                                                    <div className="flex items-center gap-1">
-                                                        <span className="text-sm font-black text-gray-900 italic">{(exam.marks || 0)}</span>
-                                                        <span className="text-[10px] text-gray-300 font-bold uppercase">/ {(exam.maxMarks || 0)}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-8 py-6 text-right">
-                                                    <div className="flex items-center justify-end gap-3">
-                                                        <button 
-                                                            onClick={() => { setSelectedExam(exam); setIsViewModalOpen(true); }}
-                                                            className="p-3 bg-gray-50 text-gray-300 hover:text-primary hover:bg-primary/5 rounded-xl transition shadow-sm"
-                                                        >
-                                                            <Eye className="w-4.5 h-4.5" />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDelete(exam._id)}
-                                                            className="p-3 bg-gray-50 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition shadow-sm"
-                                                        >
-                                                            <Trash2 className="w-4.5 h-4.5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
-                        )}
-                    </div>
-                </div>
+                        </>
+                    )}
+                </main>
             </div>
         </div>
     );

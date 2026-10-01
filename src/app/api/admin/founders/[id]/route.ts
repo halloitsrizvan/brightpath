@@ -24,16 +24,29 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
         const { id } = await params;
         const body = await req.json();
 
+        const updateData: any = {};
+        if (body.name) updateData.name = body.name;
+        if (body.email) updateData.email = body.email;
         if (body.password) {
-            body.password = await bcrypt.hash(body.password, 10);
-        } else {
-            delete body.password; // Don't overwrite if not provided
+            updateData.password = await bcrypt.hash(body.password, 10);
         }
+        if (body.adminRole) {
+            updateData.adminRole = body.adminRole;
+        } else if (body.role && body.role !== 'admin') {
+            updateData.adminRole = body.role;
+        }
+        if (body.baseSalary !== undefined) {
+            updateData.baseSalary = Number(body.baseSalary) || 0;
+        }
+        if (body.debtRemaining !== undefined) {
+            updateData.debtRemaining = Number(body.debtRemaining) || 0;
+        }
+        updateData.role = 'admin';
 
         const founder = await Admin.findByIdAndUpdate(
             id, 
-            body, 
-            { returnDocument: 'after' }
+            { $set: updateData }, 
+            { returnDocument: 'after', new: true }
         );
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json(founder);

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '@/utils/api';
 import { X, ArrowUpRight, ArrowDownRight, IndianRupee, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -8,7 +8,7 @@ interface DebtTransactionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
-    founder: any; // The founder targeted
+    founder: any;
     type: 'debt' | 'return';
 }
 
@@ -16,6 +16,17 @@ export default function DebtTransactionModal({ isOpen, onClose, onSuccess, found
     const [amount, setAmount] = useState(0);
     const [reason, setReason] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     if (!isOpen || !founder) return null;
 
@@ -46,37 +57,37 @@ export default function DebtTransactionModal({ isOpen, onClose, onSuccess, found
     const isDebt = type === 'debt';
 
     return (
-        <div className="fixed inset-0 bg-[#0A0A0B]/80 backdrop-blur-md flex items-center justify-center z-[110] p-4">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
-                <div className="relative p-8 md:p-10">
+        <div className="fixed inset-0 w-full h-full min-h-screen bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 my-auto animate-in fade-in zoom-in-95 duration-150">
+                <div className="relative p-6 sm:p-8">
                     <button 
                         onClick={onClose}
-                        className="absolute top-8 right-8 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition text-gray-400 hover:text-gray-700"
                     >
-                        <X className="w-6 h-6 text-gray-400" />
+                        <X className="w-5 h-5" />
                     </button>
 
-                    <div className="mb-8 text-center">
-                        <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 ${isDebt ? 'bg-rose-500/10 text-rose-500 shadow-rose-500/10' : 'bg-emerald-500/10 text-emerald-500 shadow-emerald-500/10'} shadow-lg rotate-3`}>
-                            {isDebt ? <ArrowUpRight className="w-8 h-8" /> : <ArrowDownRight className="w-8 h-8" />}
+                    <div className="mb-6 text-center">
+                        <div className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-3 ${isDebt ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} shadow-sm`}>
+                            {isDebt ? <ArrowUpRight className="w-7 h-7" /> : <ArrowDownRight className="w-7 h-7" />}
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 italic uppercase tracking-tighter leading-none mb-2">
-                            {isDebt ? 'Register' : 'Execute'} <span className={isDebt ? 'text-rose-500' : 'text-emerald-500'}>{isDebt ? 'Debt' : 'Return'}</span>
+                        <h2 className="text-xl font-bold text-gray-900 leading-tight">
+                            {isDebt ? 'Register Debt' : 'Execute Return'}
                         </h2>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
-                            Trustee: {founder.name}
+                        <p className="text-xs text-gray-400 mt-1">
+                            Trustee: <span className="font-semibold text-gray-700">{founder.name}</span>
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Quantum (₹)</label>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-gray-700 block">Amount (₹) *</label>
                             <div className="relative">
-                                <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
                                     required
                                     type="number"
-                                    className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 font-bold text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none"
                                     placeholder="0"
                                     value={amount || ''}
                                     onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
@@ -85,29 +96,35 @@ export default function DebtTransactionModal({ isOpen, onClose, onSuccess, found
                         </div>
 
                         {isDebt && (
-                            <div className="space-y-2">
-                                <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Justification / Reason</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-4 top-4 w-4 h-4 text-gray-300" />
-                                    <textarea
-                                        required
-                                        rows={3}
-                                        className="w-full pl-11 pr-4 py-4 bg-gray-50/50 border border-gray-100 rounded-2xl text-gray-900 font-bold text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none"
-                                        placeholder="Enter administrative reason..."
-                                        value={reason}
-                                        onChange={(e) => setReason(e.target.value)}
-                                    />
-                                </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-700 block">Justification / Reason</label>
+                                <textarea
+                                    required
+                                    rows={3}
+                                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none resize-none"
+                                    placeholder="Enter administrative reason..."
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                />
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`w-full py-4 ${isDebt ? 'bg-rose-500 shadow-rose-500/20' : 'bg-emerald-500 shadow-emerald-500/20'} text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2`}
-                        >
-                            {loading ? 'Processing...' : `Confirm ${isDebt ? 'Debt Registration' : 'Return Transaction'}`}
-                        </button>
+                        <div className="pt-2 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-100 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`px-6 py-2.5 ${isDebt ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'} text-white font-bold text-xs rounded-xl shadow-md active:scale-95 transition flex items-center justify-center gap-1.5`}
+                            >
+                                {loading ? 'Processing...' : `Confirm ${isDebt ? 'Debt' : 'Return'}`}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

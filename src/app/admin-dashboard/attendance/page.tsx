@@ -4,14 +4,20 @@ import Sidebar from '@/components/Sidebar';
 import api from '@/utils/api';
 import AttendanceModal from '@/features/attendance/components/AttendanceModal';
 import MonthPicker from '@/components/ui/MonthPicker';
-import { Menu, Calendar, Clock, ChevronDown, User, BookOpen, UserCheck, Search, Filter, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Menu, Calendar, Clock, BookOpen, User, Plus, Trash2, Shield, Search } from 'lucide-react';
+import { useAdminPermissions } from '@/hooks/useAdminPermissions';
+import AccessDenied from '@/components/admin/AccessDenied';
 
 export default function AdminAttendance() {
+    const { canAccess, isViewOnly, roleName, loading: permissionsLoading } = useAdminPermissions();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [attendance, setAttendance] = useState([]);
+    const [attendance, setAttendance] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState('All Academic Cycles');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const viewOnly = isViewOnly('attendance');
 
     const fetchAttendance = async () => {
         try {
@@ -27,7 +33,8 @@ export default function AdminAttendance() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you absolutely certain you want to purge this session log? This action is permanent.')) return;
+        if (viewOnly) return;
+        if (!window.confirm('Are you sure you want to delete this session log?')) return;
         
         try {
             await api.delete(`/attendance/${id}`);
@@ -51,8 +58,17 @@ export default function AdminAttendance() {
         };
     }, [attendance]);
 
+    const filteredAttendance = attendance.filter((log: any) => {
+        const query = searchQuery.toLowerCase();
+        return (
+            log.studentId?.fullName?.toLowerCase().includes(query) ||
+            log.teacherId?.name?.toLowerCase().includes(query) ||
+            log.subjectId?.subjectName?.toLowerCase().includes(query)
+        );
+    });
+
     return (
-        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900 overflow-x-hidden">
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900">
             <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Mobile Backdrop */}
@@ -64,170 +80,240 @@ export default function AdminAttendance() {
             )}
 
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
-                <header className="fixed top-0 left-0 right-0 lg:left-64 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md shadow-sm z-30 lg:hidden">
-                    <button onClick={() => setIsSidebarOpen(true)} className="p-3 bg-white border border-gray-100 rounded-2xl text-primary shadow-sm active:scale-95 transition-all">
-                        <Menu className="w-6 h-6" />
+                {/* Mobile Header Bar */}
+                <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white/80 backdrop-blur-md shadow-xs p-3.5 flex items-center justify-between lg:hidden border-b border-gray-100">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 bg-white border border-gray-200 rounded-xl text-[#45308D] shadow-xs active:scale-95 transition-all"
+                    >
+                        <Menu className="w-5 h-5" />
                     </button>
                     <div className="text-right">
-                        <h2 className="text-xl font-black text-primary italic uppercase tracking-tighter leading-none">Attendance Hub</h2>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
+                        <h2 className="text-base font-extrabold text-[#45308D] tracking-tight leading-none">Attendance</h2>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{roleName || 'Admin'}</span>
                     </div>
                 </header>
 
-                <div className="p-4 md:p-12 mt-20 lg:mt-0">
-                    {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 mt-4 px-2">
-                        <div>
-                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">Attendance Logs</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] mt-2 ml-1">Academic Session Control & Records</p>
-                        </div>
+                <main className="p-4 md:p-8 flex-1 space-y-6 lg:mt-0 mt-14">
+                    {!permissionsLoading && !canAccess('attendance') ? (
+                        <AccessDenied roleName={roleName} pageName="Attendance Hub" />
+                    ) : (
+                        <>
+                            {/* Header Card */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-xs">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#45308D] bg-[#45308D]/5 px-2.5 py-0.5 rounded-md border border-[#45308D]/10">
+                                            Academic Presence
+                                        </span>
+                                        {viewOnly && (
+                                            <span className="px-2.5 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                                                <Shield className="w-3 h-3" /> View Only
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1.5 leading-tight">
+                                        Attendance Logs
+                                    </h1>
+                                    <p className="text-xs font-medium text-gray-500 mt-0.5">Real-time session presence & teaching delivery ledger</p>
+                                </div>
 
-                        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-                            <MonthPicker 
-                                selected={selectedMonth} 
-                                onChange={setSelectedMonth} 
-                                allLabel="All Academic Cycles"
-                            />
-                            
-                            <button 
-                                onClick={() => setIsModalOpen(true)}
-                                className="w-full md:w-auto px-8 py-3.5 bg-primary text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 italic"
-                            >
-                                <Plus className="w-4 h-4" /> Log Manual Entry
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Statistics Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-12 px-2">
-                        <div className="bg-primary p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group border-2 border-primary">
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
-                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Total Logs</p>
-                            <h2 className="text-xl md:text-4xl font-black italic tracking-tighter mb-4 leading-none">{stats.totalSessions} <span className="text-xs md:text-lg not-italic opacity-60">Sess.</span></h2>
-                            <div className="hidden md:flex items-center gap-2 text-xs font-bold text-white/80">
-                                <BookOpen className="w-4 h-4" />
-                                <span>Academic Volume</span>
+                                <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full sm:w-auto">
+                                    <MonthPicker 
+                                        selected={selectedMonth} 
+                                        onChange={setSelectedMonth} 
+                                        allLabel="All Academic Cycles"
+                                    />
+                                    
+                                    {!viewOnly && (
+                                        <button 
+                                            onClick={() => setIsModalOpen(true)}
+                                            className="w-full sm:w-auto px-4 py-2 bg-[#45308D] hover:bg-[#45308D]/90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 flex items-center justify-center gap-1.5 whitespace-nowrap"
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            <span>Log Session</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="bg-white p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 border-gray-100 shadow-xl shadow-gray-200/30 group hover:border-primary/20 transition-all duration-300">
-                            <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Class Output</p>
-                            <h2 className="text-xl md:text-4xl font-black italic tracking-tighter text-gray-900 leading-none">{stats.totalHours.toFixed(1)} <span className="text-xs md:text-lg not-italic opacity-60 text-gray-400">Hrs</span></h2>
-                             <div className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-gray-300 mt-4">
-                                <Clock className="w-4 h-4" />
-                                <span>Engagement</span>
-                            </div>
-                        </div>
+                            {/* Stat Highlights */}
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Sessions</p>
+                                        <p className="text-2xl font-black text-gray-900 mt-0.5">{stats.totalSessions}</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-[#45308D]/5 text-[#45308D] flex items-center justify-center border border-[#45308D]/10">
+                                        <BookOpen className="w-5 h-5" />
+                                    </div>
+                                </div>
 
-                        <div className="bg-[#FDC70B] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] text-gray-900 shadow-2xl shadow-yellow-200/50 relative overflow-hidden group">
-                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Active Faculty</p>
-                            <h2 className="text-xl md:text-4xl font-black italic tracking-tighter mb-4 leading-none">{stats.activeTeachers} <span className="text-xs md:text-lg not-italic opacity-40">Tutors</span></h2>
-                             <div className="hidden md:flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter opacity-40">
-                                <UserCheck className="w-4 h-4" />
-                                <span>Instructors</span>
-                            </div>
-                        </div>
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-teal-600 uppercase tracking-wider">Teaching Hours</p>
+                                        <p className="text-2xl font-black text-teal-700 mt-0.5">{stats.totalHours.toFixed(1)} hrs</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100">
+                                        <Clock className="w-5 h-5" />
+                                    </div>
+                                </div>
 
-                        <div className="bg-white p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 border-gray-100 shadow-xl shadow-gray-200/30 relative group overflow-hidden">
-                            <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Learners</p>
-                            <h2 className="text-xl md:text-4xl font-black italic tracking-tighter text-teal-600 mb-4 leading-none">{stats.activeStudents} <span className="text-xs md:text-lg not-italic opacity-40 text-gray-300">Active</span></h2>
-                            <div className="hidden md:block w-full h-1 bg-gray-50 rounded-full mt-4 overflow-hidden shadow-inner">
-                                <div className="h-full bg-teal-500 rounded-full" style={{ width: stats.totalSessions > 0 ? '75%' : '0%' }}></div>
-                            </div>
-                        </div>
-                    </div>
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Active Tutors</p>
+                                        <p className="text-2xl font-black text-indigo-700 mt-0.5">{stats.activeTeachers}</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                                        <User className="w-5 h-5" />
+                                    </div>
+                                </div>
 
-                    {/* Main Content Area */}
-                    <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 mx-2">
-                        {loading ? (
-                            <div className="p-32 text-center text-primary font-black italic uppercase tracking-widest animate-pulse">Syncing logs...</div>
-                        ) : attendance.length === 0 ? (
-                            <div className="p-20 text-center">
-                                <AlertCircle className="w-16 h-16 text-gray-100 mx-auto mb-6" />
-                                <p className="text-gray-400 font-bold italic uppercase tracking-widest text-[10px]">No activity records found.</p>
+                                <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">Active Learners</p>
+                                        <p className="text-2xl font-black text-amber-700 mt-0.5">{stats.activeStudents}</p>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+                                        <Calendar className="w-5 h-5" />
+                                    </div>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse min-w-[700px] md:min-w-0">
-                                    <thead>
-                                        <tr className="text-[9px] md:text-[10px] font-black text-gray-300 uppercase tracking-widest border-b border-gray-50">
-                                            <th className="px-6 md:px-8 py-6">Timestamp & Date</th>
-                                            <th className="px-4 py-6">Student Enrollment</th>
-                                            <th className="px-4 py-6 hidden md:table-cell">Assigned Tutor</th>
-                                            <th className="px-4 py-6">Subject Module</th>
-                                            <th className="px-4 py-6 text-right">Duration</th>
-                                            <th className="px-6 md:px-8 py-6 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {attendance.map((record: any) => (
-                                            <tr key={record._id} className="group hover:bg-gray-50/50 transition duration-200">
-                                                <td className="px-6 md:px-8 py-5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="hidden sm:flex w-9 h-9 rounded-xl bg-gray-50 text-primary items-center justify-center border border-gray-100 group-hover:bg-white group-hover:shadow-sm transition">
-                                                            <Calendar className="w-4 h-4" />
+
+                            {/* Search Filter Bar */}
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="relative w-full sm:w-72">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search by student, teacher, or subject..." 
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full h-10 pl-9 pr-3.5 bg-white border border-gray-200 focus:border-[#45308D] focus:ring-1 focus:ring-[#45308D]/20 rounded-xl outline-none text-xs font-semibold text-gray-900 transition-all placeholder:text-gray-400"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Table & List Card */}
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
+                                {loading ? (
+                                    <div className="py-16 text-center text-[#45308D] font-bold text-xs animate-pulse">
+                                        Loading attendance sessions...
+                                    </div>
+                                ) : filteredAttendance.length === 0 ? (
+                                    <div className="py-16 text-center text-gray-400 font-medium text-xs">
+                                        No attendance logs found for this period.
+                                    </div>
+                                ) : (
+                                    <>
+                                        {/* Desktop Table View */}
+                                        <div className="hidden md:block overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr className="bg-gray-50/70 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                                                        <th className="px-5 py-3.5">Session Date</th>
+                                                        <th className="px-5 py-3.5">Student</th>
+                                                        <th className="px-5 py-3.5">Teacher</th>
+                                                        <th className="px-5 py-3.5">Subject</th>
+                                                        <th className="px-5 py-3.5">Duration</th>
+                                                        <th className="px-5 py-3.5">Status</th>
+                                                        {!viewOnly && <th className="px-5 py-3.5 text-right">Actions</th>}
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {filteredAttendance.map((log: any) => (
+                                                        <tr key={log._id} className="hover:bg-gray-50/60 transition-colors">
+                                                            <td className="px-5 py-3.5 text-xs font-bold text-gray-900">
+                                                                {new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                            </td>
+                                                            <td className="px-5 py-3.5 text-xs font-bold text-gray-900">
+                                                                {log.studentId?.fullName || 'Student'}
+                                                            </td>
+                                                            <td className="px-5 py-3.5 text-xs font-semibold text-gray-700">
+                                                                {log.teacherId?.name || 'Faculty Member'}
+                                                            </td>
+                                                            <td className="px-5 py-3.5">
+                                                                <span className="px-2.5 py-0.5 bg-[#45308D]/5 text-[#45308D] text-[10px] font-bold rounded-md">
+                                                                    {log.subjectId?.subjectName || 'Subject'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-5 py-3.5 text-xs font-bold text-gray-900">
+                                                                {log.durationMinutes} min
+                                                            </td>
+                                                            <td className="px-5 py-3.5">
+                                                                <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${
+                                                                    log.status === 'Present' 
+                                                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' 
+                                                                        : 'bg-rose-50 text-rose-700 border-rose-200/60'
+                                                                }`}>
+                                                                    {log.status}
+                                                                </span>
+                                                            </td>
+                                                            {!viewOnly && (
+                                                                <td className="px-5 py-3.5 text-right">
+                                                                    <button 
+                                                                        onClick={() => handleDelete(log._id)} 
+                                                                        className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" 
+                                                                        title="Delete Entry"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </td>
+                                                            )}
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile Card View */}
+                                        <div className="block md:hidden p-3 space-y-2.5">
+                                            {filteredAttendance.map((log: any) => (
+                                                <div 
+                                                    key={log._id}
+                                                    className="p-3.5 rounded-xl border border-gray-100 bg-white hover:bg-gray-50/60 transition-all flex flex-col justify-between gap-2.5 shadow-xs"
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-xs font-bold text-gray-900">{log.studentId?.fullName || 'Student'}</p>
+                                                            <p className="text-[11px] text-gray-500 font-medium">{log.teacherId?.name || 'Faculty'}</p>
                                                         </div>
-                                                        <p className="text-[11px] font-black text-gray-400 italic">
-                                                            {new Date(record.date).toLocaleDateString()}
-                                                        </p>
+                                                        <span className={`px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md border shrink-0 ${
+                                                            log.status === 'Present' 
+                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60' 
+                                                                : 'bg-rose-50 text-rose-700 border-rose-200/60'
+                                                        }`}>
+                                                            {log.status}
+                                                        </span>
                                                     </div>
-                                                </td>
-                                                {/* <td className="px-4 py-5 font-black text-xs md:text-sm text-gray-800">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-lg bg-primary/5 flex items-center justify-center text-[9px] text-primary group-hover:bg-primary group-hover:text-white transition-colors">{record.studentId?.fullName?.charAt(0)}</div>
-                                                        <span className="truncate max-w-[120px]">{record.studentId?.fullName || '-'}</span>
-                                                    </div>
-                                                </td> */}
-                                                <td className="px-4 py-5 text-gray-500 text-[11px] font-bold hidden md:table-cell">
-                                                     <div className="flex items-center gap-2">
-                                                        <UserCheck className="w-4 h-4 text-gray-300" />
-                                                        {record.studentId?.fullName || '-'}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-5 text-gray-500 text-[11px] font-bold hidden md:table-cell">
-                                                     <div className="flex items-center gap-2">
-                                                        <UserCheck className="w-4 h-4 text-gray-300" />
-                                                        {record.teacherId?.name || '-'}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="bg-primary/5 text-primary text-[9px] md:text-[10px] font-black px-3 py-1.5 md:px-4 md:py-2 rounded-xl uppercase tracking-tighter border border-primary/10">
-                                                        {record.subjectId?.subjectName || '-'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-5 text-right font-black text-gray-800 italic tracking-tight text-xs md:text-sm">
-                                                    {(record.durationMinutes / 60).toFixed(1)} <span className="text-[10px] not-italic opacity-40">Hrs</span>
-                                                </td>
-                                                <td className="px-6 md:px-8 py-5 text-right">
-                                                    <button 
-                                                        onClick={() => handleDelete(record._id)}
-                                                        className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-95"
-                                                        title="Delete Log"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
 
-                    {/* Legend/Helper Insight */}
-                    <div className="mt-8 flex items-center gap-3 p-5 md:p-6 bg-primary/5 rounded-[1.5rem] md:rounded-[2rem] border border-primary/10 text-primary/70 mx-2">
-                        <Clock className="w-5 h-5 flex-shrink-0" />
-                        <p className="text-[9px] font-bold italic leading-relaxed">Log times are recorded in real-time. Tutoring durations are automatically converted to decimal hours for payroll accuracy.</p>
-                    </div>
-                </div>
+                                                    <div className="flex items-center justify-between text-[11px] text-gray-500 pt-2 border-t border-gray-50">
+                                                        <span>{new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} • {log.durationMinutes}m</span>
+                                                        <span className="font-bold text-[#45308D]">{log.subjectId?.subjectName}</span>
+                                                        {!viewOnly && (
+                                                            <button onClick={() => handleDelete(log._id)} className="p-1 text-gray-400 hover:text-rose-500 rounded transition">
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </main>
             </div>
-            
-            <AttendanceModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onSuccess={fetchAttendance}
-            />
+
+            {!viewOnly && (
+                <AttendanceModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSuccess={fetchAttendance}
+                />
+            )}
         </div>
     );
 }

@@ -5,8 +5,10 @@ import Cookies from 'js-cookie';
 import api from '@/utils/api';
 import { Users, UserCheck, BookOpen, GraduationCap, IndianRupee, TrendingUp, Calendar, Clock, ArrowUpRight, Menu } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { useAdminPermissions } from '@/hooks/useAdminPermissions';
 
 export default function AdminDashboard() {
+    const { canViewIncome, roleName, mounted } = useAdminPermissions();
     const [stats, setStats] = useState({
         totalStudents: 0,
         totalTeachers: 0,
@@ -23,7 +25,6 @@ export default function AdminDashboard() {
     useEffect(() => {
         api.get('/dashboard/admin').then(res => setStats(res.data)).catch(console.error);
         
-        // Get admin name from cookie
         const userCookie = Cookies.get('user');
         if (userCookie) {
             try {
@@ -46,228 +47,246 @@ export default function AdminDashboard() {
     };
 
     return (
-        <div className="flex bg-[#fafafa] min-h-screen font-sans">
+        <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900">
             <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
-                <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white/80 backdrop-blur-md shadow-sm p-4 lg:p-12 pb-6 lg:pb-8 lg:static lg:bg-transparent lg:shadow-none lg:backdrop-blur-none">
-                    <div className="flex flex-col gap-2">
-                        {/* Mobile Header Trigger Row */}
-                        <div className="flex items-center justify-between w-full lg:hidden">
-                            <button
-                                onClick={() => setIsSidebarOpen(true)}
-                                className="p-3 bg-white border border-gray-100 rounded-2xl text-[#45308D] shadow-sm active:scale-95 transition-all"
-                            >
-                                <Menu className="w-6 h-6" />
-                            </button>
-                            <div className="text-right">
-                                <h2 className="text-xl font-black text-[#45308D] italic uppercase tracking-tighter leading-none">BrightPath</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Admin Control</p>
-                            </div>
-                        </div>
+            {/* Mobile Backdrop */}
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
-                        {/* Main Greeting Block - Hidden in mobile top bar, shown below offset */}
-                        <div className="hidden lg:flex flex-col">
-                            <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
-                                {greetings()}, <span className="text-[#45308D]">{userName}</span>
-                            </h1>
-                            <p className="text-gray-400 font-bold text-sm lg:text-base mt-4 flex items-center gap-2">
-                                {currentTime && (
-                                    <>
-                                        <Calendar className="w-4 h-4" /> {currentTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                        <Clock className="w-4 h-4" /> {currentTime.toLocaleTimeString()}
-                                    </>
-                                )}
-                            </p>
-                        </div>
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen overflow-x-hidden">
+                {/* Mobile Header Bar */}
+                <header className="fixed top-0 left-0 right-0 lg:left-64 z-30 bg-white/80 backdrop-blur-md shadow-xs p-3.5 flex items-center justify-between lg:hidden border-b border-gray-100">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 bg-white border border-gray-200 rounded-xl text-[#45308D] shadow-xs active:scale-95 transition-all"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+                    <div className="text-right">
+                        <h2 className="text-base font-extrabold text-[#45308D] tracking-tight leading-none">BrightPath</h2>
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{roleName || 'Admin'}</span>
                     </div>
                 </header>
 
-                <main className="p-4 md:p-12 pt-4 flex-1 space-y-8 md:space-y-10 lg:mt-0 mt-20">
-                    {/* Mobile Only Greeting offset */}
-                    <div className="flex lg:hidden flex-col px-2">
-                             <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-2 ml-1">Executive Command Center</p>
-                            <h1 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                <main className="p-4 md:p-8 flex-1 space-y-6 lg:mt-0 mt-14">
+                    {/* Welcome Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-xs">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#45308D] bg-[#45308D]/5 px-2.5 py-0.5 rounded-md border border-[#45308D]/10">
+                                    Command Center
+                                </span>
+                                {roleName && (
+                                    <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                                        {roleName}
+                                    </span>
+                                )}
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1.5 leading-tight">
                                 {greetings()}, <span className="text-[#45308D]">{userName}</span>
                             </h1>
+                        </div>
+
+                        {currentTime && (
+                            <div className="flex items-center gap-2.5 text-xs font-semibold text-gray-500 bg-gray-50 px-3.5 py-2 rounded-xl border border-gray-100 w-fit">
+                                <div className="flex items-center gap-1.5">
+                                    <Calendar className="w-3.5 h-3.5 text-[#45308D]" />
+                                    <span>{currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                <div className="flex items-center gap-1.5 text-gray-700 font-bold">
+                                    <Clock className="w-3.5 h-3.5 text-teal-600" />
+                                    <span>{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    {/* Performance Summary Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-8">
+
+                    {/* Summary Metrics Grid */}
+                    <div className={`grid grid-cols-2 ${mounted && !canViewIncome() ? 'md:grid-cols-3 xl:grid-cols-3' : 'md:grid-cols-2 xl:grid-cols-4'} gap-3 md:gap-4`}>
                         <DashboardCard
                             title="Active Enrollment"
-                            value={stats.totalStudents}
-                            description="Students registered"
-                            icon={<Users className="w-5 h-5 md:w-6 md:h-6" />}
+                            value={stats.totalStudents.toLocaleString()}
+                            description="Enrolled Students"
+                            icon={<Users className="w-5 h-5" />}
                             color="bg-[#45308D]"
                         />
                         <DashboardCard
-                            title="Academic Staff"
-                            value={stats.totalTeachers}
+                            title="Academic Faculty"
+                            value={stats.totalTeachers.toLocaleString()}
                             description="Active Tutors"
-                            icon={<UserCheck className="w-5 h-5 md:w-6 md:h-6" />}
+                            icon={<UserCheck className="w-5 h-5" />}
                             color="bg-indigo-600"
                         />
                         <DashboardCard
                             title="Monthly Activity"
-                            value={stats.classesThisMonth}
-                            description="Classes this month"
-                            icon={<BookOpen className="w-5 h-5 md:w-6 md:h-6" />}
+                            value={stats.classesThisMonth.toLocaleString()}
+                            description="Completed Classes"
+                            icon={<BookOpen className="w-5 h-5" />}
                             color="bg-teal-600"
                         />
-                        <DashboardCard
-                            title="Monthly Income"
-                            value={typeof stats.monthlyRevenue === 'number' ? `₹${(stats.monthlyRevenue / 1000).toFixed(0)}k` : stats.monthlyRevenue}
-                            description="Current period yield"
-                            icon={<IndianRupee className="w-5 h-5 md:w-6 md:h-6" />}
-                            color="bg-[#FDC70B]"
-                            textColor="text-gray-900"
-                            isFinancial
-                        />
+                        {(!mounted || canViewIncome()) && (
+                            <DashboardCard
+                                title="Monthly Income"
+                                value={typeof stats.monthlyRevenue === 'number' ? `₹${(stats.monthlyRevenue / 1000).toFixed(0)}k` : stats.monthlyRevenue}
+                                description="Realized Revenue"
+                                icon={<IndianRupee className="w-5 h-5" />}
+                                color="bg-[#FDC70B]"
+                                textColor="text-gray-900"
+                                isFinancial
+                            />
+                        )}
                     </div>
 
-                    {/* Operational Overview Placeholder Area */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 bg-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group min-h-[400px] md:min-h-[450px] flex flex-col">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#45308D] to-indigo-600"></div>
-                            
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
+                    {/* Operational Overview & Live Activity */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Teaching Velocity Chart (2 cols) */}
+                        <div className="lg:col-span-2 bg-white rounded-2xl p-5 md:p-6 border border-gray-100 shadow-xs flex flex-col justify-between">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-50">
                                 <div>
-                                    <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Operational Velocity</p>
-                                    <h3 className="text-xl md:text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Strategic Insights</h3>
+                                    <h3 className="text-base font-bold text-gray-900">Teaching Velocity</h3>
+                                    <p className="text-xs text-gray-400 mt-0.5">Dual-Period Delivery Output (Hours/Day)</p>
                                 </div>
-                                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                                    <div className="flex items-center gap-2">
+
+                                <div className="flex items-center gap-3 text-xs font-semibold">
+                                    <div className="flex items-center gap-1.5">
                                         <div className="w-2.5 h-2.5 rounded-full bg-[#45308D]"></div>
-                                        <span className="text-[9px] font-black uppercase text-gray-500 tracking-widest">Target</span>
+                                        <span className="text-gray-600">Current Month</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div>
-                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Cycle</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-gray-300"></div>
+                                        <span className="text-gray-400">Previous</span>
                                     </div>
-                                    <div className="hidden sm:block px-4 py-2 bg-gray-50 rounded-xl text-[9px] font-black uppercase text-gray-400 tracking-widest border border-gray-100">Comparative View</div>
                                 </div>
                             </div>
 
-                            <div className="flex-1 w-full h-[300px] mt-2">
+                            <div className="w-full h-[240px] md:h-[260px]">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={stats.velocityData}>
+                                    <AreaChart data={stats.velocityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                         <defs>
                                             <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#45308D" stopOpacity={0.2} />
+                                                <stop offset="5%" stopColor="#45308D" stopOpacity={0.25} />
                                                 <stop offset="95%" stopColor="#45308D" stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                                         <XAxis 
                                             dataKey="day" 
                                             axisLine={false} 
                                             tickLine={false} 
-                                            tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }}
-                                            dy={10}
+                                            tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 600 }}
+                                            dy={6}
                                         />
                                         <YAxis 
                                             axisLine={false} 
                                             tickLine={false} 
-                                            tick={{ fill: '#9ca3af', fontSize: 10, fontWeight: 700 }}
+                                            tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 600 }}
                                         />
                                         <Tooltip 
                                             contentStyle={{ 
                                                 backgroundColor: '#fff', 
-                                                borderRadius: '1.5rem', 
-                                                border: 'none', 
-                                                boxShadow: '0 25px 50px -12px rgb(0 0 0 / 0.15)',
-                                                fontSize: '12px',
-                                                fontWeight: 'bold',
-                                                padding: '1.25rem'
+                                                borderRadius: '1rem', 
+                                                border: '1px solid #f3f4f6', 
+                                                boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)',
+                                                fontSize: '11px',
+                                                fontWeight: 700,
+                                                padding: '0.75rem 1rem'
                                             }}
-                                            itemStyle={{ padding: '2px 0' }}
+                                            itemStyle={{ padding: '1px 0' }}
                                             cursor={{ stroke: '#45308D', strokeWidth: 1, strokeDasharray: '4 4' }}
                                         />
-                                        {/* PREVIOUS MONTH LINE */}
                                         <Area 
                                             type="monotone" 
                                             dataKey="previous" 
                                             stroke="#e5e7eb" 
-                                            strokeWidth={3}
-                                            strokeDasharray="5 5"
+                                            strokeWidth={2}
+                                            strokeDasharray="4 4"
                                             fill="transparent" 
                                             dot={false}
-                                            activeDot={{ r: 4, fill: '#e5e7eb', strokeWidth: 0 }}
+                                            activeDot={{ r: 3, fill: '#9ca3af' }}
                                             name="Previous Month"
                                         />
-                                        {/* CURRENT MONTH LINE */}
                                         <Area 
                                             type="monotone" 
                                             dataKey="current" 
                                             stroke="#45308D" 
-                                            strokeWidth={4}
+                                            strokeWidth={3}
                                             fillOpacity={1} 
                                             fill="url(#colorCurrent)" 
-                                            dot={{ r: 4, fill: '#45308D', strokeWidth: 2, stroke: '#fff' }}
-                                            activeDot={{ r: 6, strokeWidth: 0 }}
+                                            dot={{ r: 3, fill: '#45308D', strokeWidth: 1.5, stroke: '#fff' }}
+                                            activeDot={{ r: 5 }}
                                             name="Current Month"
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
-
-                            <div className="mt-6 pt-6 border-t border-gray-50 flex items-center justify-between">
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">Dual-Period Teaching Velocity (Hours/Day)</p>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-                                    <span className="text-[10px] font-black uppercase text-teal-600 tracking-widest">Deep Analytical Sync</span>
-                                </div>
-                            </div>
                         </div>
 
-                        <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-xl shadow-gray-200/40 relative overflow-hidden group flex flex-col">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                            
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <p className="text-[#45308D] font-black text-[10px] uppercase tracking-[0.4em] mb-1">Live Feed</p>
-                                    <h3 className="text-2xl font-black text-gray-800 italic uppercase tracking-tighter">Activity Ledger</h3>
+                        {/* Recent Activity Feed (1 col) */}
+                        <div className="bg-white rounded-2xl p-5 md:p-6 border border-gray-100 shadow-xs flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-50">
+                                    <div>
+                                        <h3 className="text-base font-bold text-gray-900">Recent Sessions</h3>
+                                        <p className="text-xs text-gray-400 mt-0.5">Live Classroom Logs</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => window.location.href = '/admin-dashboard/attendance'} 
+                                        className="p-1.5 text-gray-400 hover:text-[#45308D] hover:bg-[#45308D]/5 rounded-lg transition"
+                                        title="View All Attendance"
+                                    >
+                                        <ArrowUpRight className="w-4 h-4" />
+                                    </button>
                                 </div>
-                                <button onClick={() => window.location.href='/admin-dashboard/attendance'} className="p-3 bg-gray-50 rounded-2xl hover:bg-primary/5 hover:text-primary transition group/btn">
-                                    <ArrowUpRight className="w-5 h-5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                                </button>
+
+                                <div className="space-y-2.5 max-h-[250px] overflow-y-auto pr-1">
+                                    {stats.latestLogs.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-10 text-gray-300">
+                                            <Clock className="w-8 h-8 mb-2 opacity-30" />
+                                            <p className="text-xs font-bold uppercase tracking-wider">No recent logs recorded</p>
+                                        </div>
+                                    ) : (
+                                        stats.latestLogs.map((log: any, idx: number) => (
+                                            <div 
+                                                key={log._id || idx} 
+                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition"
+                                            >
+                                                <div className="w-8 h-8 rounded-lg bg-[#45308D]/10 text-[#45308D] font-extrabold text-xs flex items-center justify-center flex-shrink-0">
+                                                    {idx + 1}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-1.5">
+                                                        <h4 className="text-xs font-bold text-gray-900 truncate">
+                                                            {log.studentId?.fullName || 'Student'}
+                                                        </h4>
+                                                        <span className="text-[10px] font-semibold text-gray-400 flex-shrink-0">
+                                                            {new Date(log.date).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-500 truncate mt-0.5">
+                                                        <span className="text-[#45308D] font-medium">{log.subjectId?.subjectName || 'General'}</span>
+                                                        <span className="text-gray-300 mx-1">•</span>
+                                                        <span>{log.teacherId?.name || 'Tutor'}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="flex-1 space-y-4">
-                                {stats.latestLogs.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-300 py-10">
-                                        <Clock className="w-12 h-12 mb-4 opacity-20" />
-                                        <p className="text-xs font-black uppercase tracking-widest">No recent sessions</p>
-                                    </div>
-                                ) : (
-                                    stats.latestLogs.map((log: any, idx: number) => (
-                                        <div key={log._id} className="flex items-center gap-4 p-4 rounded-3xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 group/item">
-                                            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black italic shadow-inner">
-                                                {idx + 1}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2 overflow-hidden">
-                                                    <h4 className="text-sm font-black text-gray-800 truncate tracking-tight">{log.studentId?.fullName}</h4>
-                                                    <span className="text-[9px] font-black text-gray-400 whitespace-nowrap uppercase tracking-widest">{new Date(log.date).toLocaleDateString()}</span>
-                                                </div>
-                                                <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1.5 mt-0.5 uppercase tracking-widest">
-                                                    <span className="text-primary/60">{log.subjectId?.subjectName}</span>
-                                                    <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
-                                                    <span>with {log.teacherId?.name}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                            
-                            <div className="mt-8">
-                                <button onClick={() => window.location.href='/admin-dashboard/attendance'} className="w-full py-4 bg-gray-50 text-gray-400 rounded-2xl font-black text-[9px] uppercase tracking-[0.2em] hover:bg-[#45308D] hover:text-white transition-all shadow-sm">
-                                    Analyze Complete History
-                                </button>
-                            </div>
+                            <button 
+                                onClick={() => window.location.href = '/admin-dashboard/attendance'} 
+                                className="w-full mt-4 py-2.5 bg-gray-50 hover:bg-[#45308D] text-gray-600 hover:text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-100 hover:border-transparent cursor-pointer"
+                            >
+                                <span>Full Attendance History</span>
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                            </button>
                         </div>
                     </div>
                 </main>
@@ -278,20 +297,19 @@ export default function AdminDashboard() {
 
 function DashboardCard({ title, value, description, icon, color, textColor = "text-white", isFinancial }: any) {
     return (
-        <div className={`${color} ${textColor} p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-2xl shadow-gray-200/50 relative group overflow-hidden transition-all hover:-translate-y-2`}>
-            <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
-            <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4 md:mb-8">
-                    <div className="p-2 md:p-3 bg-white/10 rounded-xl backdrop-blur-md">
+        <div className={`${color} ${textColor} p-4 md:p-5 rounded-2xl shadow-sm relative group overflow-hidden transition-all duration-200 hover:-translate-y-1`}>
+            <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-all"></div>
+            <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-75">{title}</span>
+                    <div className="p-2 bg-white/15 rounded-xl backdrop-blur-xs flex items-center justify-center">
                         {icon}
                     </div>
-                    {isFinancial && <TrendingUp className="w-4 h-4 md:w-5 md:h-5 opacity-40" />}
                 </div>
-                <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1 md:mb-2">{title}</p>
-                <div className="flex items-end gap-1 md:gap-2">
-                    <h2 className="text-2xl md:text-4xl font-black italic tracking-tighter leading-none">{value}</h2>
+                <div>
+                    <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-none mb-1">{value}</h2>
+                    <p className="text-[10px] font-semibold opacity-70 tracking-tight">{description}</p>
                 </div>
-                <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest mt-2 md:mt-4 opacity-40">{description}</p>
             </div>
         </div>
     );

@@ -66,7 +66,13 @@ export async function POST(req: Request) {
         }, { ip }, req);
 
         const response = NextResponse.json({
-            user: { id: user._id, name: user.name || user.fullName, email: user.email, role: user.role }
+            user: { 
+                id: user._id, 
+                name: user.name || user.fullName, 
+                email: user.email, 
+                role: user.role,
+                adminRole: user.adminRole || (user.role === 'admin' ? 'Super Admin' : user.role)
+            }
         });
 
         response.cookies.set({

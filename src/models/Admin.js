@@ -5,6 +5,7 @@ const AdminSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, default: 'admin' },
+    adminRole: { type: String, default: 'Super Admin' },
     isFounder: { type: Boolean, default: false },
     baseSalary: { type: Number, default: 0 },
     debtRemaining: { type: Number, default: 0 },

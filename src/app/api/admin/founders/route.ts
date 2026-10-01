@@ -33,11 +33,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'User with this email already exists' }, { status: 400 });
         }
 
-        // Default new admins to be founders if they are being added here
+        // Save new admin/founder
         const admin = await Admin.create({
-            ...body,
-            isFounder: true,
-            role: 'admin'
+            name: body.name,
+            email: body.email,
+            password: body.password,
+            adminRole: body.adminRole || body.role || 'Super Admin',
+            role: 'admin',
+            baseSalary: Number(body.baseSalary) || 0,
+            debtRemaining: Number(body.debtRemaining) || 0,
+            isFounder: true
         });
         
         return NextResponse.json(admin);

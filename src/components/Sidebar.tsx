@@ -5,11 +5,13 @@ import Cookies from 'js-cookie';
 import Link from 'next/link';
 import NextImage from 'next/image';
 import { useEffect, useState } from 'react';
+import { useAdminPermissions } from '@/hooks/useAdminPermissions';
 
 export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'teacher' | 'student', isOpen?: boolean, onClose?: () => void }) {
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
+    const { canAccess, roleName, isSuperAdmin } = useAdminPermissions();
 
     useEffect(() => setMounted(true), []);
 
@@ -38,22 +40,24 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
 
     const getLinks = () => {
         if (role === 'admin') {
-            return [
-                { name: 'Dashboard', href: '/admin-dashboard', icon: <Home className="w-5 h-5" /> },
-                { name: 'Students', href: '/admin-dashboard/students', icon: <Users className="w-5 h-5" /> },
-                { name: 'Teachers', href: '/admin-dashboard/teachers', icon: <UserCheck className="w-5 h-5" /> },
-                { name: 'Subjects', href: '/admin-dashboard/subjects', icon: <BookOpen className="w-5 h-5" /> },
-                { name: 'Attendance', href: '/admin-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
-                { name: 'Exams', href: '/admin-dashboard/exams', icon: <FileText className="w-5 h-5" /> },
-                { name: 'Finance', href: '/admin-dashboard/finance', icon: <IndianRupee className="w-5 h-5" /> },
-                { name: 'Expenses', href: '/admin-dashboard/expenses', icon: <Receipt className="w-5 h-5" /> },
-                { name: 'Founders', href: '/admin-dashboard/founders', icon: <ShieldCheck className="w-5 h-5" /> },
-                { name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
-                {name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
-                { name: 'Leads & Enquiries', href: '/admin-dashboard/leads', icon: <TrendingUp className="w-5 h-5" /> },
-                { name: 'Blog Management', href: '/admin-dashboard/blog', icon: <BookOpen className="w-5 h-5" /> },
-                { name: 'Monthly Report', href: '/admin-dashboard/reports', icon: <BarChart3 className="w-5 h-5" /> },
+            const allAdminLinks = [
+                { id: 'dashboard', name: 'Dashboard', href: '/admin-dashboard', icon: <Home className="w-5 h-5" /> },
+                { id: 'students', name: 'Students', href: '/admin-dashboard/students', icon: <Users className="w-5 h-5" /> },
+                { id: 'teachers', name: 'Teachers', href: '/admin-dashboard/teachers', icon: <UserCheck className="w-5 h-5" /> },
+                { id: 'subjects', name: 'Subjects', href: '/admin-dashboard/subjects', icon: <BookOpen className="w-5 h-5" /> },
+                { id: 'attendance', name: 'Attendance', href: '/admin-dashboard/attendance', icon: <Settings className="w-5 h-5" /> },
+                { id: 'exams', name: 'Exams', href: '/admin-dashboard/exams', icon: <FileText className="w-5 h-5" /> },
+                { id: 'finance', name: 'Finance', href: '/admin-dashboard/finance', icon: <IndianRupee className="w-5 h-5" /> },
+                { id: 'expenses', name: 'Expenses', href: '/admin-dashboard/expenses', icon: <Receipt className="w-5 h-5" /> },
+                { id: 'founders', name: 'Founders & Roles', href: '/admin-dashboard/founders', icon: <ShieldCheck className="w-5 h-5" /> },
+                { id: 'incentives', name: 'Incentives', href: '/admin-dashboard/incentives', icon: <Trophy className="w-5 h-5" /> },
+                { id: 'tasks', name: 'Tasks & Targets', href: '/admin-dashboard/tasks', icon: <ListTodo className="w-5 h-5" /> },
+                { id: 'leads', name: 'Leads & Enquiries', href: '/admin-dashboard/leads', icon: <TrendingUp className="w-5 h-5" /> },
+                { id: 'blog', name: 'Blog Management', href: '/admin-dashboard/blog', icon: <BookOpen className="w-5 h-5" /> },
+                { id: 'reports', name: 'Monthly Report', href: '/admin-dashboard/reports', icon: <BarChart3 className="w-5 h-5" /> },
             ];
+
+            return allAdminLinks.filter(item => canAccess(item.id));
         }
         if (role === 'teacher') {
             return [
@@ -97,7 +101,7 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
                         </div>
                         <div>
                             <h1 className="text-base font-black text-white tracking-widest uppercase italic leading-none">BrightPath</h1>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5 opacity-60 italic">{role} Portal</p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1.5 opacity-60 italic">{role === 'admin' ? roleName : `${role} Portal`}</p>
                         </div>
                     </div>
                 </div>

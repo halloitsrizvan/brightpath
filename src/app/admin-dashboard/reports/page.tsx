@@ -315,10 +315,8 @@ export default function MonthlyReport() {
                     {/* Header Section */}
                     <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 px-1">
                         <div>
-                            <p className="text-primary font-black text-[10px] uppercase tracking-[0.35em] mb-1.5 ml-0.5">
-                                Institutional Intelligence & Analytics Cockpit
-                            </p>
-                            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
+                          
+                            <h1 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter italic uppercase leading-none">
                                 Reports & Analytics
                             </h1>
                             <p className="text-gray-500 font-medium text-xs md:text-sm mt-2">
@@ -402,13 +400,7 @@ export default function MonthlyReport() {
                             </div>
 
                             {/* Refresh Button */}
-                            <button 
-                                onClick={() => { fetchReport(); fetchTrends(); }}
-                                className="p-3 bg-white border-2 border-white shadow-md shadow-slate-200/60 rounded-2xl hover:bg-gray-50 transition text-gray-500 hover:text-primary cursor-pointer active:scale-95 flex items-center justify-center"
-                                title="Refresh Analytics"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-primary' : ''}`} />
-                            </button>
+                          
                         </div>
                     </div>
 
