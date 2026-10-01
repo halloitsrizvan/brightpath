@@ -91,8 +91,16 @@ export const ADMIN_PAGES: AdminPageDefinition[] = [
         supportsViewOnly: true
     },
     {
+        id: 'staffs',
+        name: 'Staffs',
+        href: '/admin-dashboard/staffs',
+        description: 'Staff directory, role assignments, and monthly salary disbursement',
+        category: 'Core',
+        supportsViewOnly: false
+    },
+    {
         id: 'founders',
-        name: 'Founders & Roles',
+        name: 'Founders',
         href: '/admin-dashboard/founders',
         description: 'Executive committee, debt registry, and role access',
         category: 'Core',
@@ -162,6 +170,7 @@ export const DEFAULT_ROLES: RoleDefinition[] = [
             { pageId: 'exams', access: 'full' },
             { pageId: 'tasks', access: 'full' },
             { pageId: 'leads', access: 'full' },
+            { pageId: 'staffs', access: 'none' },
             { pageId: 'finance', access: 'none' },
             { pageId: 'expenses', access: 'none' },
             { pageId: 'founders', access: 'none' },
@@ -180,6 +189,7 @@ export const DEFAULT_ROLES: RoleDefinition[] = [
             { pageId: 'subjects', access: 'view_only' },
             { pageId: 'students', access: 'view_only' },
             { pageId: 'dashboard', access: 'view_only', excludeIncome: true },
+            { pageId: 'staffs', access: 'none' },
             { pageId: 'teachers', access: 'none' },
             { pageId: 'attendance', access: 'none' },
             { pageId: 'exams', access: 'none' },

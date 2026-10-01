@@ -17,9 +17,7 @@ import {
     Shield,
     Layers,
     Search,
-    SlidersHorizontal,
-    CheckCircle2,
-    Lock
+    SlidersHorizontal
 } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import Cookies from 'js-cookie';
@@ -45,7 +43,7 @@ export default function FoundersManagement() {
     const { canAccess, isViewOnly, roleName, loading: permissionsLoading } = useAdminPermissions();
     const [activeTab, setActiveTab] = useState<'founders' | 'roles'>('founders');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [founders, setFounders] = useState<Founder[]>([]);
+    const [allAdmins, setAllAdmins] = useState<Founder[]>([]);
     const [roles, setRoles] = useState<RoleDefinition[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<Founder | null>(null);
@@ -77,11 +75,11 @@ export default function FoundersManagement() {
                 api.get('/admin/roles')
             ]);
 
-            setFounders(foundersRes.data);
-            setRoles(rolesRes.data);
+            setAllAdmins(foundersRes.data || []);
+            setRoles(rolesRes.data || []);
 
             if (loggedInUser) {
-                const profile = foundersRes.data.find((f: Founder) => f.email === loggedInUser.email);
+                const profile = (foundersRes.data || []).find((f: Founder) => f.email === loggedInUser.email);
                 if (profile) {
                     setCurrentUser(profile);
                     const dbRole = profile.adminRole || (profile.role === 'admin' ? 'Super Admin' : profile.role);
@@ -105,7 +103,7 @@ export default function FoundersManagement() {
         try {
             setLogsLoading(true);
             const res = await api.get('/admin/founders/debt');
-            setDebtLogs(res.data);
+            setDebtLogs(res.data || []);
         } catch (err) {
             console.error("Failed to fetch logs", err);
         } finally {
@@ -118,10 +116,10 @@ export default function FoundersManagement() {
     }, []);
 
     const handleDeleteFounder = async (id: string) => {
-        if (window.confirm('Are you sure you want to remove this administrator? This action is irreversible.')) {
+        if (window.confirm('Are you sure you want to remove this founder? This action is irreversible.')) {
             try {
                 await api.delete(`/admin/founders/${id}`);
-                toast.success('Admin removed from core');
+                toast.success('Founder removed from registry');
                 fetchData();
             } catch (err) {
                 toast.error('Deletion failed');
@@ -147,39 +145,34 @@ export default function FoundersManagement() {
         setIsDebtModalOpen(true);
     };
 
-    const totalBaseTier = founders.reduce((sum, f) => sum + (f.baseSalary || 0), 0);
-    const totalDebtCount = founders.reduce((sum, f) => sum + (f.debtRemaining || 0), 0);
+    // Founders page ONLY shows staff with Super Admin role
+    const superAdminFounders = allAdmins.filter(f => {
+        const role = (f.adminRole || '').toLowerCase();
+        const defaultRole = (f.role || '').toLowerCase();
+        return role === 'super admin' || (defaultRole === 'admin' && !f.adminRole);
+    });
 
-    const filteredFounders = founders.filter(f => 
+    const totalBaseTier = superAdminFounders.reduce((sum, f) => sum + (f.baseSalary || 0), 0);
+    const totalDebtCount = superAdminFounders.reduce((sum, f) => sum + (f.debtRemaining || 0), 0);
+
+    const filteredFounders = superAdminFounders.filter(f => 
         f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (f.adminRole || f.role || '').toLowerCase().includes(searchQuery.toLowerCase())
+        f.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const getRoleBadgeStyle = (roleName?: string) => {
-        const name = (roleName || '').toLowerCase();
-        if (name.includes('super admin')) {
-            return 'bg-purple-50 text-[#45308D] border-purple-200/60';
-        }
-        if (name.includes('academic')) {
-            return 'bg-indigo-50 text-indigo-700 border-indigo-200/60';
-        }
-        if (name.includes('sales')) {
-            return 'bg-amber-50 text-amber-700 border-amber-200/60';
-        }
-        return 'bg-blue-50 text-blue-700 border-blue-200/60';
-    };
 
     return (
         <div className="flex bg-[#fafafa] min-h-screen font-sans text-gray-900">
             <Toaster position="top-right" />
             <Sidebar role="admin" isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
+            {/* AdminModal locked to Super Admin for Founders page */}
             <AdminModal 
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={fetchData}
                 editData={editData}
+                fixedRole="Super Admin"
+                mode="founder"
                 onOpenRoleModal={() => {
                     setIsModalOpen(false);
                     setEditRole(null);
@@ -233,15 +226,11 @@ export default function FoundersManagement() {
                             {/* Header Card */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-xs">
                                 <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#45308D] bg-[#45308D]/5 px-2.5 py-0.5 rounded-md border border-[#45308D]/10">
-                                            Governance Suite
-                                        </span>
-                                    </div>
+                                   
                                     <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight mt-1.5 leading-tight">
                                         Founders & Role Access
                                     </h1>
-                                    <p className="text-xs font-medium text-gray-500 mt-0.5">Administrator directory, capital exposure ledger & role permissions</p>
+                                    <p className="text-xs font-medium text-gray-500 mt-0.5">Founders directory, capital debt & return management, and role access permissions</p>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2.5">
@@ -264,7 +253,7 @@ export default function FoundersManagement() {
                                         className="px-4 py-2 bg-[#45308D] hover:bg-[#45308D]/90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 flex items-center gap-1.5"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        <span>Add Administrator</span>
+                                        <span>Add Founder</span>
                                     </button>
                                 </div>
                             </div>
@@ -276,11 +265,11 @@ export default function FoundersManagement() {
                                     className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                                         activeTab === 'founders'
                                             ? 'bg-white text-[#45308D] shadow-xs'
-                                            : 'text-gray-500 hover:text-gray-900'
+                                             : 'text-gray-500 hover:text-gray-900'
                                     }`}
                                 >
                                     <Shield className="w-3.5 h-3.5" />
-                                    <span>Founders & Admins ({founders.length})</span>
+                                    <span>Founders ({superAdminFounders.length})</span>
                                 </button>
 
                                 <button
@@ -296,7 +285,7 @@ export default function FoundersManagement() {
                                 </button>
                             </div>
 
-                            {/* TAB 1: FOUNDERS & ADMINS */}
+                            {/* TAB 1: FOUNDERS */}
                             {activeTab === 'founders' && (
                                 <div className="space-y-6">
                                     {/* Stat Highlights */}
@@ -313,7 +302,7 @@ export default function FoundersManagement() {
 
                                         <div className="p-4 bg-white rounded-2xl border border-gray-100 shadow-xs flex items-center justify-between">
                                             <div>
-                                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Core Base</p>
+                                                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Total Founders Base</p>
                                                 <p className="text-2xl font-black text-gray-900 mt-0.5">₹{totalBaseTier.toLocaleString()}</p>
                                             </div>
                                             <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center border border-gray-100">
@@ -346,15 +335,15 @@ export default function FoundersManagement() {
                                     <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
                                         <div className="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                             <div>
-                                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Administrator Registry</h3>
-                                                <p className="text-[11px] text-gray-400">Executive directory and debt balance ledger</p>
+                                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">Founders Registry</h3>
+                                                <p className="text-[11px] text-gray-400">Super Admin executive directory and capital liability ledger</p>
                                             </div>
 
                                             <div className="relative w-full sm:w-64">
                                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                                 <input
                                                     type="text"
-                                                    placeholder="Filter administrators..."
+                                                    placeholder="Filter founders..."
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
                                                     className="w-full h-9 pl-9 pr-3 bg-white border border-gray-200 focus:border-[#45308D] rounded-xl outline-none text-xs font-semibold text-gray-900 placeholder:text-gray-400"
@@ -366,7 +355,7 @@ export default function FoundersManagement() {
                                             <table className="w-full text-left border-collapse">
                                                 <thead>
                                                     <tr className="bg-gray-50/70 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                                                        <th className="px-5 py-3.5">Admin Profile</th>
+                                                        <th className="px-5 py-3.5">Founder Profile</th>
                                                         <th className="px-5 py-3.5">Assigned Role</th>
                                                         <th className="px-5 py-3.5">Base Tier (₹)</th>
                                                         <th className="px-5 py-3.5">Debt Balance</th>
@@ -381,9 +370,9 @@ export default function FoundersManagement() {
                                                                 <span className="text-[10px] text-gray-400 font-medium">{f.email}</span>
                                                             </td>
                                                             <td className="px-5 py-3.5">
-                                                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${getRoleBadgeStyle(f.adminRole || f.role)}`}>
+                                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border bg-purple-50 text-[#45308D] border-purple-200/60">
                                                                     <Shield className="w-3 h-3" />
-                                                                    {f.adminRole || (f.role === 'admin' ? 'Super Admin' : f.role)}
+                                                                    Super Admin
                                                                 </span>
                                                             </td>
                                                             <td className="px-5 py-3.5 text-xs font-bold text-gray-900">
@@ -421,14 +410,14 @@ export default function FoundersManagement() {
                                                                     )}
                                                                     <button 
                                                                         onClick={() => { setEditData(f); setIsModalOpen(true); }}
-                                                                        title="Edit Administrator"
+                                                                        title="Edit Founder"
                                                                         className="p-1.5 text-gray-400 hover:text-[#45308D] hover:bg-[#45308D]/5 rounded-lg transition"
                                                                     >
                                                                         <Edit2 className="w-3.5 h-3.5" />
                                                                     </button>
                                                                     <button 
                                                                         onClick={() => handleDeleteFounder(f._id)}
-                                                                        title="Remove Administrator"
+                                                                        title="Remove Founder"
                                                                         className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                                                                     >
                                                                         <Trash2 className="w-3.5 h-3.5" />
@@ -457,7 +446,7 @@ export default function FoundersManagement() {
                                                 <thead>
                                                     <tr className="bg-white text-gray-400 text-[11px] font-bold uppercase tracking-wider border-b border-gray-100">
                                                         <th className="px-5 py-3.5">Date</th>
-                                                        <th className="px-5 py-3.5">Administrator</th>
+                                                        <th className="px-5 py-3.5">Founder / Trustee</th>
                                                         <th className="px-5 py-3.5">Type</th>
                                                         <th className="px-5 py-3.5">Amount (₹)</th>
                                                         <th className="px-5 py-3.5">Reason / Notes</th>
@@ -479,7 +468,7 @@ export default function FoundersManagement() {
                                                                     {new Date(log.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}
                                                                 </td>
                                                                 <td className="px-5 py-3.5 text-xs font-bold text-gray-900">
-                                                                    {log.founderId?.name || 'Admin'}
+                                                                    {log.founderId?.name || 'Founder'}
                                                                 </td>
                                                                 <td className="px-5 py-3.5">
                                                                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
@@ -510,7 +499,7 @@ export default function FoundersManagement() {
                             {activeTab === 'roles' && (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     {roles.map(role => {
-                                        const assignedCount = founders.filter(f => (f.adminRole || 'Super Admin') === role.name).length;
+                                        const assignedCount = allAdmins.filter(f => (f.adminRole || 'Super Admin') === role.name).length;
                                         const accessiblePages = ADMIN_PAGES.filter(page => {
                                             const perm = role.permissions?.find(p => p.pageId === page.id);
                                             return perm ? perm.access !== 'none' : false;

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import api from '@/utils/api';
-import { X, Shield, Mail, Briefcase, IndianRupee, Wallet, KeyRound, ChevronDown, UserPlus } from 'lucide-react';
+import { X, Shield, Mail, Briefcase, IndianRupee, ChevronDown, UserPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import Cookies from 'js-cookie';
 import { DEFAULT_ROLES, RoleDefinition } from '@/lib/constants/roles';
@@ -11,15 +11,29 @@ interface AdminModalProps {
     onClose: () => void;
     onSuccess: () => void;
     editData?: any;
+    hideSuperAdmin?: boolean;
+    fixedRole?: string;
+    mode?: 'staff' | 'founder' | 'admin';
     onOpenRoleModal?: () => void;
 }
 
-export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpenRoleModal }: AdminModalProps) {
+export default function AdminModal({ 
+    isOpen, 
+    onClose, 
+    onSuccess, 
+    editData, 
+    hideSuperAdmin = false,
+    fixedRole,
+    mode = 'admin',
+    onOpenRoleModal 
+}: AdminModalProps) {
+    const defaultInitialRole = fixedRole ? fixedRole : (hideSuperAdmin ? 'Academic Coordinator' : 'Super Admin');
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
-        adminRole: 'Super Admin',
+        adminRole: defaultInitialRole,
         baseSalary: 0,
         debtRemaining: 0
     });
@@ -40,15 +54,19 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                 });
 
             if (editData) {
-                const existingRole = (editData.adminRole && editData.adminRole !== 'admin')
+                let existingRole = (editData.adminRole && editData.adminRole !== 'admin')
                     ? editData.adminRole
-                    : (editData.role && editData.role !== 'admin' ? editData.role : 'Super Admin');
+                    : (editData.role && editData.role !== 'admin' ? editData.role : (fixedRole || (hideSuperAdmin ? 'Academic Coordinator' : 'Super Admin')));
+
+                if (hideSuperAdmin && existingRole === 'Super Admin') {
+                    existingRole = 'Academic Coordinator';
+                }
 
                 setFormData({
                     name: editData.name || '',
                     email: editData.email || '',
                     password: '',
-                    adminRole: existingRole,
+                    adminRole: fixedRole || existingRole,
                     baseSalary: editData.baseSalary || 0,
                     debtRemaining: editData.debtRemaining || 0
                 });
@@ -57,7 +75,7 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                     name: '',
                     email: '',
                     password: '',
-                    adminRole: 'Super Admin',
+                    adminRole: defaultInitialRole,
                     baseSalary: 0,
                     debtRemaining: 0
                 });
@@ -69,7 +87,7 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen, editData]);
+    }, [isOpen, editData, hideSuperAdmin, fixedRole]);
 
     if (!isOpen) return null;
 
@@ -77,14 +95,16 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
         e.preventDefault();
         setLoading(true);
         try {
+            const roleToAssign = fixedRole || formData.adminRole;
             const payload = {
                 ...formData,
+                adminRole: roleToAssign,
                 role: 'admin'
             };
 
             if (editData) {
                 await api.put(`/admin/founders/${editData._id}`, payload);
-                toast.success('Administrator profile updated');
+                toast.success(hideSuperAdmin ? 'Staff profile updated' : 'Administrator profile updated');
 
                 // If updating logged in user, keep cookie in sync
                 const userCookie = Cookies.get('user');
@@ -96,14 +116,14 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                                 ...parsed,
                                 name: formData.name,
                                 email: formData.email,
-                                adminRole: formData.adminRole
+                                adminRole: roleToAssign
                             }));
                         }
                     } catch (e) {}
                 }
             } else {
                 await api.post('/admin/founders', payload);
-                toast.success('New administrator registered');
+                toast.success(hideSuperAdmin ? 'New staff member registered' : 'New administrator registered');
             }
             onSuccess();
             onClose();
@@ -112,6 +132,37 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
         } finally {
             setLoading(false);
         }
+    };
+
+    // Filter available roles based on hideSuperAdmin
+    const standardRoles = ['Academic Coordinator', 'Sales'];
+    if (!hideSuperAdmin && !fixedRole) {
+        standardRoles.unshift('Super Admin');
+    }
+
+    const customRoles = rolesList.filter(r => 
+        !['Super Admin', 'Academic Coordinator', 'Sales'].includes(r.name) &&
+        (!hideSuperAdmin || r.name.toLowerCase() !== 'super admin')
+    );
+
+    const getTitle = () => {
+        if (mode === 'staff' || hideSuperAdmin) {
+            return editData ? 'Edit Staff Member' : 'Add Staff Member';
+        }
+        if (mode === 'founder' || fixedRole === 'Super Admin') {
+            return editData ? 'Edit Founder Profile' : 'Add Founder / Trustee';
+        }
+        return editData ? 'Edit Administrator / Founder' : 'Add Founder / Administrator';
+    };
+
+    const getSubtitle = () => {
+        if (mode === 'staff' || hideSuperAdmin) {
+            return editData ? 'Update staff profile, assigned role, and base salary' : 'Enter credentials and assign access role';
+        }
+        if (mode === 'founder' || fixedRole === 'Super Admin') {
+            return editData ? 'Update founder profile and base tier' : 'Register a new Super Admin founder';
+        }
+        return editData ? 'Update profile, role, and salary tier' : 'Enter credentials and assign access role';
     };
 
     return (
@@ -126,10 +177,10 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-gray-900 leading-none">
-                                {editData ? 'Edit Administrator / Founder' : 'Add Founder / Administrator'}
+                                {getTitle()}
                             </h2>
                             <p className="text-xs text-gray-400 mt-1">
-                                {editData ? 'Update profile, role, and salary tier' : 'Enter credentials and assign access role'}
+                                {getSubtitle()}
                             </p>
                         </div>
                     </div>
@@ -169,7 +220,7 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                                 required
                                 type="email"
                                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none"
-                                placeholder="founder@brightpath.com"
+                                placeholder={hideSuperAdmin ? "staff@brightpath.com" : "founder@brightpath.com"}
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
@@ -181,46 +232,48 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                                 <label className="text-xs font-bold text-gray-700 block">
                                     Assigned Role <span className="text-red-500">*</span>
                                 </label>
-                                {/* {onOpenRoleModal && (
-                                    <button
-                                        type="button"
-                                        onClick={onOpenRoleModal}
-                                        className="text-[11px] font-semibold text-primary hover:underline"
-                                    >
-                                        + New Role
-                                    </button>
-                                )} */}
                             </div>
                             <div className="relative">
-                                <select
-                                    required
-                                    value={formData.adminRole}
-                                    onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none appearance-none cursor-pointer pr-9"
-                                >
-                                    <optgroup label="Standard Roles">
-                                        <option value="Super Admin">Super Admin</option>
-                                        <option value="Academic Coordinator">Academic Coordinator</option>
-                                        <option value="Sales">Sales</option>
-                                    </optgroup>
-                                    {rolesList.filter(r => !['Super Admin', 'Academic Coordinator', 'Sales'].includes(r.name)).length > 0 && (
-                                        <optgroup label="Custom Roles">
-                                            {rolesList.filter(r => !['Super Admin', 'Academic Coordinator', 'Sales'].includes(r.name)).map(r => (
-                                                <option key={r._id || r.name} value={r.name}>
-                                                    {r.name}
-                                                </option>
-                                            ))}
-                                        </optgroup>
-                                    )}
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                {fixedRole ? (
+                                    <input
+                                        disabled
+                                        type="text"
+                                        value={fixedRole}
+                                        className="w-full px-3.5 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 font-bold text-sm cursor-not-allowed outline-none"
+                                    />
+                                ) : (
+                                    <>
+                                        <select
+                                            required
+                                            value={formData.adminRole}
+                                            onChange={(e) => setFormData({ ...formData, adminRole: e.target.value })}
+                                            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none appearance-none cursor-pointer pr-9"
+                                        >
+                                            <optgroup label="Standard Roles">
+                                                {standardRoles.map(r => (
+                                                    <option key={r} value={r}>{r}</option>
+                                                ))}
+                                            </optgroup>
+                                            {customRoles.length > 0 && (
+                                                <optgroup label="Custom Roles">
+                                                    {customRoles.map(r => (
+                                                        <option key={r._id || r.name} value={r.name}>
+                                                            {r.name}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            )}
+                                        </select>
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    </>
+                                )}
                             </div>
                         </div>
 
-                        {/* Monthly Base Tier */}
+                        {/* Monthly Base Tier / Salary */}
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-700 block">
-                                Base Tier Salary (₹)
+                                {hideSuperAdmin ? 'Base Salary (₹ / month)' : 'Base Tier Salary (₹)'}
                             </label>
                             <input
                                 type="number"
@@ -232,9 +285,9 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                         </div>
 
                         {/* Password */}
-                        <div className="space-y-1">
+                        <div className="space-y-1 sm:col-span-2">
                             <label className="text-xs font-bold text-gray-700 block">
-                                Password {editData ? <span className="text-gray-400 font-normal text-[11px]">(leave blank to keep)</span> : <span className="text-red-500">*</span>}
+                                Password {editData ? <span className="text-gray-400 font-normal text-[11px]">(leave blank to keep current)</span> : <span className="text-red-500">*</span>}
                             </label>
                             <input
                                 type="password"
@@ -245,8 +298,6 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
                         </div>
-
-                       
                     </div>
 
                     {/* Footer Buttons */}
@@ -263,7 +314,7 @@ export default function AdminModal({ isOpen, onClose, onSuccess, editData, onOpe
                             disabled={loading}
                             className="px-6 py-2.5 bg-primary text-white font-bold text-xs rounded-xl shadow-md shadow-primary/20 hover:bg-primary/95 active:scale-95 transition flex items-center gap-1.5"
                         >
-                            {loading ? 'Saving...' : editData ? 'Update Profile' : 'Add Administrator'}
+                            {loading ? 'Saving...' : editData ? 'Update Profile' : (hideSuperAdmin ? 'Add Staff Member' : 'Add Administrator')}
                         </button>
                     </div>
                 </form>
