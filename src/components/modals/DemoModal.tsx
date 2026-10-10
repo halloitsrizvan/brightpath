@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { X, ChevronDown, CheckCircle2 } from 'lucide-react';
+import * as fpixel from '@/lib/fpixel';
 
 interface DemoModalProps {
     isOpen: boolean;
@@ -70,6 +71,11 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
             });
 
             if (response.ok) {
+                fpixel.event('Lead', {
+                    content_name: 'Book Free Demo',
+                    lead_type: 'demo',
+                    student_class: formData.studentClass
+                });
                 setIsSubmitted(true);
                 setTimeout(() => {
                     setIsSubmitted(false);

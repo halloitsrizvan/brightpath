@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
 import Script from "next/script";
+import MetaPixel from "@/components/analytics/MetaPixel";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -119,6 +120,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} antialiased selection:bg-primary/10 selection:text-primary`}
       >
+        <MetaPixel />
         {children}
       </body>
     </html>

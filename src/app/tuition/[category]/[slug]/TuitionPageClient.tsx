@@ -9,6 +9,7 @@ import { CheckCircle2, Star, Users, Clock, BookOpen, Video, Trophy, GraduationCa
 import Image from 'next/image';
 import { useState } from 'react';
 import api from '@/utils/api';
+import * as fpixel from '@/lib/fpixel';
 
 interface TuitionPageClientProps {
     category: string;
@@ -45,6 +46,10 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
             await api.post('/public-enquiries', {
                 ...formData,
                 source: `Tuition Page: ${displayName}`,
+                category: category
+            });
+            fpixel.event('Lead', {
+                content_name: `Tuition Enquiry: ${displayName}`,
                 category: category
             });
             setFormStatus('success');

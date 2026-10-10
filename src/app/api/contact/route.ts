@@ -28,20 +28,24 @@ export async function POST(req: Request) {
         // 2. Schema Validation
         const validation = contactEnquirySchema.safeParse(body);
         if (!validation.success) {
+            const firstErrorMessage = validation.error.issues[0]?.message || 'Please fill in all required fields.';
             return NextResponse.json(
-                { message: 'Incomplete or Invalid Institutional Data', errors: validation.error.format() }, 
+                { message: firstErrorMessage, errors: validation.error.format() }, 
                 { status: 400, headers }
             );
         }
 
         // 3. Lead Capture in Database
         await dbConnect();
+        const contactVal = (body.contact || '').trim();
+        const isEmail = contactVal.includes('@');
+
         await Lead.create({
-            fullName: body.name,
-            phoneNumber: body.contact,
-            email: body.email || 'not-provided@example.com',
-            notes: body.requirements,
-            studentClass: body.module,
+            fullName: body.name?.trim(),
+            phoneNumber: isEmail ? (body.phoneNumber || contactVal) : contactVal,
+            email: isEmail ? contactVal : (body.email || 'not-provided@example.com'),
+            notes: body.requirements?.trim(),
+            studentClass: body.module?.trim(),
             leadType: 'enquiry',
             status: 'pending'
         });

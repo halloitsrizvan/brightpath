@@ -6,6 +6,7 @@ import FloatingContact from '@/components/public/FloatingContact';
 import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
+import * as fpixel from '@/lib/fpixel';
 
 export default function ContactClient() {
     const [formData, setFormData] = useState({
@@ -18,20 +19,52 @@ export default function ContactClient() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const trimmedData = {
+            name: formData.name.trim(),
+            contact: formData.contact.trim(),
+            module: formData.module.trim(),
+            requirements: formData.requirements.trim()
+        };
+
+        if (trimmedData.name.length < 2) {
+            toast.error('Please enter a valid name (at least 2 characters)');
+            return;
+        }
+
+        if (trimmedData.contact.length < 6) {
+            toast.error('Please enter a valid contact number or email');
+            return;
+        }
+
+        if (!trimmedData.module) {
+            toast.error('Please specify the subject or grade');
+            return;
+        }
+
+        if (trimmedData.requirements.length < 2) {
+            toast.error('Please provide brief requirements');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
-            const res = await api.post('/contact', formData);
+            const res = await api.post('/contact', trimmedData);
             
             if (res.data.success) {
+                fpixel.event('Contact', {
+                    content_name: 'Contact Page Inquiry',
+                    module: trimmedData.module
+                });
                 const now = new Date().toLocaleString();
                 const message = encodeURIComponent(
                     `📚 *BrightPath Enquiry*\n` +
                     `----------------------------------\n\n` +
-                    `👤 *Name:* ${formData.name}\n` +
-                    `📞 *Contact:* ${formData.contact}\n` +
-                    `📚 *Subject/Grade:* ${formData.module}\n` +
-                    `📝 *Requirements:* ${formData.requirements}\n\n` +
+                    `👤 *Name:* ${trimmedData.name}\n` +
+                    `📞 *Contact:* ${trimmedData.contact}\n` +
+                    `📚 *Subject/Grade:* ${trimmedData.module}\n` +
+                    `📝 *Requirements:* ${trimmedData.requirements}\n\n` +
                     `----------------------------------\n` +
                     `⏰ *Sent:* ${now}\n` +
                     `🌐 *Source:* Website Contact Form`
@@ -40,6 +73,12 @@ export default function ContactClient() {
                 const whatsappUrl = `https://api.whatsapp.com/send?phone=918590878148&text=${message}`;
                 window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
                 toast.success('Message sent! Opening WhatsApp...');
+                setFormData({
+                    name: '',
+                    contact: '',
+                    module: '',
+                    requirements: ''
+                });
             }
         } catch (err: any) {
             const errorMsg = err.response?.data?.message || 'Something went wrong. Please try again.';
