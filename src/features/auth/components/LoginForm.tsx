@@ -23,8 +23,8 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
             const { data } = await api.post('/auth/login', { email, password, role });
 
             // Set user info for UI (token is handled by server-side httpOnly cookie)
-            Cookies.set('user', JSON.stringify(data.user), { 
-                expires: 365 * 100, 
+            Cookies.set('user', JSON.stringify(data.user), {
+                expires: 365 * 100,
                 secure: window.location.protocol === 'https:',
                 sameSite: 'lax'
             });
@@ -50,7 +50,7 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
                 <Link href="/" className="inline-flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-[0.2em] mb-8 hover:translate-x-[-4px] transition-transform">
                     <ArrowLeft className="w-4 h-4" /> Back to Official Portal
                 </Link>
-                
+
                 <div className="flex items-center gap-2 mb-2">
                     <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 rotate-3">
                         B
@@ -71,7 +71,7 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <div className="bg-white py-12 px-8 shadow-2xl shadow-primary/5 rounded-[2.5rem] border border-gray-100 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary to-secondary" />
-                    
+
                     <form className="space-y-8" onSubmit={handleLogin}>
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Identifier</label>
@@ -144,7 +144,7 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
                         </button>
                     </form>
                 </div>
-                
+
                 <p className="mt-8 text-center text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic px-8 leading-relaxed">
                     By accessing this terminal, you agree to our strictly audited academic privacy protocols.
                 </p>

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
         const admins = await Admin.find().sort({ createdAt: -1 });
         return NextResponse.json(admins);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
     }
 }
 
@@ -47,6 +47,6 @@ export async function POST(req: NextRequest) {
         
         return NextResponse.json(admin);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
     }
 }

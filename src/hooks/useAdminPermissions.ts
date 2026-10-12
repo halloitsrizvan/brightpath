@@ -23,7 +23,13 @@ export function useAdminPermissions() {
             }
         }
 
-        const roleTitle = parsedUser?.adminRole || (parsedUser?.role === 'admin' ? 'Super Admin' : '');
+        // Only proceed with admin roles if this is an admin user
+        if (!parsedUser || parsedUser.role !== 'admin') {
+            setLoading(false);
+            return;
+        }
+
+        const roleTitle = parsedUser?.adminRole || 'Super Admin';
 
         // Check if matching default role first for instant rendering
         const localDefault = DEFAULT_ROLES.find(r => r.name.toLowerCase() === (roleTitle || '').toLowerCase());

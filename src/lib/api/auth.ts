@@ -31,18 +31,19 @@ export async function checkAuth(req: NextRequest, roles: string[] = []) {
         throw new Error('No token, authorization denied');
     }
 
+    let decoded: any;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
-
-        if (roles.length && !roles.includes(decoded.role)) {
-            throw new Error('Forbidden: Insufficient permissions');
-        }
-
-        return decoded;
+        decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
     } catch (err: any) {
-        console.error('Auth verification failed:', err.message);
+        console.warn('JWT verification failed:', err.message);
         throw new Error(err.message || 'Token is not valid');
     }
+
+    if (roles.length && !roles.includes(decoded.role)) {
+        throw new Error('Forbidden: Insufficient permissions');
+    }
+
+    return decoded;
 }
 
 export function authHandler(handler: Function, roles: string[] = []) {

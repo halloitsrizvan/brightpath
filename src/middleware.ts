@@ -52,6 +52,8 @@ export async function middleware(request: NextRequest) {
                     finalResponse = NextResponse.redirect(new URL('/teacher', request.url));
                 } else if (isStudentDashboard && payload.role !== 'student') {
                     finalResponse = NextResponse.redirect(new URL('/student', request.url));
+                } else if (isApiAdminRoute && payload.role !== 'admin') {
+                    finalResponse = NextResponse.json({ message: 'Forbidden: Insufficient permissions' }, { status: 403 });
                 } else {
                     finalResponse = NextResponse.next();
                 }

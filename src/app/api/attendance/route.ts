@@ -85,6 +85,35 @@ export async function GET(req: NextRequest) {
             query.studentId = studentIdLog;
         }
 
+        // Return list of available months for this user
+        if (searchParams.get('getMonths') === 'true') {
+            const records = await Attendance.find(query).select('date').sort({ date: -1 });
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const monthSet = new Set<string>();
+            const now = new Date();
+            const currentMonthStr = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+            monthSet.add(currentMonthStr);
+
+            records.forEach(r => {
+                if (r.date) {
+                    const d = new Date(r.date);
+                    if (!isNaN(d.getTime())) {
+                        monthSet.add(`${monthNames[d.getMonth()]} ${d.getFullYear()}`);
+                    }
+                }
+            });
+
+            const sortedMonths = Array.from(monthSet).sort((a, b) => {
+                const [mA, yA] = a.split(' ');
+                const [mB, yB] = b.split(' ');
+                const dateA = new Date(parseInt(yA), monthNames.indexOf(mA), 1);
+                const dateB = new Date(parseInt(yB), monthNames.indexOf(mB), 1);
+                return dateB.getTime() - dateA.getTime();
+            });
+
+            return NextResponse.json(sortedMonths);
+        }
+
         if (today) {
             const start = new Date();
             start.setHours(0, 0, 0, 0);
@@ -101,7 +130,7 @@ export async function GET(req: NextRequest) {
         }
 
         const list = await Attendance.find(query)
-            .populate('studentId', 'fullName')
+            .populate('studentId', 'fullName class grade phone contactNumber')
             .populate('teacherId', 'name')
             .populate('subjectId', 'subjectName')
             .sort({ date: -1 });

@@ -31,8 +31,20 @@ api.interceptors.response.use(
         const status = error.response?.status;
         const url = error.config?.url;
 
-        if (status === 401 || status === 403) {
-            console.warn(`API ${status} (${url}):`, msg);
+        const isForbidden = status === 403 || (typeof msg === 'string' && msg.toLowerCase().includes('forbidden'));
+        const isUnauthorized = 
+            status === 401 || 
+            (typeof msg === 'string' && (
+                msg.toLowerCase().includes('no token') ||
+                msg.toLowerCase().includes('token is not valid') ||
+                msg.toLowerCase().includes('jwt expired') ||
+                msg.toLowerCase().includes('authorization denied') ||
+                msg.toLowerCase().includes('session revoked') ||
+                msg.toLowerCase().includes('identity required')
+            ));
+
+        if (status === 401 || status === 403 || isForbidden || isUnauthorized) {
+            console.warn(`API ${status || 'Auth'} (${url}):`, msg);
         } else {
             const errorData = {
                 status,
@@ -45,24 +57,20 @@ api.interceptors.response.use(
             console.error('Full Error Details:', errorData);
         }
 
-        if (
-            error.response &&
-            (error.response.status === 401 ||
-                (error.response.status === 500 && (
-                    msg.includes('token') ||
-                    msg.includes('jwt') ||
-                    msg.includes('signature') ||
-                    msg.includes('authorization denied')
-                )))
-        ) {
-            // Don't redirect if we're already on a login page
+        // Only redirect on actual 401 Unauthenticated sessions (never on 403 Forbidden)
+        if (isUnauthorized && error.response) {
             const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
             const isLoginPage = ['/', '/admin', '/teacher', '/student'].includes(currentPath);
             
             if (!isLoginPage) {
                 const userStr = Cookies.get('user');
                 let loginPath = '/admin';
-                if (userStr) {
+                
+                if (currentPath.startsWith('/teacher-dashboard')) {
+                    loginPath = '/teacher';
+                } else if (currentPath.startsWith('/student-dashboard')) {
+                    loginPath = '/student';
+                } else if (userStr) {
                     try {
                         const user = JSON.parse(userStr);
                         if (user.role === 'student') loginPath = '/student';
@@ -70,10 +78,14 @@ api.interceptors.response.use(
                     } catch (e) { }
                 }
 
-                Cookies.remove('token');
-                Cookies.remove('user');
+                Cookies.remove('token', { path: '/' });
+                Cookies.remove('user', { path: '/' });
+                
                 if (typeof window !== 'undefined') {
-                    window.location.href = loginPath;
+                    // Call server logout to ensure httpOnly cookie is cleared
+                    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+                        window.location.href = loginPath;
+                    });
                 }
             }
         }

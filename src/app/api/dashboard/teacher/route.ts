@@ -79,6 +79,6 @@ export async function GET(req: NextRequest) {
             salaryEstimate: Math.round(estimatedSalary)
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
     }
 }
