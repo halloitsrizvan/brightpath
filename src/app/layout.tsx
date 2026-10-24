@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Outfit } from "next/font/google";
-import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import MetaPixel from "@/components/analytics/MetaPixel";
 import "./globals.css";
 
@@ -99,30 +99,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <head>
-        {gaId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}');
-              `}
-            </Script>
-          </>
-        )}
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${outfit.variable} antialiased selection:bg-primary/10 selection:text-primary`}
       >
         <MetaPixel />
         {children}
       </body>
+      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }

@@ -332,7 +332,7 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                             href="https://wa.me/919072618007?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20BrightPath%20tuition"
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={() => gtag.event('contact_whatsapp', { event_category: 'Contact', event_label: 'Mobile Drawer WhatsApp' })}
+                            onClick={() => gtag.trackWhatsAppClick('mobile_drawer', { event_label: 'Mobile Drawer WhatsApp' })}
                             className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
                         >
                             <MessageCircle className="w-3.5 h-3.5" />

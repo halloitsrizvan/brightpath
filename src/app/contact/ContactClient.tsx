@@ -3,7 +3,7 @@ import { useState } from 'react';
 import PublicNavbar from '@/components/public/Navbar';
 import PublicFooter from '@/components/public/Footer';
 import FloatingContact from '@/components/public/FloatingContact';
-import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
+import { Smartphone, Mail, MapPin, Send, Calendar, MessageCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 import * as fpixel from '@/lib/fpixel';
@@ -121,8 +121,29 @@ export default function ContactClient() {
                 <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-12">
                     {/* Left: Contact Info */}
                     <div className="lg:col-span-2 space-y-6">
-                        <ContactCard icon={<Smartphone className="w-5 h-5" />} label="Phone" value="+91 85908 78148" desc="Call us for quick inquiries" />
-                        <ContactCard icon={<Mail className="w-5 h-5" />} label="Email" value="enquiry@brightpath.eduvora" desc="For detailed questions" />
+                        <ContactCard 
+                            icon={<MessageCircle className="w-5 h-5 text-emerald-600" />} 
+                            label="WhatsApp" 
+                            value="+91 85908 78148" 
+                            desc="Chat directly with our academic team" 
+                            href="https://wa.me/918590878148?text=Hi%20BrightPath%2C%20I%20would%20like%20to%20enquire%20about%201%3A1%20online%20tuition."
+                            onClick={() => gtag.trackWhatsAppClick('contact_page_card', { event_label: 'Contact Page WhatsApp Card' })}
+                        />
+                        <ContactCard 
+                            icon={<Smartphone className="w-5 h-5" />} 
+                            label="Phone" 
+                            value="+91 85908 78148" 
+                            desc="Call us for quick inquiries" 
+                            href="tel:+918590878148"
+                            onClick={() => gtag.event('contact_call', { event_category: 'Contact', event_label: 'Contact Page Phone Card' })}
+                        />
+                        <ContactCard 
+                            icon={<Mail className="w-5 h-5" />} 
+                            label="Email" 
+                            value="enquiry@brightpath.eduvora" 
+                            desc="For detailed questions" 
+                            href="mailto:enquiry@brightpath.eduvora"
+                        />
                         <ContactCard icon={<MapPin className="w-5 h-5" />} label="Location" value="Calicut, Kerala" desc="Serving students across India & abroad" />
 
                         <div className="bg-primary p-6 rounded-xl text-white">
@@ -184,9 +205,23 @@ export default function ContactClient() {
     );
 }
 
-function ContactCard({ icon, label, value, desc }: { icon: React.ReactNode, label: string, value: string, desc: string }) {
-    return (
-        <div className="flex items-start gap-4 p-5 rounded-xl bg-surface border border-gray-100/80">
+function ContactCard({ 
+    icon, 
+    label, 
+    value, 
+    desc, 
+    href, 
+    onClick 
+}: { 
+    icon: React.ReactNode, 
+    label: string, 
+    value: string, 
+    desc: string, 
+    href?: string, 
+    onClick?: () => void 
+}) {
+    const cardContent = (
+        <div className="flex items-start gap-4 p-5 rounded-xl bg-surface border border-gray-100/80 hover:border-primary/30 hover:shadow-xs transition-all">
             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                 {icon}
             </div>
@@ -197,6 +232,22 @@ function ContactCard({ icon, label, value, desc }: { icon: React.ReactNode, labe
             </div>
         </div>
     );
+
+    if (href) {
+        return (
+            <a 
+                href={href} 
+                onClick={onClick} 
+                target={href.startsWith('http') ? '_blank' : undefined} 
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                className="block"
+            >
+                {cardContent}
+            </a>
+        );
+    }
+
+    return cardContent;
 }
 
 function FormField({ label, placeholder, name, value, onChange }: { label: string, placeholder: string, name: string, value: string, onChange: React.ChangeEventHandler<HTMLInputElement> }) {

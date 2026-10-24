@@ -8,8 +8,7 @@ export default function FloatingContact() {
     const whatsappLink = `https://wa.me/${phoneNumber.replace('+', '')}?text=Hi%20Brightpath%2C%20I%20need%20support%20regarding%20your%20academic%20programs.`;
 
     const handleWhatsAppClick = () => {
-        gtag.event('contact_whatsapp', {
-            event_category: 'Contact',
+        gtag.trackWhatsAppClick('floating_widget', {
             event_label: 'Floating WhatsApp Button'
         });
         fpixel.event('Contact', {
