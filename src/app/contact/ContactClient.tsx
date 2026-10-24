@@ -7,6 +7,7 @@ import { Smartphone, Mail, MapPin, Send, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '@/utils/api';
 import * as fpixel from '@/lib/fpixel';
+import * as gtag from '@/lib/gtag';
 
 export default function ContactClient() {
     const [formData, setFormData] = useState({
@@ -56,6 +57,11 @@ export default function ContactClient() {
                 fpixel.event('Contact', {
                     content_name: 'Contact Page Inquiry',
                     module: trimmedData.module
+                });
+                gtag.event('generate_lead', {
+                    event_category: 'Contact Form',
+                    event_label: trimmedData.module,
+                    source: 'Contact Page'
                 });
                 const now = new Date().toLocaleString();
                 const message = encodeURIComponent(

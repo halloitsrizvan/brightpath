@@ -10,6 +10,8 @@ import Image from 'next/image';
 import { useState } from 'react';
 import api from '@/utils/api';
 import * as fpixel from '@/lib/fpixel';
+import * as gtag from '@/lib/gtag';
+import { formatTuitionDisplayName } from '@/utils/tuitionHelper';
 
 interface TuitionPageClientProps {
     category: string;
@@ -17,13 +19,7 @@ interface TuitionPageClientProps {
 }
 
 export default function TuitionPageClient({ category, slug }: TuitionPageClientProps) {
-    const displayName = slug 
-        ? slug
-            .replace(/(\d)-(\d)/g, '$1_RANGE_$2') 
-            .replace(/-/g, ' ')
-            .replace(/_RANGE_/g, '-')
-            .replace(/\b\w/g, l => l.toUpperCase()) 
-        : 'Academic';
+    const displayName = formatTuitionDisplayName(slug);
     const isLocationPage = category === 'tuition-by-location';
 
     const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
@@ -35,7 +31,7 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
         country: 'India',
         phone: '',
         whatsapp: '',
-        class: slug.replace(/(\d)-(\d)/g, '$1_RANGE_$2').replace(/-/g, ' ').replace(/_RANGE_/g, '-'),
+        class: displayName,
         board: ''
     });
 
@@ -50,6 +46,11 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
             });
             fpixel.event('Lead', {
                 content_name: `Tuition Enquiry: ${displayName}`,
+                category: category
+            });
+            gtag.event('generate_lead', {
+                event_category: 'Tuition Page',
+                event_label: displayName,
                 category: category
             });
             setFormStatus('success');
@@ -188,7 +189,7 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
                                             <Trophy className="w-3 h-3 fill-primary" /> {displayName} Tuition
                                         </div>
                                         <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 font-display leading-tight">
-                                            Master <span className="text-primary">{displayName}</span> with Kerala&apos;s best tutors
+                                            Master <span className="text-primary">{displayName}</span> with Expert 1:1 Mentors
                                         </h1>
                                         <p className="text-gray-500 leading-relaxed max-w-lg">
                                             Tailored 1:1 online tuition designed specifically for {displayName} curriculum. Build a strong foundation with our most trusted mentors.

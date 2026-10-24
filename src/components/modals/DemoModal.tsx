@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { X, ChevronDown, CheckCircle2 } from 'lucide-react';
 import * as fpixel from '@/lib/fpixel';
+import * as gtag from '@/lib/gtag';
 
 interface DemoModalProps {
     isOpen: boolean;
@@ -75,6 +76,11 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     content_name: 'Book Free Demo',
                     lead_type: 'demo',
                     student_class: formData.studentClass
+                });
+                gtag.event('generate_lead', {
+                    event_category: 'Demo Booking',
+                    event_label: formData.studentClass || 'General',
+                    lead_type: 'demo'
                 });
                 setIsSubmitted(true);
                 setTimeout(() => {

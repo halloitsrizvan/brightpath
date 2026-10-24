@@ -8,11 +8,19 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Expert Tutors",
-    description: "Meet our verified team of professional 1:1 tutors, including postgraduate and PhD subject-matter experts across Kerala.",
+    title: "Certified Online Tutors in Kerala & GCC | Expert 1:1 Mentors",
+    description: "Meet BrightPath's verified 1:1 online tutors. Postgraduate and experienced subject specialists providing patient, individual mentorship for school students.",
     alternates: {
-        canonical: '/tutors',
+        canonical: 'https://www.brightpatheduvora.com/tutors',
     },
+    openGraph: {
+        title: "Certified Online Tutors in Kerala & GCC | Expert 1:1 Mentors",
+        description: "Meet BrightPath's verified 1:1 online tutors. Postgraduate and experienced subject specialists providing patient, individual mentorship.",
+        url: "https://www.brightpatheduvora.com/tutors",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export const revalidate = 3600;

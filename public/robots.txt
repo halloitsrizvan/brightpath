@@ -6,11 +6,18 @@ Allow: /icon.png
 Allow: /llms.txt
 Allow: /llms-full.txt
 Disallow: /admin
+Disallow: /admin/
 Disallow: /teacher
+Disallow: /teacher/
 Disallow: /student
+Disallow: /student/
 Disallow: /admin-dashboard
+Disallow: /admin-dashboard/
 Disallow: /teacher-dashboard
+Disallow: /teacher-dashboard/
 Disallow: /student-dashboard
+Disallow: /student-dashboard/
 Disallow: /api/
+Disallow: /downloads
 
 Sitemap: https://www.brightpatheduvora.com/sitemap.xml

@@ -109,19 +109,15 @@ export default function HomeClient() {
                                     "closes": "23:00"
                                 }
                             ],
-                            "aggregateRating": {
-                                "@type": "AggregateRating",
-                                "ratingValue": "4.9",
-                                "reviewCount": "128",
-                                "bestRating": "5",
-                                "worstRating": "1"
-                            },
                             "areaServed": [
                                 { "@type": "Country", "name": "India" },
+                                { "@type": "AdministrativeArea", "name": "Kerala" },
                                 { "@type": "Country", "name": "United Arab Emirates" },
                                 { "@type": "Country", "name": "Qatar" },
                                 { "@type": "Country", "name": "Saudi Arabia" },
-                                { "@type": "AdministrativeArea", "name": "Kerala" }
+                                { "@type": "Country", "name": "Oman" },
+                                { "@type": "Country", "name": "Kuwait" },
+                                { "@type": "Country", "name": "Bahrain" }
                             ],
                             "sameAs": [
                                 "https://www.facebook.com/brightpatheduvora",
@@ -173,7 +169,7 @@ export default function HomeClient() {
                                 <div className="space-y-5">
                                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/80 text-amber-700 text-xs font-bold tracking-wider uppercase">
                                         <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                        <span>Kerala&apos;s #1 Rated 1:1 Online Tuition</span>
+                                        <span>Trusted 1:1 Online Tuition in Kerala & GCC</span>
                                     </div>
 
                                     <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-gray-950 tracking-tight font-display leading-[1.14]">
@@ -230,9 +226,9 @@ export default function HomeClient() {
                                                 {[...Array(5)].map((_, i) => (
                                                     <Star key={i} className="w-3.5 h-3.5 fill-current" />
                                                 ))}
-                                                <span className="font-bold text-gray-900 ml-1">4.9 / 5</span>
+                                                <span className="font-bold text-gray-900 ml-1">1:1 Individual Mentorship</span>
                                             </div>
-                                            <span className="text-gray-500">Trusted by <strong className="text-gray-800">5,000+</strong> students & parents</span>
+                                            <span className="text-gray-500">Trusted by Parents across <strong className="text-gray-800">Kerala & GCC</strong></span>
                                         </div>
                                     </div>
                                 </div>
@@ -324,30 +320,30 @@ export default function HomeClient() {
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={100} suffix="+" duration={2} />
+                                100%
                             </p>
-                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Expert Tutors</p>
+                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">1:1 Individual Attention</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={10000} suffix="+" duration={2.2} />
+                                KG–12
                             </p>
-                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Hours Tutored</p>
+                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Foundations to Grade 12</p>
                         </div>
 
                         <div className="md:border-r border-white/15 pr-4">
                             <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={50} duration={2}  suffix="+" />
+                                4 Boards
                             </p>
-                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Subjects & Courses</p>
+                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">CBSE, ICSE, State & IGCSE</p>
                         </div>
 
                         <div>
-                            <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight font-display text-white">
-                                <AnimatedCounter end={80} suffix="+" duration={2.4} />
+                            <p className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight font-display text-white">
+                                5 AM – 11 PM
                             </p>
-                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Active Students</p>
+                            <p className="text-xs sm:text-sm font-medium text-white/80 mt-1">Flexible Scheduling</p>
                         </div>
 
                     </div>
@@ -748,75 +744,99 @@ export default function HomeClient() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
                         {/* Primary */}
-                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full uppercase">KG to Class 5</span>
-                                <span className="text-xs text-gray-400 font-medium">Foundational Stage</span>
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full uppercase">KG to Class 5</span>
+                                    <span className="text-xs text-gray-400 font-medium">Foundational Stage</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Primary School Foundations & Basics</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                    Developing genuine curiosity and self-confidence during the most critical cognitive years. Our friendly mentors guide young learners through phonics, English and Malayalam reading fluency, fundamental arithmetic, and early scientific inquiry using colorful visual models.
+                                </p>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Phonics & Grammar</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Mental Math</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Malayalam Reading</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Basics Coaching</span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Primary School Foundations</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                                Developing genuine curiosity and self-confidence during the most critical cognitive years. Our friendly mentors guide young learners through phonics, English and Malayalam reading fluency, fundamental arithmetic, and early scientific inquiry using colorful visual models.
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Phonics & Grammar</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Mental Math</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Malayalam Reading</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Confidence Building</span>
-                            </div>
+                            <Link href="/tuition/tuition-by-classes/class-1-5" className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-700 hover:text-amber-900 mt-5 group">
+                                <span>Explore Primary & Foundation Classes</span>
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
                         </div>
 
                         {/* Middle School */}
-                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-bold rounded-full uppercase">Class 6 to Class 8</span>
-                                <span className="text-xs text-gray-400 font-medium">Transition Stage</span>
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-sky-100 text-sky-800 text-xs font-bold rounded-full uppercase">Class 6 to Class 8</span>
+                                    <span className="text-xs text-gray-400 font-medium">Transition Stage</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Middle School Core Concept Development</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                    As academic demands increase, students transition from simple rote learning to abstract thinking. We focus deeply on Algebra, Geometry, Physics fundamentals, Chemistry concepts, Biology diagrams, and structured essay writing to establish an unshakeable base before high school.
+                                </p>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Algebra & Geometry</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">General Science</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Social Sciences</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Language Proficiency</span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Middle School Core Concept Development</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                                As academic demands increase, students transition from simple rote learning to abstract thinking. We focus deeply on Algebra, Geometry, Physics fundamentals, Chemistry concepts, Biology diagrams, and structured essay writing to establish an unshakeable base before high school.
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Algebra & Geometry</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">General Science</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Social Sciences</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Language Proficiency</span>
-                            </div>
+                            <Link href="/tuition/tuition-by-classes/class-6" className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 mt-5 group">
+                                <span>Explore Middle School Tuition</span>
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
                         </div>
 
                         {/* Secondary */}
-                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase">Class 9 & Class 10</span>
-                                <span className="text-xs text-gray-400 font-medium">Board Preparation</span>
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase">Class 9 & Class 10</span>
+                                    <span className="text-xs text-gray-400 font-medium">Board Preparation</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Secondary School & Board Exam Excellence</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                    Rigorous, targeted exam preparation for CBSE Board, ICSE, and Kerala SSLC examinations. Our certified mentors provide comprehensive chapter revisions, step-by-step mathematical problem solving, previous years&apos; question analyses, and regular timed mock tests.
+                                </p>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">CBSE & ICSE Board Prep</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Kerala SSLC Specialization</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Previous Years Papers</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Speed & Accuracy Drills</span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Secondary School & Board Exam Excellence</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                                Rigorous, targeted exam preparation for CBSE Board, ICSE, and Kerala SSLC examinations. Our certified mentors provide comprehensive chapter revisions, step-by-step mathematical problem solving, previous years&apos; question analyses, and regular timed mock tests.
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">CBSE & ICSE Board Prep</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Kerala SSLC Specialization</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Previous Years Papers</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Speed & Accuracy Drills</span>
-                            </div>
+                            <Link href="/tuition/tuition-by-classes/class-10" className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-900 mt-5 group">
+                                <span>Explore Class 10 & SSLC Tuition</span>
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
                         </div>
 
                         {/* Higher Secondary */}
-                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full uppercase">Class 11 & Class 12</span>
-                                <span className="text-xs text-gray-400 font-medium">Stream Specialization</span>
+                        <div className="p-8 rounded-2xl bg-white border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-bold rounded-full uppercase">Class 11 & Class 12</span>
+                                    <span className="text-xs text-gray-400 font-medium">Stream Specialization</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Higher Secondary & Entrance Foundations</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                                    Advanced subject-matter expertise for Plus One and Plus Two students across Science and Commerce streams. Master complex Physics derivations, Organic Chemistry mechanisms, Advanced Calculus, and Biology alongside competitive exam foundations (NEET, JEE, KEAM).
+                                </p>
+                                <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Plus One & Plus Two Coaching</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Physics & Chemistry Derivations</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Calculus & Vectors</span>
+                                    <span className="px-2.5 py-1 bg-gray-100 rounded-md">Entrance Exam Foundation</span>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Higher Secondary & Entrance Foundations</h3>
-                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                                Advanced subject-matter expertise for Plus One and Plus Two students across Science and Commerce streams. Master complex Physics derivations, Organic Chemistry mechanisms, Advanced Calculus, and Biology alongside competitive exam foundations (NEET, JEE, KEAM).
-                            </p>
-                            <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Plus One & Plus Two Coaching</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Physics & Chemistry Derivations</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Calculus & Vectors</span>
-                                <span className="px-2.5 py-1 bg-gray-100 rounded-md">Entrance Exam Foundation</span>
-                            </div>
+                            <Link href="/tuition/tuition-by-classes/class-11" className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-900 mt-5 group">
+                                <span>Explore Plus One & Plus Two Tuition</span>
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
                         </div>
                     </div>
 
@@ -833,22 +853,22 @@ export default function HomeClient() {
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
-                                <h4 className="text-base font-bold text-white mb-1">CBSE (NCERT)</h4>
+                            <Link href="/tuition/tuition-by-board/cbse" className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs hover:bg-white/15 transition-all block group">
+                                <h4 className="text-base font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">CBSE (NCERT) &rarr;</h4>
                                 <p className="text-xs text-gray-300 leading-relaxed">NCERT textbook solutions, exemplar exercises, assertion-reasoning practice, and case-study questions.</p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
-                                <h4 className="text-base font-bold text-white mb-1">Kerala State (SCERT)</h4>
+                            </Link>
+                            <Link href="/tuition/tuition-by-board/state" className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs hover:bg-white/15 transition-all block group">
+                                <h4 className="text-base font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">Kerala State (SCERT) &rarr;</h4>
                                 <p className="text-xs text-gray-300 leading-relaxed">SCERT textbooks taught in English or Malayalam with previous SSLC and Plus Two model exam questions.</p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
-                                <h4 className="text-base font-bold text-white mb-1">ICSE & ISC Board</h4>
+                            </Link>
+                            <Link href="/tuition/tuition-by-board/icse" className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs hover:bg-white/15 transition-all block group">
+                                <h4 className="text-base font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">ICSE & ISC Board &rarr;</h4>
                                 <p className="text-xs text-gray-300 leading-relaxed">In-depth analytical syllabi, detailed science lab concepts, literature analysis, and mathematical rigor.</p>
-                            </div>
-                            <div className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
-                                <h4 className="text-base font-bold text-white mb-1">IGCSE & Cambridge</h4>
+                            </Link>
+                            <Link href="/tuition/tuition-by-board/igcse" className="p-4 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs hover:bg-white/15 transition-all block group">
+                                <h4 className="text-base font-bold text-white mb-1 group-hover:text-amber-400 transition-colors">IGCSE & Cambridge &rarr;</h4>
                                 <p className="text-xs text-gray-300 leading-relaxed">International standards, inquiry-based investigations, past papers, and progressive grading support.</p>
-                            </div>
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -5,11 +5,19 @@ import { BookOpen, CheckCircle2, PenTool, Atom, Calculator } from 'lucide-react'
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Curriculum",
-    description: "Structured academic programs for KG to 12th grade across CBSE, ICSE, and Kerala State boards. Personalized learning paths for every level.",
+    title: "KG to 12th Curriculum Tracks | CBSE, ICSE & Kerala State Syllabus",
+    description: "Structured 1:1 academic programs covering foundational primary years (KG-5), middle school STEM concepts (6-8), and secondary/higher secondary board exam tracks.",
     alternates: {
-        canonical: '/curriculum',
+        canonical: 'https://www.brightpatheduvora.com/curriculum',
     },
+    openGraph: {
+        title: "KG to 12th Curriculum Tracks | CBSE, ICSE & Kerala State Syllabus",
+        description: "Structured 1:1 academic programs covering foundational primary years (KG-5), middle school STEM concepts (6-8), and secondary/higher secondary board exam tracks.",
+        url: "https://www.brightpatheduvora.com/curriculum",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function CurriculumPage() {

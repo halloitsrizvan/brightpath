@@ -6,10 +6,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Downloads",
+    title: "Downloads & Academic Resources | BrightPath",
     description: "Access BrightPath study materials, brochures, and curriculum guidelines. Available for registered students and tutors.",
-    alternates: {
-        canonical: '/downloads',
+    robots: {
+        index: false,
+        follow: true,
     },
 };
 
@@ -45,7 +46,7 @@ export default function DownloadsPage() {
                         
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <Link 
-                                href="/student-dashboard" 
+                                href="/student" 
                                 className="px-6 py-3.5 bg-primary text-white font-semibold text-sm rounded-xl shadow-md shadow-primary/15 hover:bg-primary/90 active:scale-[0.98] transition-all"
                             >
                                 Student Login

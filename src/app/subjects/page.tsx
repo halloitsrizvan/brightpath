@@ -7,11 +7,19 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Subjects We Teach",
-    description: "Specialized 1:1 tutoring across Mathematics, Physics, Chemistry, Biology, English, Malayalam, and more for KG-12 students.",
+    title: "Online Subject Tuition | Maths, Science, English, Malayalam & More",
+    description: "Specialized 1:1 online tutoring across Mathematics, Physics, Chemistry, Biology, English, Malayalam, and Social Science for KG to 12th grade students.",
     alternates: {
-        canonical: '/subjects',
+        canonical: 'https://www.brightpatheduvora.com/subjects',
     },
+    openGraph: {
+        title: "Online Subject Tuition | Maths, Science, English, Malayalam & More",
+        description: "Specialized 1:1 online tutoring across Mathematics, Physics, Chemistry, Biology, English, Malayalam, and Social Science for KG to 12th grade students.",
+        url: "https://www.brightpatheduvora.com/subjects",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function SubjectsPage() {

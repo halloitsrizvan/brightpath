@@ -1,9 +1,31 @@
 'use client';
 import { Phone, MessageCircle } from 'lucide-react';
+import * as gtag from '@/lib/gtag';
+import * as fpixel from '@/lib/fpixel';
 
 export default function FloatingContact() {
     const phoneNumber = "+918590878148";
     const whatsappLink = `https://wa.me/${phoneNumber.replace('+', '')}?text=Hi%20Brightpath%2C%20I%20need%20support%20regarding%20your%20academic%20programs.`;
+
+    const handleWhatsAppClick = () => {
+        gtag.event('contact_whatsapp', {
+            event_category: 'Contact',
+            event_label: 'Floating WhatsApp Button'
+        });
+        fpixel.event('Contact', {
+            content_name: 'Floating WhatsApp Click'
+        });
+    };
+
+    const handleCallClick = () => {
+        gtag.event('contact_call', {
+            event_category: 'Contact',
+            event_label: 'Floating Phone Button'
+        });
+        fpixel.event('Contact', {
+            content_name: 'Floating Call Click'
+        });
+    };
 
     return (
         <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5">
@@ -11,6 +33,8 @@ export default function FloatingContact() {
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleWhatsAppClick}
+                aria-label="Chat with BrightPath Eduvora on WhatsApp"
                 className="w-12 h-12 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-lg shadow-[#25D366]/30 hover:scale-105 active:scale-95 transition-all group relative"
             >
                 <MessageCircle className="w-6 h-6" />
@@ -21,6 +45,8 @@ export default function FloatingContact() {
 
             <a 
                 href={`tel:${phoneNumber}`}
+                onClick={handleCallClick}
+                aria-label="Call BrightPath Eduvora"
                 className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-105 active:scale-95 transition-all group relative"
             >
                 <Phone className="w-5 h-5" />

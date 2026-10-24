@@ -98,7 +98,7 @@ export default function PublicFooter() {
 
                     <div className="flex items-center gap-2 text-sm text-gray-400">
                         <Star className="w-3.5 h-3.5 fill-secondary text-secondary" />
-                        <span>4.9/5 rated by parents across Kerala</span>
+                        <span>Trusted 1:1 Online Tuition for KG–12 in Kerala & GCC</span>
                     </div>
                 </div>
             </div>

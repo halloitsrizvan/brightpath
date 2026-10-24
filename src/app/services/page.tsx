@@ -7,11 +7,19 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-    title: "Our Services",
-    description: "Premium 1:1 online tuition, entrance exam prep, language foundation courses, and personalized academic counseling for KG-12 students.",
+    title: "1:1 Online Tuition Services | KG–12 Mentorship & Foundation Classes",
+    description: "Explore BrightPath's personalized 1:1 online tuition services: foundational basics, board exam preparation (CBSE, ICSE, State), and subject-specific coaching.",
     alternates: {
-        canonical: '/services',
+        canonical: 'https://www.brightpatheduvora.com/services',
     },
+    openGraph: {
+        title: "1:1 Online Tuition Services | KG–12 Mentorship & Foundation Classes",
+        description: "Explore BrightPath's personalized 1:1 online tuition services: foundational basics, board exam preparation, and subject-specific coaching.",
+        url: "https://www.brightpatheduvora.com/services",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function ServicesPage() {

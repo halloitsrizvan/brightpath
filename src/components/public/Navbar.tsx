@@ -8,6 +8,7 @@ import {
     Layers, Star, FileText, Phone, MessageCircle 
 } from 'lucide-react';
 import DemoModal from '../modals/DemoModal';
+import * as gtag from '@/lib/gtag';
 
 interface PublicNavbarProps {
     showMarquee?: boolean;
@@ -42,12 +43,14 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
             { name: 'Class 1-5', items: ['Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5'] },
             'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'
         ],
-        locations: ['Kerala', 'Dubai(UAE)', 'Qatar', 'Chennai', 'Bangalore', 'Coimbatore', 'Hyderabad'],
+        locations: ['Kerala', 'Dubai', 'UAE', 'Qatar', 'Saudi Arabia', 'Oman', 'Kuwait', 'Bahrain', 'Chennai', 'Bangalore', 'Coimbatore', 'Hyderabad'],
         subjects: ['English', 'Maths', 'Science', 'Social Science', 'Malayalam', 'Hindi', 'Physics', 'Chemistry', 'Biology'],
         boards: ['CBSE', 'ICSE', 'State', 'IGCSE']
     };
 
     const moreLinks = [
+        { name: 'Academic Boards', href: '/boards' },
+        { name: 'Subjects We Teach', href: '/subjects' },
         { name: 'Our System', href: '/our-system' },
         { name: 'Testimonials', href: '/testimonials' },
         { name: 'Blog', href: '/blog' },
@@ -329,6 +332,7 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                             href="https://wa.me/919072618007?text=Hello%2C%20I%20would%20like%20to%20know%20more%20about%20BrightPath%20tuition"
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => gtag.event('contact_whatsapp', { event_category: 'Contact', event_label: 'Mobile Drawer WhatsApp' })}
                             className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
                         >
                             <MessageCircle className="w-3.5 h-3.5" />
@@ -336,6 +340,7 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                         </a>
                         <a 
                             href="tel:+919072618007"
+                            onClick={() => gtag.event('contact_call', { event_category: 'Contact', event_label: 'Mobile Drawer Phone' })}
                             className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-lg bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-100 transition-colors"
                         >
                             <Phone className="w-3.5 h-3.5 text-primary" />

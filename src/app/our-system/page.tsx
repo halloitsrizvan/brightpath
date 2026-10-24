@@ -13,11 +13,19 @@ import {
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Our System",
-    description: "Explore the Brightpath digital ecosystem. Real-time progress tracking, task management, and structured 1:1 online classrooms.",
+    title: "How Our 1:1 Online Learning Platform Works | BrightPath Eduvora",
+    description: "Discover BrightPath's transparent online tuition ecosystem: real-time parent progress tracking, interactive whiteboards, flexible scheduling, and verified mentors.",
     alternates: {
-        canonical: '/our-system',
+        canonical: 'https://www.brightpatheduvora.com/our-system',
     },
+    openGraph: {
+        title: "How Our 1:1 Online Learning Platform Works | BrightPath Eduvora",
+        description: "Discover BrightPath's transparent online tuition ecosystem: real-time parent progress tracking, interactive whiteboards, flexible scheduling, and verified mentors.",
+        url: "https://www.brightpatheduvora.com/our-system",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function OurSystemPage() {

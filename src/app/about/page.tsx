@@ -5,11 +5,19 @@ import { Target, Zap, ShieldCheck, Heart, Eye, Award } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "About Us",
-    description: "Kerala's premier 1:1 online tuition academy. Learn about our vision, mission, core values, and dedicated academic mentorship.",
+    title: "About BrightPath Eduvora | 1:1 Online Tuition Academy Kerala",
+    description: "Learn about BrightPath Eduvora's mission, values, and expert educators dedicated to empowering KG–12 students through personalized 1:1 online academic mentoring.",
     alternates: {
-        canonical: '/about',
+        canonical: 'https://www.brightpatheduvora.com/about',
     },
+    openGraph: {
+        title: "About BrightPath Eduvora | 1:1 Online Tuition Academy Kerala",
+        description: "Learn about BrightPath Eduvora's mission, values, and expert educators dedicated to empowering KG–12 students through personalized 1:1 online academic mentoring.",
+        url: "https://www.brightpatheduvora.com/about",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function AboutPage() {
@@ -78,13 +86,14 @@ export default function AboutPage() {
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">Our Impact in Numbers</h2>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 font-display leading-tight">Our Core Educational Commitments</h2>
+                        <p className="text-sm text-gray-500 mt-2">Built on individual attention, syllabus precision, and measurable academic progress</p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <StatItem label="Years of Excellence" value="12+" />
-                        <StatItem label="Happy Families" value="5000+" />
-                        <StatItem label="Expert Tutors" value="500+" />
-                        <StatItem label="Satisfaction Rate" value="99%" />
+                        <StatItem label="1:1 Student Attention" value="100%" />
+                        <StatItem label="Academic Range" value="KG–12" />
+                        <StatItem label="Curricula Supported" value="4 Boards" />
+                        <StatItem label="Learning Model" value="Personalized" />
                     </div>
                 </div>
             </section>

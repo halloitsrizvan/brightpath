@@ -5,11 +5,19 @@ import { Briefcase, ArrowRight } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Careers",
-    description: "Explore career opportunities at BrightPath. Join our team of passionate educators and academic consultants.",
+    title: "Careers at BrightPath Eduvora | Academic & Mentorship Opportunities",
+    description: "Explore educator and counseling opportunities at BrightPath Eduvora. Join our mission to redefine personalized online learning for school students.",
     alternates: {
-        canonical: '/careers',
+        canonical: 'https://www.brightpatheduvora.com/careers',
     },
+    openGraph: {
+        title: "Careers at BrightPath Eduvora | Academic & Mentorship Opportunities",
+        description: "Explore educator and counseling opportunities at BrightPath Eduvora. Join our mission to redefine personalized online learning for school students.",
+        url: "https://www.brightpatheduvora.com/careers",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function CareersPage() {

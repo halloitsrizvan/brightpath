@@ -8,11 +8,19 @@ import { PublicService } from '@/lib/services/publicService';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Blog | BrightPath Eduvora",
-    description: "Study guides, academic insights, and updates from Kerala's premier 1:1 online tuition academy.",
+    title: "Education & Study Tips Blog | BrightPath Eduvora",
+    description: "Expert study tips, exam preparation roadmaps, foundation building advice, and curriculum insights for parents and school students in Kerala and GCC.",
     alternates: {
-        canonical: '/blog',
+        canonical: 'https://www.brightpatheduvora.com/blog',
     },
+    openGraph: {
+        title: "Education & Study Tips Blog | BrightPath Eduvora",
+        description: "Expert study tips, exam preparation roadmaps, foundation building advice, and curriculum insights for parents and school students in Kerala and GCC.",
+        url: "https://www.brightpatheduvora.com/blog",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export const revalidate = 3600;

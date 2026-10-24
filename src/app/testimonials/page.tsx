@@ -2,11 +2,19 @@ import { Metadata } from 'next';
 import TestimonialsClient from './TestimonialsClient';
 
 export const metadata: Metadata = {
-    title: "Success Stories",
-    description: "Read testimonials from families, parents, and students who have transformed their grades and confidence with BrightPath online tuition.",
+    title: "Parent & Student Reviews | BrightPath 1:1 Online Tuition Stories",
+    description: "Read real reviews and feedback from parents and students across Kerala and GCC experiencing transformative academic growth with BrightPath 1:1 online tuition.",
     alternates: {
-        canonical: '/testimonials',
+        canonical: 'https://www.brightpatheduvora.com/testimonials',
     },
+    openGraph: {
+        title: "Parent & Student Reviews | BrightPath 1:1 Online Tuition Stories",
+        description: "Read real reviews and feedback from parents and students across Kerala and GCC experiencing transformative academic growth with BrightPath 1:1 online tuition.",
+        url: "https://www.brightpatheduvora.com/testimonials",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function TestimonialsPage() {

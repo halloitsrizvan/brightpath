@@ -96,14 +96,14 @@ export default function TestimonialsClient() {
                                 Delivering <span className="text-primary">excellence</span> in every session
                             </h2>
                             <p className="text-gray-400 leading-relaxed">
-                                Our commitment to personalized learning has resulted in measurable academic growth for 99% of our students.
+                                Our commitment to personalized learning ensures individual attention, timely doubt clearing, and continuous progress reporting for every student.
                             </p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <MetricCard icon={<Users className="w-4 h-4" />} value="5000+" label="Happy Families" />
-                            <MetricCard icon={<Heart className="w-4 h-4" />} value="99%" label="Success Rate" />
-                            <MetricCard icon={<ShieldCheck className="w-4 h-4" />} value="100%" label="Verified Tutors" />
-                            <MetricCard icon={<Star className="w-4 h-4" />} value="4.9/5" label="Average Rating" />
+                            <MetricCard icon={<Users className="w-4 h-4" />} value="100%" label="1:1 Individual Focus" />
+                            <MetricCard icon={<Heart className="w-4 h-4" />} value="KG–12" label="All School Grades" />
+                            <MetricCard icon={<ShieldCheck className="w-4 h-4" />} value="4 Boards" label="CBSE, ICSE, State & IGCSE" />
+                            <MetricCard icon={<Star className="w-4 h-4" />} value="100%" label="Verified Faculty" />
                         </div>
                     </div>
                 </div>

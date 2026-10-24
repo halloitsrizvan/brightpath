@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/favicon.ico",
+        source: "/_next/static/:path*",
         headers: [
           {
             key: "X-Robots-Tag",
@@ -33,11 +33,65 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/_next/static/:path*",
+        source: "/admin/:path*",
         headers: [
           {
             key: "X-Robots-Tag",
-            value: "noindex",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/admin-dashboard/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/teacher/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/teacher-dashboard/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/student/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/student-dashboard/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
           },
         ],
       },

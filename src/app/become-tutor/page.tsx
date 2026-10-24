@@ -5,11 +5,19 @@ import { Clock, Heart, BookOpen, CheckCircle2, MessageCircle, Users } from 'luci
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Become a Tutor",
-    description: "Join Kerala's fastest-growing 1:1 online mentorship network. Flexible hours, competitive pay, and teaching opportunities from home.",
+    title: "Become an Online Tutor | Teach with BrightPath Eduvora",
+    description: "Join BrightPath's dedicated educator community. Teach students 1:1 online with flexible schedules, supportive digital tools, and competitive compensation from home.",
     alternates: {
-        canonical: '/become-tutor',
+        canonical: 'https://www.brightpatheduvora.com/become-tutor',
     },
+    openGraph: {
+        title: "Become an Online Tutor | Teach with BrightPath Eduvora",
+        description: "Join BrightPath's dedicated educator community. Teach students 1:1 online with flexible schedules, supportive digital tools, and competitive compensation from home.",
+        url: "https://www.brightpatheduvora.com/become-tutor",
+        siteName: "BrightPath Eduvora",
+        locale: "en_IN",
+        type: "website",
+    }
 };
 
 export default function BecomeTutor() {
@@ -77,8 +85,8 @@ export default function BecomeTutor() {
                             <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                                 <Users className="w-7 h-7 text-primary" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 font-display mb-2">Join 500+ Tutors</h3>
-                            <p className="text-sm text-gray-500 mb-6">BrightPath is home to Kerala&apos;s best teaching talent.</p>
+                            <h3 className="text-xl font-bold text-gray-900 font-display mb-2">Join Our Tutor Network</h3>
+                            <p className="text-sm text-gray-500 mb-6">BrightPath is home to passionate, verified teaching talent.</p>
                             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="block w-full py-3.5 bg-primary text-white font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors">
                                 Apply Now
                             </a>
