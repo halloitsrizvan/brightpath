@@ -1,45 +1,51 @@
-interface RateLimitStore {
-    [key: string]: {
-        count: number;
-        resetTime: number;
-    }
-}
-
-const store: RateLimitStore = {};
+import dbConnect from '@/lib/db/mongodb';
+import RateLimit from '@/models/RateLimit';
 
 export class RateLimitService {
     /**
-     * Checks if a request is within the rate limit.
+     * Checks if a request is within the rate limit. Counters live in MongoDB so the
+     * limit holds across serverless instances and restarts.
      * @param identifier - Unique ID for the requester (IP, UserID, etc.)
      * @param limit - Max requests allowed
      * @param windowMs - Time window in milliseconds
-     * @returns boolean - true if allowed, false if limited
      */
-    static check(identifier: string, limit: number, windowMs: number): { success: boolean; remaining: number; reset: number } {
-        const now = Date.now();
-        const record = store[identifier];
+    static async check(identifier: string, limit: number, windowMs: number): Promise<{ success: boolean; remaining: number; reset: number }> {
+        await dbConnect();
+        const now = new Date();
 
-        if (!record || now > record.resetTime) {
-            store[identifier] = {
-                count: 1,
-                resetTime: now + windowMs
-            };
-            return { success: true, remaining: limit - 1, reset: store[identifier].resetTime };
+        // Start a fresh window when the previous one has expired (TTL cleanup can lag by ~60s)
+        await RateLimit.deleteOne({ key: identifier, expiresAt: { $lte: now } });
+
+        let record: any;
+        try {
+            record = await RateLimit.findOneAndUpdate(
+                { key: identifier },
+                { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date(now.getTime() + windowMs) } },
+                { upsert: true, new: true }
+            ).lean();
+        } catch (err: any) {
+            // Two concurrent first requests can race on the unique key; retry once as an update
+            if (err.code !== 11000) throw err;
+            record = await RateLimit.findOneAndUpdate({ key: identifier }, { $inc: { count: 1 } }, { new: true }).lean();
         }
 
-        if (record.count >= limit) {
-            return { success: false, remaining: 0, reset: record.resetTime };
-        }
-
-        record.count += 1;
-        return { success: true, remaining: limit - record.count, reset: record.resetTime };
+        const reset = new Date(record.expiresAt).getTime();
+        return { success: record.count <= limit, remaining: Math.max(0, limit - record.count), reset };
     }
 
-    // Utility to get IP from headers in Next.js
+    /**
+     * Client IP. Prefers headers set by the hosting platform (Vercel / reverse proxy),
+     * which clients cannot forge, over the spoofable left-most X-Forwarded-For entry.
+     */
     static getIP(req: Request): string {
+        const platformIp = req.headers.get('x-vercel-forwarded-for') || req.headers.get('x-real-ip');
+        if (platformIp) return platformIp.split(',')[0].trim();
+
+        // Behind a single proxy the right-most entry is the one the proxy appended
         const xForwardedFor = req.headers.get('x-forwarded-for');
         if (xForwardedFor) {
-            return xForwardedFor.split(',')[0].trim();
+            const parts = xForwardedFor.split(',').map(p => p.trim()).filter(Boolean);
+            return parts[parts.length - 1] || 'anonymous';
         }
         return 'anonymous';
     }

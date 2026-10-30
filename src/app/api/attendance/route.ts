@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertCanAccessStudent } from '@/lib/api/access';
 import Attendance from '@/models/Attendance';
 import Teacher from '@/models/Teacher';
 import dbConnect from '@/lib/db/mongodb';
@@ -13,6 +14,9 @@ export async function POST(req: NextRequest) {
         // If the user is an admin running the teacher dashboard, 
         // they might not have a Teacher profile to augment.
         const teacherId = user.role === 'teacher' ? user.id : body.teacherId || user.id;
+        // Teachers can only log classes for students assigned to them (attendance drives their pay)
+        await assertCanAccessStudent(user, body.studentId);
+        delete body._id;
 
         // Capture rates at time of attendance for historical data integrity
         let billRateAtTime = 0;
@@ -59,10 +63,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(attendance, { status: 201 });
     } catch (err: any) {
-        if (err.message && err.message.includes('Forbidden')) {
-            return NextResponse.json({ message: err.message }, { status: 403 });
-        }
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err, 'POST /api/attendance');
     }
 }
 
@@ -137,6 +138,6 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(list);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

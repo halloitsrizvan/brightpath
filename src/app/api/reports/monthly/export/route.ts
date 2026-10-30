@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import '@/models/Subject';
 import Attendance from '@/models/Attendance';
@@ -575,9 +575,6 @@ export async function GET(req: NextRequest) {
 
     } catch (err: any) {
         console.error("Monthly Report Export Error:", err);
-        return new Response(JSON.stringify({ message: err.message || 'Verification failed' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return errorResponse(err);
     }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Exam from '@/models/Exam';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -61,6 +61,6 @@ export async function GET(req: NextRequest) {
         });
 
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

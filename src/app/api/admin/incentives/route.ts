@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import IncentiveRule from '../../../../models/IncentiveRule';
 import Teacher from '@/models/Teacher';
@@ -12,9 +12,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(rules);
     } catch (err: any) {
         console.error('API Error (GET /api/admin/incentives):', err);
-        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
-                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
-        return NextResponse.json({ message: err.message }, { status });
+        return errorResponse(err);
     }
 }
 
@@ -27,8 +25,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(rule, { status: 201 });
     } catch (err: any) {
         console.error('API Error (POST /api/admin/incentives):', err);
-        const status = err.message.toLowerCase().includes('authorization denied') || err.message.toLowerCase().includes('token') ? 401 : 
-                       err.message.toLowerCase().includes('forbidden') ? 403 : 500;
-        return NextResponse.json({ message: err.message }, { status });
+        return errorResponse(err);
     }
 }

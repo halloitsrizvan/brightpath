@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import StaffSalary from '@/models/StaffSalary';
 
@@ -15,7 +15,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         return NextResponse.json(salary);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -28,6 +28,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         if (!deleted) return NextResponse.json({ message: "Record not found" }, { status: 404 });
         return NextResponse.json({ message: "Salary disbursement record deleted" });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

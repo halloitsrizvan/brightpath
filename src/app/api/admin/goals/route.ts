@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import MonthlyGoal from '@/models/MonthlyGoal';
 import Fee from '@/models/Fee';
 import Attendance from '@/models/Attendance';
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
             currentHours
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -61,6 +61,6 @@ export async function POST(req: NextRequest) {
         );
         return NextResponse.json(updatedGoal);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

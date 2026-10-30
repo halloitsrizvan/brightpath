@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Subject from '@/models/Subject';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const subject = await Subject.findByIdAndUpdate(id, body, { new: true });
         return NextResponse.json(subject);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -24,6 +24,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await Subject.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Subject deleted successfully' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

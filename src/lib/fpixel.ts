@@ -21,9 +21,19 @@ export const pageview = () => {
  * Triggers standard or custom Meta Pixel events (e.g., 'Lead', 'Contact', 'CompleteRegistration').
  * @param name Event name recognized by Meta Pixel or custom event name
  * @param options Additional metadata for the event
+ * @param eventId Shared with the server-side Conversions API event so Meta deduplicates them
  */
-export const event = (name: string, options: Record<string, any> = {}) => {
+export const event = (name: string, options: Record<string, any> = {}, eventId?: string) => {
   if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-    window.fbq('track', name, options);
+    if (eventId) window.fbq('track', name, options, { eventID: eventId });
+    else window.fbq('track', name, options);
   }
 };
+
+/**
+ * Generates an event ID for Pixel / Conversions API deduplication.
+ */
+export const newEventId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;

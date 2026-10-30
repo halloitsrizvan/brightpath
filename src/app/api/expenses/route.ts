@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Expense from '@/models/Expense';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         await newExpense.save();
         return NextResponse.json(newExpense, { status: 201 });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -42,6 +42,6 @@ export async function GET(req: NextRequest) {
         const list = await Expense.find(query).sort({ date: -1 });
         return NextResponse.json(list);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

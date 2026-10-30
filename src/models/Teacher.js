@@ -4,7 +4,7 @@ import './Subject';
 const TeacherSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false }, // never returned unless explicitly selected
     phone: { type: String },
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
     salaryPerHour: { type: Number, default: 0 },

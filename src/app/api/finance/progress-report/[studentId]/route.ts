@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertCanAccessStudent } from '@/lib/api/access';
 import Student from '@/models/Student';
 import Exam from '@/models/Exam';
 import Attendance from '@/models/Attendance';
@@ -9,9 +10,10 @@ import PDFDocument from 'pdfkit';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'student', 'teacher']);
+        const user = await checkAuth(req, ['admin', 'student', 'teacher']);
 
         const { studentId } = await params;
+        await assertCanAccessStudent(user, studentId);
         const student = await Student.findById(studentId);
         if (!student) return new Response(JSON.stringify({ message: 'Student not found' }), { status: 404 });
 
@@ -62,6 +64,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ stud
             }
         });
     } catch (err: any) {
-        return new Response(JSON.stringify({ message: err.message }), { status: 500 });
+        return errorResponse(err);
     }
 }

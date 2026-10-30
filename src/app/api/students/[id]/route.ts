@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertCanAccessStudent, assertSelfOrAdmin, assertStrongPassword, pick } from '@/lib/api/access';
+
+// Students may only update their own contact details; everything else is admin-only
+const STUDENT_EDITABLE = ['contactNumber', 'whatsappNumber', 'parentName', 'district', 'password'] as const;
+const ADMIN_EDITABLE = [
+    'fullName', 'dateOfBirth', 'class', 'syllabus', 'district', 'residentialLocation', 'parentName',
+    'contactNumber', 'whatsappNumber', 'email', 'password', 'subjects', 'preferredTrainers',
+    'subjectAssignments', 'joinedAt', 'status'
+] as const;
 import Student from '@/models/Student';
 import Teacher from '@/models/Teacher';
 import Subject from '@/models/Subject';
@@ -12,18 +21,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const user = await checkAuth(req, ['admin', 'teacher', 'student']);
         const { id } = await params;
 
-        if (user.role === 'student' && user.id !== id) {
-            return NextResponse.json({ message: 'Forbidden: Cannot access other student profiles' }, { status: 403 });
-        }
+        await assertCanAccessStudent(user, id);
 
         const student = await Student.findById(id)
+            .select('-password')
             .populate('preferredTrainers', 'name salaryPerHour')
             .populate('subjects', 'subjectName classLevel')
             .populate('subjectAssignments.subjectId', 'subjectName')
             .populate('subjectAssignments.teacherId', 'name salaryPerHour');
         return NextResponse.json(student);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err, 'Student Profile');
     }
 }
 
@@ -31,32 +39,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     try {
         await dbConnect();
         const user = await checkAuth(req, ['admin', 'student']);
-        const body = await req.json();
         const { id } = await params;
+        assertSelfOrAdmin(user, id, 'other student profiles');
 
-        if (user.role === 'student' && user.id !== id) {
-            return NextResponse.json({ message: 'Forbidden: Cannot update other student profiles' }, { status: 403 });
-        }
-
-        // Only admin can change these sensitive fields if needed, 
-        // or we just allow student to update their own contact info.
-        if (user.role === 'student') {
-            // Protect sensitive fields from being changed by student
-            delete body.role;
-            delete body.status;
-            delete body.email;
-            delete body.subjects;
-            delete body.preferredTrainers;
-        }
+        const body = pick(await req.json(), user.role === 'admin' ? ADMIN_EDITABLE : STUDENT_EDITABLE);
 
         if (body.password) {
+            assertStrongPassword(body.password);
             body.password = await bcrypt.hash(body.password, 10);
         }
 
-        const updated = await Student.findByIdAndUpdate(id, body, { new: true });
+        const updated = await Student.findByIdAndUpdate(id, body, { new: true }).select('-password');
         return NextResponse.json(updated);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err, 'Student Profile');
     }
 }
 
@@ -68,6 +64,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await Student.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Student deleted' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err, 'Student Profile');
     }
 }

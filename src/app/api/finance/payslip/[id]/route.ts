@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Salary from '@/models/Salary';
 import Attendance from '@/models/Attendance';
 import IncentiveRule from '@/models/IncentiveRule';
@@ -9,13 +9,15 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'teacher']);
+        const user = await checkAuth(req, ['admin', 'teacher']);
 
         const { id } = await params;
         const ids = id.split(',');
         
-        // Fetch all salaries
-        const salaries = await Salary.find({ _id: { $in: ids } }).populate('teacherId');
+        // Fetch all salaries (teachers only ever see their own)
+        const filter: any = { _id: { $in: ids } };
+        if (user.role === 'teacher') filter.teacherId = user.id;
+        const salaries = await Salary.find(filter).populate('teacherId');
         if (salaries.length === 0) return NextResponse.json({ message: "Salary records not found" }, { status: 404 });
 
         const teacher = salaries[0].teacherId;
@@ -202,6 +204,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         });
     } catch (err: any) {
         console.error("Payslip Generate Error:", err);
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

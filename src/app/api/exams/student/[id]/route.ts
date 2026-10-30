@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertCanAccessStudent } from '@/lib/api/access';
 import Exam from '@/models/Exam';
 import dbConnect from '@/lib/db/mongodb';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'student', 'teacher']);
+        const user = await checkAuth(req, ['admin', 'student', 'teacher']);
         const { id } = await params;
+        await assertCanAccessStudent(user, id);
         const list = await Exam.find({ studentId: id }).populate('teacherId', 'name');
         return NextResponse.json(list);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err, 'Student Exams');
     }
 }

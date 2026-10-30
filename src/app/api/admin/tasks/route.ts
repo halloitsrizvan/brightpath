@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Task from '@/models/Task';
 import Admin from '@/models/Admin';
 import dbConnect from '@/lib/db/mongodb';
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
         const tasks = await Task.find({}).populate('allocatedAdmin', 'name').sort({ createdAt: -1 });
         return NextResponse.json(tasks);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -23,6 +23,6 @@ export async function POST(req: NextRequest) {
         const newTask = await Task.create(body);
         return NextResponse.json(newTask);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

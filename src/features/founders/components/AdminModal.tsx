@@ -292,6 +292,7 @@ export default function AdminModal({
                             <input
                                 type="password"
                                 required={!editData}
+                                minLength={8}
                                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium text-sm focus:bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition outline-none"
                                 placeholder={editData ? "••••••••" : "Enter password"}
                                 value={formData.password}

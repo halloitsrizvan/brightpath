@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Salary from '@/models/Salary';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         const salary = await Salary.findById(id).populate('teacherId');
         return NextResponse.json(salary);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -27,6 +27,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const updatedSalary = await Salary.findByIdAndUpdate(id, body, { returnDocument: 'after' });
         return NextResponse.json(updatedSalary);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

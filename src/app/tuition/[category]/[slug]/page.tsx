@@ -101,7 +101,7 @@ export default async function TuitionClassPage({ params }: Props) {
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, courseSchema]) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, courseSchema]).replace(/</g, '\\u003c') }}
             />
             <TuitionPageClient category={category} slug={slug} />
         </>

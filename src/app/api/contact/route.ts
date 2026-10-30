@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { RateLimitService } from '@/lib/services/rateLimitService';
 import { contactEnquirySchema } from '@/lib/validations/contact';
 import dbConnect from '@/lib/db/mongodb';
 import Lead from '@/models/Lead';
+import { getRequestContext, sendWebsiteLeadEvent } from '@/lib/services/metaConversionsService';
 
 export async function POST(req: Request) {
     try {
         // 1. Rate Limiting: 5 enquiries per hour per IP to prevent spam
         const ip = RateLimitService.getIP(req);
-        const rl = RateLimitService.check(`contact_${ip}`, 5, 60 * 60 * 1000);
+        const rl = await RateLimitService.check(`contact_${ip}`, 5, 60 * 60 * 1000);
         
         const headers = {
             'X-RateLimit-Limit': '5',
@@ -40,15 +41,25 @@ export async function POST(req: Request) {
         const contactVal = (body.contact || '').trim();
         const isEmail = contactVal.includes('@');
 
-        await Lead.create({
+        const metaContext = getRequestContext(req);
+
+        const lead = await Lead.create({
             fullName: body.name?.trim(),
             phoneNumber: isEmail ? (body.phoneNumber || contactVal) : contactVal,
             email: isEmail ? contactVal : (body.email || 'not-provided@example.com'),
             notes: body.requirements?.trim(),
             studentClass: body.module?.trim(),
             leadType: 'enquiry',
-            status: 'pending'
+            status: 'pending',
+            fbp: metaContext.fbp,
+            fbc: metaContext.fbc,
+            metaReportedStages: ['pending']
         });
+
+        after(() => sendWebsiteLeadEvent(lead, metaContext, {
+            eventId: body.eventId,
+            customData: { lead_type: 'enquiry', module: lead.studentClass }
+        }));
         
         return NextResponse.json({ 
             message: 'Identity Verified. Proceeding to Secure Institutional Dispatch.',

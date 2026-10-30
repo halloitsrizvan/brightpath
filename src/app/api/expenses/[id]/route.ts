@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Expense from '@/models/Expense';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -12,7 +12,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await Expense.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Expense record deleted' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -26,6 +26,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         const updated = await Expense.findByIdAndUpdate(id, body, { new: true });
         return NextResponse.json(updated);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

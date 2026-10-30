@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Teacher from '@/models/Teacher';
 import Student from '@/models/Student';
 import Attendance from '@/models/Attendance';
@@ -124,6 +124,6 @@ export async function POST(req: NextRequest) {
             feesProcessed: feeResults.length 
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

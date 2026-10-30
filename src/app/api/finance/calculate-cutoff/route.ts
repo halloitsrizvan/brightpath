@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 
 // Force Model Registrations
@@ -221,6 +221,6 @@ export async function POST(req: NextRequest) {
             activities: allActivities
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

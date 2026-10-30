@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Teacher from '@/models/Teacher';
 import Attendance from '@/models/Attendance';
 import dbConnect from '@/lib/db/mongodb';
@@ -79,6 +79,6 @@ export async function GET(req: NextRequest) {
             salaryEstimate: Math.round(estimatedSalary)
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err);
     }
 }

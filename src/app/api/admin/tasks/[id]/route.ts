@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Task from '@/models/Task';
 import Admin from '@/models/Admin';
 import dbConnect from '@/lib/db/mongodb';
@@ -13,7 +13,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const updatedTask = await Task.findByIdAndUpdate(id, body, { new: true }).populate('allocatedAdmin', 'name');
         return NextResponse.json(updatedTask);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -25,6 +25,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await Task.findByIdAndDelete(id);
         return NextResponse.json({ message: "Task deleted successfully" });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import Teacher from '@/models/Teacher';
@@ -8,12 +7,13 @@ import Student from '@/models/Student';
 import { RateLimitService } from '@/lib/services/rateLimitService';
 import { loginSchema } from '@/lib/validations/auth';
 import { AuditService } from '@/lib/services/auditService';
+import { signToken, SESSION_COOKIE_MAX_AGE } from '@/lib/api/auth';
 
 export async function POST(req: Request) {
     try {
         // 1. Rate Limiting: 5 attempts per 15 mins per IP
         const ip = RateLimitService.getIP(req);
-        const rl = RateLimitService.check(`login_${ip}`, 5, 15 * 60 * 1000);
+        const rl = await RateLimitService.check(`login_${ip}`, 5, 15 * 60 * 1000);
         
         const headers = {
             'X-RateLimit-Limit': '5',
@@ -37,31 +37,29 @@ export async function POST(req: Request) {
         const { email, password } = validation.data;
         const role = body.role;
 
-        let user;
-        if (role === 'admin') user = await Admin.findOne({ email });
-        else if (role === 'teacher') user = await Teacher.findOne({ email });
-        else if (role === 'student') user = await Student.findOne({ email });
-
-        if (!user) {
-            if (role === 'admin' && email === 'admin@brightpath.com') {
-                const hashedPassword = await bcrypt.hash('admin123', 10);
-                user = new Admin({ name: 'Super Admin', email, password: hashedPassword });
-                await user.save();
-            } else {
-                return NextResponse.json({ message: 'User not found' }, { status: 404 });
-            }
+        // Per-account limit as well, so rotating IPs cannot brute-force a single account
+        const accountRl = await RateLimitService.check(`login_acct_${role}_${email.toLowerCase()}`, 10, 15 * 60 * 1000);
+        if (!accountRl.success) {
+            return NextResponse.json({ message: 'Brute-force protection: Too many attempts. Try again in 15 minutes.' }, { status: 429, headers });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return NextResponse.json({ message: 'Invalid credentials' }, { status: 400 });
+        const Model = role === 'admin' ? Admin : role === 'teacher' ? Teacher : role === 'student' ? Student : null;
+        const user: any = Model ? await Model.findOne({ email }).select('+password') : null;
 
-        const payload = { id: user._id, role: user.role };
-        const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret'); // No expiration
+        // Same response for unknown users and wrong passwords, so accounts cannot be enumerated
+        const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+        if (!user || !isMatch) {
+            return NextResponse.json({ message: 'Invalid email or password' }, { status: 401, headers });
+        }
+
+        // The role always comes from which collection matched, never from the stored document
+        const payload = { id: String(user._id), role: role as string };
+        const token = signToken(payload);
 
         await AuditService.log('USER_LOGIN_SUCCESS', {
             id: user._id,
             email: user.email,
-            role: user.role,
+            role,
             name: user.name || user.fullName
         }, { ip }, req);
 
@@ -70,8 +68,8 @@ export async function POST(req: Request) {
                 id: user._id, 
                 name: user.name || user.fullName, 
                 email: user.email, 
-                role: user.role,
-                adminRole: user.adminRole || (user.role === 'admin' ? 'Super Admin' : user.role)
+                role,
+                adminRole: user.adminRole || (role === 'admin' ? 'Super Admin' : role)
             }
         });
 
@@ -82,11 +80,12 @@ export async function POST(req: Request) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            maxAge: 60 * 60 * 24 * 365 * 100 // 100 years
+            maxAge: SESSION_COOKIE_MAX_AGE
         });
 
         return response;
     } catch (error: any) {
-        return NextResponse.json({ message: error.message || 'Server error' }, { status: 500 });
+        console.error('Login error:', error);
+        return NextResponse.json({ message: 'Server error' }, { status: 500 });
     }
 }

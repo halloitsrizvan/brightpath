@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
@@ -409,6 +409,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         });
     } catch (err: any) {
         console.error("PDF Generate Error:", err);
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

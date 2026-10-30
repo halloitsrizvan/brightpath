@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Role from '@/models/Role';
 
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
         if (!role) return NextResponse.json({ message: 'Role not found' }, { status: 404 });
         return NextResponse.json(role);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -49,7 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
         await role.save();
         return NextResponse.json(role);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -69,6 +69,6 @@ export async function DELETE(req: NextRequest, { params }: { params: any }) {
         await Role.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Role deleted successfully' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

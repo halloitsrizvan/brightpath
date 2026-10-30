@@ -34,6 +34,7 @@ interface Lead {
     leadType: 'demo' | 'enquiry';
     status: 'pending' | 'contacted' | 'resolved' | 'junk';
     notes?: string;
+    source?: string;
     createdAt: string;
 }
 
@@ -327,6 +328,9 @@ export default function LeadsDashboard() {
                                                                         <span className="text-[10px] text-gray-400 font-medium">
                                                                             Class {lead.studentClass || 'N/A'} • {lead.country || 'Global'}
                                                                         </span>
+                                                                        {lead.notes && (
+                                                                            <p className="text-[10px] text-gray-500 font-medium mt-0.5 max-w-xs truncate" title={lead.notes}>{lead.notes}</p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </td>
@@ -416,6 +420,7 @@ export default function LeadsDashboard() {
                                                             <div className="min-w-0">
                                                                 <h4 className="text-xs font-bold text-gray-900 truncate">{lead.fullName}</h4>
                                                                 <p className="text-[10px] text-gray-400 font-medium">Class {lead.studentClass || 'N/A'} • {formatDate(lead.createdAt)}</p>
+                                                                {lead.notes && <p className="text-[10px] text-gray-500 font-medium truncate" title={lead.notes}>{lead.notes}</p>}
                                                             </div>
                                                         </div>
                                                         <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shrink-0 border ${

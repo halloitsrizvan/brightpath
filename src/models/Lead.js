@@ -39,6 +39,23 @@ const LeadSchema = new mongoose.Schema({
     },
     notes: {
         type: String
+    },
+    source: {
+        type: String // Where the lead came from, e.g. "Tuition Page: CBSE Maths"
+    },
+    // Meta Conversions API matching data
+    metaLeadId: {
+        type: String // Lead ID from Meta Lead Ads, when the lead came from an instant form
+    },
+    fbp: {
+        type: String
+    },
+    fbc: {
+        type: String
+    },
+    metaReportedStages: {
+        type: [String],
+        default: []
     }
 }, { timestamps: true });
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Attendance from '@/models/Attendance';
 import IncentiveRule from '@/models/IncentiveRule';
@@ -77,6 +77,6 @@ export async function GET(req: NextRequest) {
         });
 
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

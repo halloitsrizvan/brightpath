@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertStrongPassword } from '@/lib/api/access';
 import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
@@ -9,10 +10,10 @@ export async function GET(req: NextRequest) {
         await dbConnect();
         await checkAuth(req, ['admin']);
         // Fetch all admins as requested (unifying admins and founders)
-        const admins = await Admin.find().sort({ createdAt: -1 });
+        const admins = await Admin.find().select('-password').sort({ createdAt: -1 });
         return NextResponse.json(admins);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err, 'Founders');
     }
 }
 
@@ -22,11 +23,9 @@ export async function POST(req: NextRequest) {
         await checkAuth(req, ['admin']);
         const body = await req.json();
         
-        if (body.password) {
-            body.password = await bcrypt.hash(body.password, 10);
-        } else {
-            body.password = await bcrypt.hash('admin123', 10);
-        }
+        // No shared default password: every account gets its own
+        assertStrongPassword(body.password);
+        body.password = await bcrypt.hash(body.password, 10);
 
         const isExisting = await Admin.findOne({ email: body.email });
         if (isExisting) {
@@ -45,8 +44,9 @@ export async function POST(req: NextRequest) {
             isFounder: true
         });
         
-        return NextResponse.json(admin);
+        const { password, ...created } = admin.toObject();
+        return NextResponse.json(created);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err, 'Founders');
     }
 }

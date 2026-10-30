@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertSelfOrAdmin, assertStrongPassword, pick } from '@/lib/api/access';
+
+// Fields a teacher may change on their own profile; salary, status, subjects and role are admin-only
+const TEACHER_EDITABLE = ['name', 'email', 'phone', 'password'] as const;
+const ADMIN_EDITABLE = ['name', 'email', 'phone', 'password', 'subjects', 'salaryPerHour', 'joinedAt', 'status'] as const;
 import Teacher from '@/models/Teacher';
 import Subject from '@/models/Subject';
 import Student from '@/models/Student';
@@ -11,8 +16,9 @@ import dbConnect from '@/lib/db/mongodb';
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'teacher']);
+        const user = await checkAuth(req, ['admin', 'teacher']);
         const { id } = await params;
+        assertSelfOrAdmin(user, id, 'other teacher profiles');
 
         // Ensure models are registered (especially important for population in Next.js)
         const dummySubject = Subject.modelName;
@@ -82,24 +88,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         return NextResponse.json(teacherData);
     } catch (err: any) {
-        console.error('Teacher Profile Fetch Error:', err);
-        return NextResponse.json({
-            message: err.message || 'Internal Server Error',
-            error: err.toString()
-        }, { status: 500 });
+        return errorResponse(err, 'Teacher Profile Fetch');
     }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await dbConnect();
-        await checkAuth(req, ['admin', 'teacher']);
-        const body = await req.json();
+        const user = await checkAuth(req, ['admin', 'teacher']);
         const { id } = await params;
+        assertSelfOrAdmin(user, id, 'other teacher profiles');
 
-        // Hash password if provided, or prevent student from changing it if needed
-        // Teachers are usually changed by admins, but teachers can also change their own profile.
+        const body = pick(await req.json(), user.role === 'admin' ? ADMIN_EDITABLE : TEACHER_EDITABLE);
+
         if (body.password) {
+            assertStrongPassword(body.password);
             body.password = await bcrypt.hash(body.password, 10);
         }
 
@@ -108,11 +111,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
         return NextResponse.json(updated);
     } catch (err: any) {
-        console.error('Teacher Profile Update Error:', err);
-        return NextResponse.json({
-            message: err.message || 'Internal Server Error',
-            error: err.toString()
-        }, { status: 500 });
+        return errorResponse(err, 'Teacher Profile Update');
     }
 }
 
@@ -124,10 +123,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         await Teacher.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Teacher deleted' });
     } catch (err: any) {
-        console.error('Teacher Profile Delete Error:', err);
-        return NextResponse.json({
-            message: err.message || 'Internal Server Error',
-            error: err.toString()
-        }, { status: 500 });
+        return errorResponse(err, 'Teacher Profile Delete');
     }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import FounderDebt from '@/models/FounderDebt';
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(transaction);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -39,6 +39,6 @@ export async function GET(req: NextRequest) {
         
         return NextResponse.json(logs);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

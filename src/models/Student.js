@@ -13,7 +13,7 @@ const StudentSchema = new mongoose.Schema({
     contactNumber: { type: String },
     whatsappNumber: { type: String },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false }, // never returned unless explicitly selected
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subject' }],
     preferredTrainers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Teacher' }],
     subjectAssignments: [{

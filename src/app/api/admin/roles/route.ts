@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Role from '@/models/Role';
 import { DEFAULT_ROLES } from '@/lib/constants/roles';
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
         const roles = await Role.find().sort({ createdAt: 1 });
         return NextResponse.json(roles);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err);
     }
 }
 
@@ -48,6 +48,6 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(role);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err);
     }
 }

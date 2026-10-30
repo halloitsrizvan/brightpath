@@ -59,6 +59,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
             const formattedWhatsapp = formData.whatsappNumber.startsWith('+') 
                 ? formData.whatsappNumber 
                 : `${activeDialCode} ${formData.whatsappNumber.trim()}`;
+            const eventId = fpixel.newEventId();
 
             const response = await fetch('/api/leads', {
                 method: 'POST',
@@ -67,7 +68,8 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     ...formData,
                     phoneNumber: formattedPhone,
                     whatsappNumber: formattedWhatsapp,
-                    leadType: 'demo'
+                    leadType: 'demo',
+                    eventId
                 })
             });
 
@@ -76,7 +78,7 @@ export default function DemoModal({ isOpen, onClose }: DemoModalProps) {
                     content_name: 'Book Free Demo',
                     lead_type: 'demo',
                     student_class: formData.studentClass
-                });
+                }, eventId);
                 gtag.event('generate_lead', {
                     event_category: 'Demo Booking',
                     event_label: formData.studentClass || 'General',

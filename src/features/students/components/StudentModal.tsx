@@ -170,7 +170,7 @@ export default function StudentModal({ isOpen, onClose, onSuccess, editData }: {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">{editData ? 'New Password (Optional)' : 'Password'}</label>
-                                <input required={!editData} type="password" className="w-full border border-gray-300 text-gray-900 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary outline-none" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                                <input required={!editData} minLength={8} type="password" className="w-full border border-gray-300 text-gray-900 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary outline-none" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>

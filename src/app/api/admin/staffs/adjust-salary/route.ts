@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import StaffSalaryAdjustment from '@/models/StaffSalaryAdjustment';
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(adjustments);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err);
     }
 }
 
@@ -87,6 +87,6 @@ export async function POST(req: NextRequest) {
             }
         });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: err.message?.includes('Forbidden') ? 403 : 500 });
+        return errorResponse(err);
     }
 }

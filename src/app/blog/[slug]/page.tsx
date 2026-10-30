@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PublicService } from '@/lib/services/publicService';
 import { Metadata } from 'next';
+import { sanitizeHTML } from '@/lib/utils/sanitizer';
 
 export const revalidate = 3600;
 
@@ -112,7 +113,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="min-h-screen bg-white">
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, articleSchema]) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, articleSchema]).replace(/</g, '\\u003c') }}
             />
             <PublicNavbar />
 
@@ -153,7 +154,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         prose-p:text-gray-600 prose-p:leading-relaxed
                         prose-img:rounded-xl prose-img:shadow-lg
                         prose-a:text-primary"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHTML(post.content || '') }}
                     />
                 </div>
             </article>

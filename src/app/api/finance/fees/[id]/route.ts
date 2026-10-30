@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import Fee from '@/models/Fee';
 import dbConnect from '@/lib/db/mongodb';
 
@@ -14,6 +14,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const updatedFee = await Fee.findByIdAndUpdate(id, body, { returnDocument: 'after' });
         return NextResponse.json(updatedFee);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

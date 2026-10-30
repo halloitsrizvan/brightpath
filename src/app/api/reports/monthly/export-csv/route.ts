@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
 import dbConnect from '@/lib/db/mongodb';
 
 // Ensure models
@@ -191,6 +191,6 @@ export async function GET(req: NextRequest) {
 
     } catch (err: any) {
         console.error("CSV Export Error:", err);
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }

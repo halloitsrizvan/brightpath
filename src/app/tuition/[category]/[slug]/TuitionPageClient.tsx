@@ -39,15 +39,17 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
         e.preventDefault();
         setFormStatus('submitting');
         try {
+            const eventId = fpixel.newEventId();
             await api.post('/public-enquiries', {
                 ...formData,
                 source: `Tuition Page: ${displayName}`,
-                category: category
+                category: category,
+                eventId
             });
             fpixel.event('Lead', {
                 content_name: `Tuition Enquiry: ${displayName}`,
                 category: category
-            });
+            }, eventId);
             gtag.event('generate_lead', {
                 event_category: 'Tuition Page',
                 event_label: displayName,

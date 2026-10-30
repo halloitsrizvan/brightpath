@@ -2,7 +2,33 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
+// No fallback: without a real secret every token is rejected instead of being forgeable
+const JWT_SECRET = process.env.JWT_SECRET && process.env.JWT_SECRET !== 'secret'
+    ? new TextEncoder().encode(process.env.JWT_SECRET)
+    : null;
+
+const verifyToken = async (token: string) => {
+    if (!JWT_SECRET) throw new Error('JWT_SECRET is not configured');
+    return jwtVerify(token, JWT_SECRET, { algorithms: ['HS256'] });
+};
+
+// Browsers cap cookie lifetime at ~400 days, so the session cookie is re-issued on every
+// dashboard visit; active users therefore stay logged in indefinitely.
+const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 400;
+
+const isDev = process.env.NODE_ENV !== 'production';
+const CONTENT_SECURITY_POLICY = [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} https://connect.facebook.net https://www.googletagmanager.com`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' blob: data: https://res.cloudinary.com https://api.dicebear.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com https://via.placeholder.com https://www.transparenttextures.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "connect-src 'self' https://api.whatsapp.com https://api.cloudinary.com https://www.facebook.com https://connect.facebook.net https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
+    "frame-ancestors 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+].join('; ') + ';';
 export async function middleware(request: NextRequest) {
     const host = request.headers.get('host') || '';
     const proto = request.headers.get('x-forwarded-proto') || '';
@@ -44,7 +70,7 @@ export async function middleware(request: NextRequest) {
             else finalResponse = NextResponse.json({ message: 'Identity Required' }, { status: 401 });
         } else {
             try {
-                const { payload } = await jwtVerify(token, JWT_SECRET);
+                const { payload } = await verifyToken(token);
                 
                 if (isAdminDashboard && payload.role !== 'admin') {
                     finalResponse = NextResponse.redirect(new URL('/admin', request.url));
@@ -56,6 +82,29 @@ export async function middleware(request: NextRequest) {
                     finalResponse = NextResponse.json({ message: 'Forbidden: Insufficient permissions' }, { status: 403 });
                 } else {
                     finalResponse = NextResponse.next();
+                    if (!isApiAdminRoute) {
+                        finalResponse.cookies.set({
+                            name: 'token',
+                            value: token,
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === 'production',
+                            sameSite: 'lax',
+                            path: '/',
+                            maxAge: SESSION_COOKIE_MAX_AGE
+                        });
+                        // The readable "user" profile cookie used by the dashboards has the same cap
+                        const userCookie = request.cookies.get('user')?.value;
+                        if (userCookie) {
+                            finalResponse.cookies.set({
+                                name: 'user',
+                                value: userCookie,
+                                secure: process.env.NODE_ENV === 'production',
+                                sameSite: 'lax',
+                                path: '/',
+                                maxAge: SESSION_COOKIE_MAX_AGE
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 if (isAdminDashboard) finalResponse = NextResponse.redirect(new URL('/admin', request.url));
@@ -68,7 +117,7 @@ export async function middleware(request: NextRequest) {
     // B. Redirect Logged-in users away from login pages
     else if (token && (isAdminLogin || isTeacherLogin || isStudentLogin)) {
         try {
-            const { payload } = await jwtVerify(token, JWT_SECRET);
+            const { payload } = await verifyToken(token);
             if (payload.role === 'admin' && isAdminLogin) {
                 finalResponse = NextResponse.redirect(new URL('/admin-dashboard', request.url));
             } else if (payload.role === 'teacher' && isTeacherLogin) {
@@ -92,10 +141,7 @@ export async function middleware(request: NextRequest) {
     finalResponse.headers.set('X-Content-Type-Options', 'nosniff');
     finalResponse.headers.set('Referrer-Policy', 'origin-when-cross-origin');
     finalResponse.headers.set('X-XSS-Protection', '1; mode=block');
-    finalResponse.headers.set(
-        'Content-Security-Policy',
-        "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://api.dicebear.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://res.cloudinary.com https://api.dicebear.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.whatsapp.com https://api.cloudinary.com;"
-    );
+    finalResponse.headers.set('Content-Security-Policy', CONTENT_SECURITY_POLICY);
 
     // Prevent caching for auth-related pages to fix iPhone/Safari issues
     if (isAdminDashboard || isTeacherDashboard || isStudentDashboard || isAdminLogin || isTeacherLogin || isStudentLogin) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { checkAuth } from '@/lib/api/auth';
+import { checkAuth, errorResponse } from '@/lib/api/auth';
+import { assertStrongPassword } from '@/lib/api/access';
 import dbConnect from '@/lib/db/mongodb';
 import Admin from '@/models/Admin';
 import bcrypt from 'bcryptjs';
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: any }) {
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json(founder);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -28,6 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
         if (body.name) updateData.name = body.name;
         if (body.email) updateData.email = body.email;
         if (body.password) {
+            assertStrongPassword(body.password);
             updateData.password = await bcrypt.hash(body.password, 10);
         }
         if (body.adminRole) {
@@ -51,7 +53,7 @@ export async function PUT(req: NextRequest, { params }: { params: any }) {
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json(founder);
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
 
@@ -67,6 +69,6 @@ export async function DELETE(req: NextRequest, { params }: { params: any }) {
         if (!founder) return NextResponse.json({ message: 'Founder not found' }, { status: 404 });
         return NextResponse.json({ message: 'Founder deleted successfully' });
     } catch (err: any) {
-        return NextResponse.json({ message: err.message }, { status: 500 });
+        return errorResponse(err);
     }
 }
