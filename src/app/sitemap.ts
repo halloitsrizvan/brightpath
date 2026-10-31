@@ -1,10 +1,12 @@
 import { MetadataRoute } from 'next';
 import { PublicService } from '@/lib/services/publicService';
+import { TUITION_ROUTES } from '@/utils/tuitionHelper';
+
+// Bump when page content materially changes; a fake "now" lastmod makes Google ignore the field
+const CONTENT_LAST_MODIFIED = '2026-10-31';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.brightpatheduvora.com';
-    const now = new Date().toISOString();
-    
     // Core institutional marketing pages (excluding private, gated, or utility pages)
     const staticRoutes: MetadataRoute.Sitemap = [
         '',
@@ -24,74 +26,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         '/boards',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
+        lastModified: CONTENT_LAST_MODIFIED,
+        changeFrequency: 'monthly',
         priority: route === '' ? 1.0 : 0.8,
     }));
 
-    // Class tuition pages (KG to 12)
-    const classSlugs = [
-        'class-1-5', 'class-1', 'class-2', 'class-3', 'class-4', 'class-5',
-        'class-6', 'class-7', 'class-8', 'class-9', 'class-10', 'class-11', 'class-12'
-    ];
-    const classRoutes: MetadataRoute.Sitemap = classSlugs.map((slug) => ({
-        url: `${baseUrl}/tuition/tuition-by-classes/${slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.85,
-    }));
-
-    // Subject tuition pages
-    const subjectSlugs = [
-        'english', 'maths', 'science', 'social-science',
-        'malayalam', 'hindi', 'physics', 'chemistry', 'biology'
-    ];
-    const subjectRoutes: MetadataRoute.Sitemap = subjectSlugs.map((slug) => ({
-        url: `${baseUrl}/tuition/tuition-by-subject/${slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.85,
-    }));
-
-    // Board tuition pages
-    const boardSlugs = ['cbse', 'icse', 'state', 'igcse'];
-    const boardRoutes: MetadataRoute.Sitemap = boardSlugs.map((slug) => ({
-        url: `${baseUrl}/tuition/tuition-by-board/${slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.85,
-    }));
-
-    // Target audience locations (Kerala, GCC expat nations & major South Indian cities)
-    const locationSlugs = [
-        'kerala',
-        'dubai',
-        'uae',
-        'qatar',
-        'saudi-arabia',
-        'oman',
-        'kuwait',
-        'bahrain',
-        'chennai',
-        'bangalore',
-        'coimbatore',
-        'hyderabad'
-    ];
-    const locationRoutes: MetadataRoute.Sitemap = locationSlugs.map((slug) => ({
-        url: `${baseUrl}/tuition/tuition-by-location/${slug}`,
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.8,
-    }));
+    // Tuition landing pages (classes, subjects, boards, locations)
+    const tuitionRoutes: MetadataRoute.Sitemap = Object.entries(TUITION_ROUTES).flatMap(
+        ([category, slugs]) => slugs.map((slug) => ({
+            url: `${baseUrl}/tuition/${category}/${slug}`,
+            lastModified: CONTENT_LAST_MODIFIED,
+            changeFrequency: 'monthly' as const,
+            priority: category === 'tuition-by-location' ? 0.8 : 0.85,
+        }))
+    );
 
     // Blog articles
     let blogRoutes: MetadataRoute.Sitemap = [];
     try {
-        const posts = await PublicService.getBlogPosts();
+        const posts = await PublicService.getAllBlogPosts();
         if (posts && posts.length > 0) {
             blogRoutes = posts.map((post: any) => ({
                 url: `${baseUrl}/blog/${post.slug || post._id}`,
-                lastModified: post.updatedAt ? new Date(post.updatedAt).toISOString() : now,
+                lastModified: post.updatedAt ? new Date(post.updatedAt).toISOString() : CONTENT_LAST_MODIFIED,
                 changeFrequency: 'monthly',
                 priority: 0.7,
             }));
@@ -102,10 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
         ...staticRoutes,
-        ...classRoutes,
-        ...subjectRoutes,
-        ...boardRoutes,
-        ...locationRoutes,
+        ...tuitionRoutes,
         ...blogRoutes,
     ];
 }

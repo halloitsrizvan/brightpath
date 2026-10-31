@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import HomeClient from './HomeClient';
 
 export const metadata: Metadata = {
-    title: "Online Tuition in Kerala | 1:1 Classes KG–12 & Foundation | BrightPath",
+    // absolute: skips the layout title template, which would append the brand a second time
+    title: { absolute: "Online Tuition in Kerala | 1:1 Classes KG–12 | BrightPath" },
     description: "Personalized online tuition for KG–12 students with individual attention, foundation support, and flexible scheduling. Contact BrightPath to discuss your child's learning needs.",
     alternates: {
         canonical: 'https://www.brightpatheduvora.com',

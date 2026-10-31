@@ -21,6 +21,15 @@ export class PublicService {
             .lean();
     }
 
+    // Uncapped list for the sitemap (getBlogPosts is limited to the 9 latest for the blog index)
+    static async getAllBlogPosts() {
+        await dbConnect();
+        return await BlogPost.find({ status: 'published' })
+            .select('slug updatedAt')
+            .sort({ publishedAt: -1 })
+            .lean();
+    }
+
     static async getBlogPostBySlug(slug: string) {
         await dbConnect();
         return await BlogPost.findOne({ slug, status: 'published' }).lean();

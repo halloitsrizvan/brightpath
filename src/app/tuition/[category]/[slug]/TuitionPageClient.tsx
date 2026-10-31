@@ -12,13 +12,15 @@ import api from '@/utils/api';
 import * as fpixel from '@/lib/fpixel';
 import * as gtag from '@/lib/gtag';
 import { formatTuitionDisplayName } from '@/utils/tuitionHelper';
+import type { TuitionContent } from '@/utils/tuitionContent';
 
 interface TuitionPageClientProps {
     category: string;
     slug: string;
+    content: TuitionContent;
 }
 
-export default function TuitionPageClient({ category, slug }: TuitionPageClientProps) {
+export default function TuitionPageClient({ category, slug, content }: TuitionPageClientProps) {
     const displayName = formatTuitionDisplayName(slug);
     const isLocationPage = category === 'tuition-by-location';
 
@@ -296,6 +298,42 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
                 </>
             )}
 
+            {/* Page-specific content (unique per class/subject/board/location) */}
+            <section className="py-20 bg-white">
+                <div className="container mx-auto px-6 max-w-4xl">
+                    <h2 className="text-3xl font-extrabold text-gray-900 font-display leading-tight mb-6">
+                        {topicsHeading(category, displayName)}
+                    </h2>
+                    <div className="space-y-4 mb-10">
+                        {content.intro.map((p, i) => (
+                            <p key={i} className="text-gray-600 leading-relaxed">{p}</p>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-14">
+                        {content.topics.map((topic) => (
+                            <div key={topic.title} className="p-5 rounded-xl bg-surface border border-gray-100/80">
+                                <h3 className="text-sm font-bold text-gray-900 mb-1.5">{topic.title}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed">{topic.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <h2 className="text-2xl font-extrabold text-gray-900 font-display mb-5">
+                        {displayName} tuition: common questions
+                    </h2>
+                    <div className="space-y-3">
+                        {content.faqs.map((faq) => (
+                            <details key={faq.question} className="group p-5 rounded-xl bg-white border border-gray-100/80 open:shadow-md">
+                                <summary className="cursor-pointer text-sm font-bold text-gray-900 list-none flex justify-between gap-4">
+                                    {faq.question}
+                                    <span className="text-primary group-open:rotate-45 transition-transform shrink-0">+</span>
+                                </summary>
+                                <p className="mt-3 text-sm text-gray-500 leading-relaxed">{faq.answer}</p>
+                            </details>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Why Choose BrightPath (shared) */}
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-6 max-w-5xl">
@@ -368,6 +406,15 @@ export default function TuitionPageClient({ category, slug }: TuitionPageClientP
             <PublicFooter />
         </div>
     );
+}
+
+function topicsHeading(category: string, displayName: string) {
+    switch (category) {
+        case 'tuition-by-classes': return `Online tuition for ${displayName}: what we cover`;
+        case 'tuition-by-subject': return `How we teach ${displayName} online`;
+        case 'tuition-by-board': return `${displayName} online tuition at BrightPath`;
+        default: return `Online tuition in ${displayName}: how it works`;
+    }
 }
 
 function BenefitCard({ icon, color, title, desc }: { icon: React.ReactNode, color: string, title: string, desc: string }) {

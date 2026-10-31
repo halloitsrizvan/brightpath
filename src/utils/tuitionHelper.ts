@@ -1,3 +1,25 @@
+import { getTuitionContent } from './tuitionContent';
+
+/**
+ * Single source of truth for every tuition landing page. Used by the sitemap and by
+ * generateStaticParams so the pages are prerendered and served from the CDN cache.
+ */
+export const TUITION_ROUTES: Record<string, string[]> = {
+    'tuition-by-classes': [
+        'class-1-5', 'class-1', 'class-2', 'class-3', 'class-4', 'class-5',
+        'class-6', 'class-7', 'class-8', 'class-9', 'class-10', 'class-11', 'class-12'
+    ],
+    'tuition-by-subject': [
+        'english', 'maths', 'science', 'social-science',
+        'malayalam', 'hindi', 'physics', 'chemistry', 'biology'
+    ],
+    'tuition-by-board': ['cbse', 'icse', 'state', 'igcse'],
+    'tuition-by-location': [
+        'kerala', 'dubai', 'uae', 'qatar', 'saudi-arabia', 'oman', 'kuwait',
+        'bahrain', 'chennai', 'bangalore', 'coimbatore', 'hyderabad'
+    ],
+};
+
 /**
  * Helper to produce accurate, capitalized, and readable display names for tuition routes.
  */
@@ -32,22 +54,20 @@ export function formatTuitionDisplayName(slug: string): string {
  */
 export function getTuitionSEO(category: string, slug: string) {
     const displayName = formatTuitionDisplayName(slug);
-    let title = `${displayName} Online Tuition | 1:1 Classes | BrightPath Eduvora`;
+    // Titles are used as `absolute` (the root layout template would append the brand twice); keep <= 60 chars
+    let title = `${displayName} Online Tuition | 1:1 Classes | BrightPath`;
     let description = `Personalized 1:1 online tuition for ${displayName}. Expert certified tutors, individual attention, and customized learning roadmaps.`;
 
-    if (category === 'tuition-by-classes') {
-        title = `${displayName} Online Tuition | 1:1 Personal Classes | BrightPath`;
-        description = `Personalized 1:1 online tuition for ${displayName} students. Expert certified mentors, individual doubt clearing, and customized curriculum support across CBSE, ICSE & State boards.`;
-    } else if (category === 'tuition-by-board') {
-        title = `${displayName} Online Tuition | 1:1 Expert Mentors | BrightPath`;
-        description = `Specialized 1:1 online tuition aligned strictly with ${displayName} curriculum. Build conceptual clarity, solve previous question papers, and boost exam confidence.`;
+    if (category === 'tuition-by-board') {
+        title = `${displayName} Online Tuition | 1:1 Mentors | BrightPath`;
     } else if (category === 'tuition-by-subject') {
-        title = `1:1 Online ${displayName} Tuition | Expert Subject Mentors | BrightPath`;
-        description = `Master ${displayName} with dedicated 1:1 online tutoring for KG-12 students. Clear foundational doubts, practice numericals/concepts, and score higher marks.`;
+        title = `Online ${displayName} Tuition | 1:1 Tutors | BrightPath`;
     } else if (category === 'tuition-by-location') {
-        title = `Online Tuition in ${displayName} | 1:1 Classes for CBSE & State | BrightPath`;
-        description = `Top-rated 1:1 online tuition for students in ${displayName}. Individual attention for CBSE, ICSE, and Kerala State syllabus with flexible scheduling from home.`;
+        title = `Online Tuition in ${displayName} | 1:1 Classes | BrightPath`;
     }
+
+    const content = getTuitionContent(category, slug);
+    if (content) description = content.description;
 
     return { displayName, title, description };
 }

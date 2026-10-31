@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import TuitionPageClient from './TuitionPageClient';
-import { getTuitionSEO, formatTuitionDisplayName } from '@/utils/tuitionHelper';
+import { notFound } from 'next/navigation';
+import { getTuitionSEO, TUITION_ROUTES } from '@/utils/tuitionHelper';
+import { getTuitionContent } from '@/utils/tuitionContent';
 
 interface Props {
     params: Promise<{
@@ -9,13 +11,22 @@ interface Props {
     }>;
 }
 
+// Prerender every known landing page (cacheable, fast TTFB) and 404 anything else
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+    return Object.entries(TUITION_ROUTES).flatMap(([category, slugs]) =>
+        slugs.map((slug) => ({ category, slug }))
+    );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { category, slug } = await params;
     const { title, description } = getTuitionSEO(category, slug);
     const canonicalUrl = `https://www.brightpatheduvora.com/tuition/${category}/${slug}`;
 
     return {
-        title,
+        title: { absolute: title },
         description,
         alternates: {
             canonical: canonicalUrl,
@@ -48,6 +59,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TuitionClassPage({ params }: Props) {
     const { category, slug } = await params;
     const { displayName, description } = getTuitionSEO(category, slug);
+    const content = getTuitionContent(category, slug);
+    if (!content) notFound();
     const canonicalUrl = `https://www.brightpatheduvora.com/tuition/${category}/${slug}`;
 
     // Schema.org Structured Data
@@ -97,13 +110,23 @@ export default async function TuitionClassPage({ params }: Props) {
         }
     };
 
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": content.faqs.map((faq) => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+        }))
+    };
+
     return (
         <>
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, courseSchema]).replace(/</g, '\\u003c') }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, courseSchema, faqSchema]).replace(/</g, '\\u003c') }}
             />
-            <TuitionPageClient category={category} slug={slug} />
+            <TuitionPageClient category={category} slug={slug} content={content} />
         </>
     );
 }

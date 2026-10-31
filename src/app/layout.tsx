@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     description: "Personalized 1:1 online tuition for KG to 12th grade students. Expert tutors, flexible scheduling, and custom study plans.",
     url: "https://www.brightpatheduvora.com",
     siteName: "BrightPath Eduvora",
-    locale: "en_US",
+    locale: "en_IN",
     type: "website",
     images: [
       {
@@ -104,8 +104,8 @@ export default function RootLayout({
       >
         <MetaPixel />
         {children}
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
-      {gaId && <GoogleAnalytics gaId={gaId} />}
     </html>
   );
 }

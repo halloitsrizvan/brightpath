@@ -60,12 +60,23 @@ export default function HomeClient() {
         return () => clearInterval(timer);
     }, [isPaused, testimonials.length]);
 
-    // Auto-open Free Demo modal 3 seconds after landing on website
+    // Exit-intent Free Demo prompt: desktop only, once per session, never on page load
+    // (an interstitial shown on arrival hurts mobile usability and rankings)
     useEffect(() => {
-        const timer = setTimeout(() => {
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        try {
+            if (sessionStorage.getItem('demoPromptShown')) return;
+        } catch { /* storage blocked: allow one prompt per page view */ }
+
+        const armedAt = Date.now();
+        const onMouseOut = (e: MouseEvent) => {
+            if (e.relatedTarget || e.clientY > 0 || Date.now() - armedAt < 15000) return;
             setIsDemoModalOpen(true);
-        }, 3000);
-        return () => clearTimeout(timer);
+            try { sessionStorage.setItem('demoPromptShown', '1'); } catch { /* ignore */ }
+            document.removeEventListener('mouseout', onMouseOut);
+        };
+        document.addEventListener('mouseout', onMouseOut);
+        return () => document.removeEventListener('mouseout', onMouseOut);
     }, []);
 
     return (
