@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     canonical: 'https://www.brightpatheduvora.com',
   },
   icons: {
-    icon: [{ url: '/app-icon-512.png', type: 'image/png', sizes: '512x512' }],
-    shortcut: '/app-icon-512.png',
-    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+    icon: [{ url: '/new_logo/app-icon-512.png', type: 'image/png', sizes: '512x512' }],
+    shortcut: '/new_logo/app-icon-512.png',
+    apple: [{ url: '/new_logo/app-icon-180.png', sizes: '180x180', type: 'image/png' }],
   },
   formatDetection: {
     email: false,

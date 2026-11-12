@@ -20,7 +20,7 @@ export default function PublicFooter() {
                     <div className="lg:col-span-4 space-y-6">
                         <Link href="/" className="inline-flex items-center gap-2.5">
                             <div className="relative w-10 h-10 bg-white rounded-lg p-2 flex items-center justify-center">
-                                <Image src="/brightpath-eduvora-mark-purple.png" alt="BrightPath" width={36} height={36} className="w-full h-full object-contain" />
+                                <Image src="/new_logo/brightpath-eduvora-mark-purple.png" alt="BrightPath" width={36} height={36} className="w-full h-full object-contain" />
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-lg font-bold tracking-tight leading-none font-display">BrightPath</span>

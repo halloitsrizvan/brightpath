@@ -101,7 +101,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             "@type": "EducationalOrganization",
             "name": "BrightPath Eduvora",
             "url": "https://www.brightpatheduvora.com",
-            "logo": "https://www.brightpatheduvora.com/app-icon-512.png"
+            "logo": "https://www.brightpatheduvora.com/new_logo/app-icon-512.png"
         },
         "mainEntityOfPage": {
             "@type": "WebPage",

@@ -98,7 +98,7 @@ export default function Sidebar({ role, isOpen, onClose }: { role: 'admin' | 'te
                 <div className="p-6 pb-2">
                     <div className="flex items-center gap-4 group cursor-default">
                         <div className="relative w-12 h-12 flex-shrink-0 bg-white rounded-2xl flex items-center justify-center p-2 shadow-xl shadow-black/20 group-hover:scale-105 transition-transform">
-                            <NextImage src="/brightpath-eduvora-mark-purple.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
+                            <NextImage src="/new_logo/brightpath-eduvora-mark-purple.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
                         </div>
                         <div>
                             <h1 className="text-base font-black text-white tracking-widest uppercase italic leading-none">BrightPath</h1>

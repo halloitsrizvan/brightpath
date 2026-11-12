@@ -93,7 +93,7 @@ export default function HomeClient() {
                             "name": "BrightPath Eduvora",
                             "alternateName": ["BrightPath Online Tuition", "BrightPath Academy"],
                             "url": "https://www.brightpatheduvora.com",
-                            "logo": "https://www.brightpatheduvora.com/app-icon-512.png",
+                            "logo": "https://www.brightpatheduvora.com/new_logo/app-icon-512.png",
                             "image": "https://www.brightpatheduvora.com/bn2.png",
                             "description": "BrightPath Eduvora provides personalized 1:1 online tuition for KG to 12th grade students. Certified expert tutors for CBSE, ICSE, State & IGCSE boards.",
                             "telephone": "+918590878148",
