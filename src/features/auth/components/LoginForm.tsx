@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import api from '@/utils/api';
 import { ShieldCheck, Lock, Mail, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teacher' | 'student', roleTitle: string }) {
     const [email, setEmail] = useState('');
@@ -52,8 +53,8 @@ export default function LoginForm({ role, roleTitle }: { role: 'admin' | 'teache
                 </Link>
 
                 <div className="flex items-center gap-2 mb-2">
-                    <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20 rotate-3">
-                        B
+                    <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg shadow-primary/20">
+                        <Image src="/brightpath-eduvora-mark-purple.png" alt="BrightPath Logo" width={28} height={28} className="w-full h-full object-contain" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xl font-black tracking-tighter text-gray-900 leading-none uppercase">Brightpath</span>

@@ -43,6 +43,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://www.brightpatheduvora.com',
   },
+  icons: {
+    icon: [{ url: '/app-icon-512.png', type: 'image/png', sizes: '512x512' }],
+    shortcut: '/app-icon-512.png',
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   formatDetection: {
     email: false,
     address: false,

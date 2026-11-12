@@ -67,7 +67,7 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                 <div className={`container mx-auto px-6 flex justify-between items-center transition-all duration-200 ${scrolled ? 'py-2.5' : 'py-3.5'}`}>
                     <Link href="/" className="flex items-center gap-2.5 group">
                         <div className="relative w-9 h-9 rounded-lg overflow-hidden bg-white">
-                            <Image src="/logo.png" alt="BrightPath Logo" width={36} height={36} className="w-full h-full object-contain" />
+                            <Image src="/brightpath-eduvora-mark-purple.png" alt="BrightPath Logo" width={36} height={36} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
                             <span className={`text-base font-bold tracking-tight leading-none font-display ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>BrightPath</span>
@@ -226,7 +226,7 @@ export default function PublicNavbar({ showMarquee = false, onApplyNow }: Public
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
                     <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
                         <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-white">
-                            <Image src="/logo.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
+                            <Image src="/brightpath-eduvora-mark-purple.png" alt="BrightPath Logo" width={32} height={32} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-sm font-bold tracking-tight text-gray-900 font-display">BrightPath</span>
