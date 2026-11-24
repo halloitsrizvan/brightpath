@@ -13,6 +13,7 @@ import '@/models/Attendance';
 import Fee from '@/models/Fee';
 import Attendance from '@/models/Attendance';
 import Student from '@/models/Student';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -289,11 +290,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             if (rawDoc.billRateAtTime !== undefined && rawDoc.billRateAtTime !== null && rawDoc.billRateAtTime > 0) {
                 rate = rawDoc.billRateAtTime;
             } else if (Array.isArray(student.subjectAssignments)) {
-                const assignment = student.subjectAssignments.find((a: any) => 
-                    ((a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId) && 
-                    ((a.teacherId?._id?.toString() || a.teacherId?.toString()) === tId)
-                ) || student.subjectAssignments.find((a: any) => 
-                    (a.subjectId?._id?.toString() || a.subjectId?.toString()) === sId
+                const assignment = findSubjectAssignment(
+                    student.subjectAssignments,
+                    sObj,
+                    tObj
                 );
                 if (assignment && assignment.billPerHour > 0) rate = assignment.billPerHour;
             }

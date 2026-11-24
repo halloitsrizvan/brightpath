@@ -4,6 +4,8 @@ import { assertCanAccessStudent } from '@/lib/api/access';
 import Attendance from '@/models/Attendance';
 import Teacher from '@/models/Teacher';
 import dbConnect from '@/lib/db/mongodb';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
+import Subject from '@/models/Subject';
 
 export async function POST(req: NextRequest) {
     try {
@@ -22,9 +24,11 @@ export async function POST(req: NextRequest) {
         let billRateAtTime = 0;
         let salaryRateAtTime = 0;
 
-        const [targetStudent, targetTeacher] = await Promise.all([
-            import('@/models/Student').then(m => m.default.findById(body.studentId)),
-            Teacher.findById(teacherId)
+        const [targetStudent, targetTeacher, targetSubject] = await Promise.all([
+            import('@/models/Student').then(m => m.default.findById(body.studentId)
+                .populate('subjectAssignments.subjectId')),
+            Teacher.findById(teacherId),
+            Subject.findById(body.subjectId)
         ]);
 
         if (targetTeacher) {
@@ -32,9 +36,10 @@ export async function POST(req: NextRequest) {
         }
 
         if (targetStudent && targetStudent.subjectAssignments) {
-            const assignment = targetStudent.subjectAssignments.find((a: any) => 
-                a.subjectId.toString() === body.subjectId?.toString() && 
-                a.teacherId.toString() === teacherId.toString()
+            const assignment = findSubjectAssignment(
+                targetStudent.subjectAssignments,
+                targetSubject || body.subjectId,
+                teacherId
             );
             if (assignment) {
                 if (assignment.billPerHour > 0) billRateAtTime = assignment.billPerHour;

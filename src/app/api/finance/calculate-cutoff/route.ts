@@ -11,6 +11,7 @@ import '@/models/Attendance';
 
 import Fee from '@/models/Fee';
 import Attendance from '@/models/Attendance';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,7 +27,8 @@ export async function POST(req: NextRequest) {
 
         const fees = await Fee.find({ _id: { $in: feeIds } }).populate({
             path: 'studentId',
-            model: 'Student'
+            model: 'Student',
+            populate: { path: 'subjectAssignments.subjectId', model: 'Subject' }
         });
 
         if (fees.length === 0) {
@@ -159,14 +161,13 @@ export async function POST(req: NextRequest) {
                     for (const rec of attendances) {
                         const hours = (rec.durationMinutes || 0) / 60;
                         let billRate = 0;
-                        if (rec.billRateAtTime !== undefined && rec.billRateAtTime !== null) {
+                        if (rec.billRateAtTime !== undefined && rec.billRateAtTime !== null && rec.billRateAtTime > 0) {
                             billRate = rec.billRateAtTime;
                         } else if (student.subjectAssignments) {
-                            const tId = (rec.teacherId as any)?._id?.toString() || (rec.teacherId as any)?.toString();
-                            const sId = (rec.subjectId as any)?._id?.toString() || (rec.subjectId as any)?.toString();
-                            const assignment = student.subjectAssignments.find((a: any) => 
-                                (a.subjectId?.toString() === sId) && 
-                                (a.teacherId?.toString() === tId)
+                            const assignment = findSubjectAssignment(
+                                student.subjectAssignments,
+                                rec.subjectId,
+                                rec.teacherId
                             );
                             if (assignment && assignment.billPerHour > 0) billRate = assignment.billPerHour;
                         }

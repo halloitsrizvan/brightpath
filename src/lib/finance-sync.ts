@@ -4,6 +4,7 @@ import Salary from '@/models/Salary';
 import Student from '@/models/Student';
 import Teacher from '@/models/Teacher';
 import IncentiveRule from '@/models/IncentiveRule';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
 
 export async function syncFinancialsForMonth(month: string) {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -19,7 +20,10 @@ export async function syncFinancialsForMonth(month: string) {
     const allAttendances = await Attendance.find({
         date: { $gte: startDate, $lte: endDate },
         status: 'Present'
-    }).populate('studentId').populate('teacherId');
+    }).populate({
+        path: 'studentId',
+        populate: { path: 'subjectAssignments.subjectId' }
+    }).populate('teacherId').populate('subjectId');
 
     // Fetch all paid fees for the month to determine which student attendances are paid
     const paidFeesForMonth = await Fee.find({
@@ -62,25 +66,19 @@ export async function syncFinancialsForMonth(month: string) {
         let salaryRate = teacher.salaryPerHour || 0;
 
         // PRIORITIZE SNAPSHOTS if they exist (new records)
-        if (rec.billRateAtTime !== undefined && rec.billRateAtTime !== null) {
+        if (rec.billRateAtTime !== undefined && rec.billRateAtTime !== null && rec.billRateAtTime > 0) {
             billRate = rec.billRateAtTime;
         } else if (student.subjectAssignments) {
             // FALLBACK for old records
-            const assignment = student.subjectAssignments.find((a: any) => 
-                (a.subjectId.toString() === rec.subjectId?.toString() || a.subjectId?._id?.toString() === rec.subjectId?.toString()) && 
-                a.teacherId.toString() === tId
-            );
+            const assignment = findSubjectAssignment(student.subjectAssignments, rec.subjectId, teacher);
             if (assignment && assignment.billPerHour > 0) billRate = assignment.billPerHour;
         }
 
-        if (rec.salaryRateAtTime !== undefined && rec.salaryRateAtTime !== null) {
+        if (rec.salaryRateAtTime !== undefined && rec.salaryRateAtTime !== null && rec.salaryRateAtTime > 0) {
             salaryRate = rec.salaryRateAtTime;
         } else if (student.subjectAssignments) {
             // FALLBACK for old records
-            const assignment = student.subjectAssignments.find((a: any) => 
-                (a.subjectId.toString() === rec.subjectId?.toString() || a.subjectId?._id?.toString() === rec.subjectId?.toString()) && 
-                a.teacherId.toString() === tId
-            );
+            const assignment = findSubjectAssignment(student.subjectAssignments, rec.subjectId, teacher);
             if (assignment && assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
         }
 
