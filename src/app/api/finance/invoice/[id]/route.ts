@@ -313,8 +313,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             };
         });
 
-        // The invoice is a receipt for the settled fee amount of this transaction
-        const finalInvoiceTotal = totalAmount;
+        // Keep the displayed total consistent with the itemized ledger. This is
+        // especially important for legacy attendance rows whose missing/zero rate
+        // is recovered from the student's current subject assignment above.
+        // Flat-fee invoices have no activity rows, so they retain the stored fee.
+        const finalInvoiceTotal = enrichedActivityRecords.length > 0
+            ? totalActivityAmount
+            : totalAmount;
 
         y -= 40;
         const ledgerDateStr = overallCutoffDate 
