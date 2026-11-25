@@ -146,6 +146,7 @@ export async function POST(req: NextRequest) {
 
                 let feeAttendanceBill = 0;
                 let feeAttendanceHours = 0;
+                let feeAttendanceClasses = 0;
 
                 // Query attendances only within the active unpaid billing window
                 if (activityStartDate <= queryEndDate) {
@@ -157,6 +158,7 @@ export async function POST(req: NextRequest) {
                     .populate('subjectId')
                     .populate('teacherId')
                     .sort({ date: 1 });
+                    feeAttendanceClasses = attendances.length;
 
                     for (const rec of attendances) {
                         const hours = (rec.durationMinutes || 0) / 60;
@@ -196,7 +198,7 @@ export async function POST(req: NextRequest) {
                 const netBill = Math.round(feeAttendanceBill);
                 totalGross += netBill;
                 totalCalculated += netBill;
-                totalClasses += feeAttendanceHours > 0 ? allActivities.length : 0;
+                totalClasses += feeAttendanceClasses;
                 totalHours += feeAttendanceHours;
                 feeBreakdown[fee._id.toString()] = netBill;
             } else {

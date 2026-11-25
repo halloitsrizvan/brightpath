@@ -59,12 +59,12 @@ export async function GET(req: NextRequest) {
         const totalReceivable = unpaidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
         const totalPayable = unpaidSalaries.reduce((acc, salary) => {
             const qualified = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
-            return acc + (qualified || 0);
+            return acc + Math.max(0, (qualified || 0) - (salary.disbursedAmount || 0));
         }, 0);
         const totalAccruedPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
         const totalPendingStudentPayable = unpaidSalaries.reduce((acc, salary) => acc + (salary.pendingStudentSalary || 0), 0);
         const totalReceived = paidFees.reduce((acc, fee) => acc + (fee.amount || 0), 0);
-        const totalDisbursed = paidSalaries.reduce((acc, salary) => acc + (salary.totalSalary || 0), 0);
+        const totalDisbursed = allSalaries.reduce((acc, salary) => acc + (salary.disbursedAmount || 0), 0);
         const totalExpenses = allExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0);
         const totalFounderSalaries = paidFounderSalaries.reduce((acc, s) => acc + (s.amount || 0), 0);
 

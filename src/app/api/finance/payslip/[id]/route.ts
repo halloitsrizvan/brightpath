@@ -5,6 +5,7 @@ import Attendance from '@/models/Attendance';
 import IncentiveRule from '@/models/IncentiveRule';
 import dbConnect from '@/lib/db/mongodb';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -42,7 +43,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 teacherId: teacher._id,
                 date: { $gte: startDate, $lte: endDate },
                 status: 'Present'
-            }).populate('studentId').populate('subjectId');
+            }).populate({
+                path: 'studentId',
+                populate: { path: 'subjectAssignments.subjectId' }
+            }).populate('subjectId');
 
             // Find all paid student fees for this month
             const Fee = (await import('@/models/Fee')).default;
@@ -84,13 +88,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 const student = cls.studentId as any;
                 if (!student) continue;
                 let rate = (teacher as any).salaryPerHour || 0;
-                if (cls.salaryRateAtTime !== undefined && cls.salaryRateAtTime !== null) {
+                if (cls.salaryRateAtTime !== undefined && cls.salaryRateAtTime !== null && cls.salaryRateAtTime > 0) {
                     rate = cls.salaryRateAtTime;
                 } else if (student.subjectAssignments) {
-                    const assignment = student.subjectAssignments.find((a: any) => 
-                        (a.subjectId?.toString() === cls.subjectId?._id?.toString() || a.subjectId?.toString() === cls.subjectId?.toString()) && 
-                        a.teacherId?.toString() === (teacher as any)._id.toString()
-                    );
+                    const assignment = findSubjectAssignment(student.subjectAssignments, cls.subjectId, teacher);
                     if (assignment && assignment.salaryPerHour > 0) rate = assignment.salaryPerHour;
                 }
                 const hrs = (cls.durationMinutes || 0) / 60;
@@ -159,7 +160,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             y -= 20;
             page.drawRectangle({ x: width - 250, y: y - 10, width: 200, height: 45, color: lightGray, borderColor: primaryColor, borderWidth: 1 });
             page.drawText('NET EARNINGS', { x: width - 240, y: y + 15, size: 10, font: boldFont, color: primaryColor });
-            page.drawText(safeStr(`INR ${salary.totalSalary.toLocaleString()}`), { x: width - 240, y: y - 2, size: 16, font: boldFont });
+            page.drawText(safeStr(`INR ${(salary.disbursedAmount || salary.totalSalary).toLocaleString()}`), { x: width - 240, y: y - 2, size: 16, font: boldFont });
             y -= 70;
 
             page.drawText('CLASS ACTIVITY LEDGER', { x: 50, y, size: 11, font: boldFont, color: primaryColor });

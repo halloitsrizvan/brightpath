@@ -8,6 +8,7 @@ import Teacher from '@/models/Teacher';
 import Subject from '@/models/Subject';
 import IncentiveRule from '@/models/IncentiveRule';
 import dbConnect from '@/lib/db/mongodb';
+import { findSubjectAssignment } from '@/lib/subject-assignment';
 
 export async function POST(req: NextRequest) {
     try {
@@ -65,7 +66,10 @@ export async function POST(req: NextRequest) {
                 teacherId: teacher._id,
                 date: { $gte: monthStart, $lte: monthEnd },
                 status: 'Present'
-            }).populate('studentId').populate('subjectId');
+            }).populate({
+                path: 'studentId',
+                populate: { path: 'subjectAssignments.subjectId' }
+            }).populate('subjectId');
 
             // Find all paid fees for this month to check which students have paid
             const paidFees = await Fee.find({
@@ -97,13 +101,10 @@ export async function POST(req: NextRequest) {
                 const classDate = new Date(cls.date);
 
                 let salaryRate = teacher.salaryPerHour || 0;
-                if (cls.salaryRateAtTime !== undefined && cls.salaryRateAtTime !== null) {
+                if (cls.salaryRateAtTime !== undefined && cls.salaryRateAtTime !== null && cls.salaryRateAtTime > 0) {
                     salaryRate = cls.salaryRateAtTime;
                 } else if (student.subjectAssignments) {
-                    const assignment = student.subjectAssignments.find((a: any) => 
-                        (a.subjectId?.toString() === subject?._id?.toString() || a.subjectId?.toString() === cls.subjectId?.toString()) && 
-                        a.teacherId?.toString() === teacher._id.toString()
-                    );
+                    const assignment = findSubjectAssignment(student.subjectAssignments, subject, teacher);
                     if (assignment && assignment.salaryPerHour > 0) salaryRate = assignment.salaryPerHour;
                 }
 
@@ -158,9 +159,10 @@ export async function POST(req: NextRequest) {
             const finalSalaryQualified = Math.round(salaryQualified + qualifiedIncentive);
             const finalSalaryTotal = Math.round(salaryAccrued + totalIncentive);
 
-            breakdown[salary._id.toString()] = finalSalaryQualified;
+            const payableNow = Math.max(0, finalSalaryQualified - (salary.disbursedAmount || 0));
+            breakdown[salary._id.toString()] = payableNow;
             totalAccrued += finalSalaryTotal;
-            totalQualified += finalSalaryQualified;
+            totalQualified += payableNow;
             totalPending += Math.max(0, finalSalaryTotal - finalSalaryQualified);
             totalHours += salHours;
             qualifiedHours += salQualHours;

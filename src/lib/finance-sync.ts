@@ -94,7 +94,7 @@ export async function syncFinancialsForMonth(month: string) {
             };
         }
 
-        const classEarnings = hours * salaryRate;
+        const classEarnings = Math.round(hours * salaryRate);
         teacherCalcs[tId].earnings += classEarnings;
         teacherCalcs[tId].hours += hours;
 
@@ -115,7 +115,7 @@ export async function syncFinancialsForMonth(month: string) {
         }
 
         if (!studentCalcs[sId]) studentCalcs[sId] = { totalBill: 0, hours: 0 };
-        studentCalcs[sId].totalBill += hours * billRate;
+        studentCalcs[sId].totalBill += Math.round(hours * billRate);
         studentCalcs[sId].hours += hours;
     }
 
@@ -138,9 +138,12 @@ export async function syncFinancialsForMonth(month: string) {
         const pendingStudentSalary = Math.max(0, finalTotalSalary - finalQualifiedSalary);
 
         const existingSalary = await Salary.findOne({ teacherId: tId, month });
-        if (existingSalary && existingSalary.paidStatus === 'paid') {
-            continue; // CRITICAL: Protect fully paid records from updates
-        }
+        const alreadyDisbursed = existingSalary?.disbursedAmount || 0;
+        const paymentState = alreadyDisbursed <= 0
+            ? 'unpaid'
+            : alreadyDisbursed >= finalTotalSalary
+                ? 'paid'
+                : 'partial';
 
         await Salary.findOneAndUpdate(
             { teacherId: tId, month },
@@ -150,7 +153,8 @@ export async function syncFinancialsForMonth(month: string) {
                 salaryPerHour: data.baseRate,
                 totalSalary: finalTotalSalary,
                 qualifiedSalary: finalQualifiedSalary,
-                pendingStudentSalary: pendingStudentSalary
+                pendingStudentSalary: pendingStudentSalary,
+                paidStatus: paymentState
             },
             { upsert: true, new: true }
         );

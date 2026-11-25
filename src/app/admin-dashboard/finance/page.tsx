@@ -332,11 +332,8 @@ export default function FinanceHub() {
                             : (idArray.length === 1 ? (latestSettlementAmount > 0 ? latestSettlementAmount : amount) : Math.round(amount / idArray.length));
 
                         return api.put(`/finance/salary/${id}`, { 
-                            paidStatus: 'paid',
                             paymentDate: new Date(),
                             disbursementCutoffDate: cutoffDateObj || new Date(),
-                            totalSalary: calculatedSalaryAmount,
-                            qualifiedSalary: calculatedSalaryAmount,
                             disbursedAmount: calculatedSalaryAmount
                         });
                     }));
@@ -365,31 +362,26 @@ export default function FinanceHub() {
     const downloadInvoice = async (feeIds: string | string[], cutoffDate?: string) => {
         try {
             const idArray = Array.isArray(feeIds) ? feeIds : [feeIds];
-            const idString = idArray.join(',');
-            const queryCutoff = cutoffDate ? `?cutoffDate=${cutoffDate}` : '';
-
-            const response = await api.get(`/finance/invoice/${idString}${queryCutoff}`, {
-                responseType: 'blob'
+            const knownFees = [...(unpaidFees || []), ...(paidFees || [])];
+            const groups = new Map<string, string[]>();
+            idArray.forEach(id => {
+                const fee = knownFees.find((item: any) => item._id === id);
+                const studentKey = fee?.studentId?._id || fee?.studentId || id;
+                groups.set(studentKey, [...(groups.get(studentKey) || []), id]);
             });
 
-            let filename = `Invoice_${idString.slice(-6)}.pdf`;
-            const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
-            if (disposition) {
-                const match = disposition.match(/filename="?([^";]+)"?/i);
-                if (match && match[1]) {
-                    filename = match[1];
+            for (const groupIds of groups.values()) {
+                const idString = groupIds.join(',');
+                const queryCutoff = cutoffDate ? `?cutoffDate=${cutoffDate}` : '';
+                const response = await api.get(`/finance/invoice/${idString}${queryCutoff}`, { responseType: 'blob' });
+                let filename = `Invoice_${idString.slice(-6)}.pdf`;
+                const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
+                if (disposition) {
+                    const match = disposition.match(/filename="?([^";]+)"?/i);
+                    if (match?.[1]) filename = match[1];
                 }
+                downloadBlob(response.data, filename);
             }
-
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Failed to download invoice:", error);
             toast.error("Failed to download invoice PDF");
@@ -399,33 +391,32 @@ export default function FinanceHub() {
     const downloadPayslip = async (salaryIds: string | string[]) => {
         try {
             const idArray = Array.isArray(salaryIds) ? salaryIds : [salaryIds];
-            const idString = idArray.join(',');
-            const response = await api.get(`/finance/payslip/${idString}`, {
-                responseType: 'blob'
-            });
-
-            let filename = `Payslip_${idString.slice(-6)}.pdf`;
-            const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
-            if (disposition) {
-                const match = disposition.match(/filename="?([^";]+)"?/i);
-                if (match && match[1]) {
-                    filename = match[1];
+            for (const salaryId of idArray) {
+                const response = await api.get(`/finance/payslip/${salaryId}`, { responseType: 'blob' });
+                let filename = `Payslip_${salaryId.slice(-6)}.pdf`;
+                const disposition = response.headers?.['content-disposition'] || response.headers?.['Content-Disposition'];
+                if (disposition) {
+                    const match = disposition.match(/filename="?([^";]+)"?/i);
+                    if (match?.[1]) filename = match[1];
                 }
+                downloadBlob(response.data, filename);
             }
-
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error("Failed to download payslip:", error);
             toast.error("Failed to download payslip PDF");
         }
+    };
+
+    const downloadBlob = (data: BlobPart, filename: string) => {
+        const blob = new Blob([data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     };
 
     const { summary, unpaidFees, paidFees, unpaidSalaries, paidSalaries } = financeData || { summary: {}, unpaidFees: [], paidFees: [], unpaidSalaries: [], paidSalaries: [] };
@@ -1221,7 +1212,7 @@ export default function FinanceHub() {
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-4 md:gap-6">
-                                                <p className="text-sm md:text-lg font-black text-orange-600 italic">₹{groupedSalaries[month].reduce((sum: any, s: any) => sum + ((s.qualifiedSalary !== undefined ? s.qualifiedSalary : s.totalSalary) || 0), 0).toLocaleString()}</p>
+                                                <p className="text-sm md:text-lg font-black text-orange-600 italic">₹{groupedSalaries[month].reduce((sum: any, s: any) => sum + Math.max(0, ((s.qualifiedSalary !== undefined ? s.qualifiedSalary : s.totalSalary) || 0) - (s.disbursedAmount || 0)), 0).toLocaleString()}</p>
                                                 {expandedMonths.includes(`salary_${month}`) ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
                                             </div>
                                         </button>
@@ -1241,7 +1232,8 @@ export default function FinanceHub() {
                                                         </thead>
                                                         <tbody className="divide-y divide-gray-50">
                                                             {groupedSalaries[month].map((salary: any) => {
-                                                                const disburseable = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                                const qualified = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                                const disburseable = Math.max(0, (qualified || 0) - (salary.disbursedAmount || 0));
                                                                 const pending = salary.pendingStudentSalary || 0;
                                                                 const isFullyPaid = salary.paidStatus === 'paid';
                                                                 const hasPendingFees = pending > 0;
@@ -1339,7 +1331,8 @@ export default function FinanceHub() {
                                                 {/* Mobile View: Div Cards */}
                                                 <div className="block md:hidden space-y-2.5">
                                                     {groupedSalaries[month].map((salary: any) => {
-                                                        const disburseable = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                        const qualified = salary.qualifiedSalary !== undefined ? salary.qualifiedSalary : salary.totalSalary;
+                                                        const disburseable = Math.max(0, (qualified || 0) - (salary.disbursedAmount || 0));
                                                         const pending = salary.pendingStudentSalary || 0;
                                                         const isFullyPaid = salary.paidStatus === 'paid';
                                                         const hasPendingFees = pending > 0;
